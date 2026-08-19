@@ -8,28 +8,28 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-<header class="topbar">
+<header class="topbar no-print">
   <div><p class="eyebrow">MGS</p><h1>Med Gas</h1></div>
-  <button id="newProjectBtn" class="primary">+ New project</button>
+  <div class="top-actions"><button id="printReportBtn" class="secondary">Print / Save PDF</button><button id="newProjectBtn" class="primary">+ New project</button></div>
 </header>
 
 <main class="shell">
-  <section class="hero">
+  <section class="hero no-print">
     <div>
       <p class="eyebrow">Field workspace</p>
       <h2>Medical gas project records, organized by job.</h2>
-      <p>Track facility information, alarms, outlets, verification items and field notes from one project workspace.</p>
+      <p>Track facility information, alarms, outlets, test records, photos, verification items and field notes from one project workspace.</p>
     </div>
-    <div class="status-card"><span>Build status</span><strong>Project records enabled</strong></div>
+    <div class="status-card"><span>Build status</span><strong>Field reporting enabled</strong></div>
   </section>
 
-  <section class="stats" aria-label="Project summary">
+  <section class="stats no-print" aria-label="Project summary">
     <article><span>Projects</span><strong id="projectCount">0</strong></article>
     <article><span>Open items</span><strong id="openCount">0</strong></article>
-    <article><span>Recorded devices</span><strong id="deviceCount">0</strong></article>
+    <article><span>Recorded items</span><strong id="deviceCount">0</strong></article>
   </section>
 
-  <section class="grid">
+  <section class="grid no-print">
     <article class="panel projects-panel">
       <div class="panel-head"><div><p class="eyebrow">Projects</p><h3>Current jobs</h3></div></div>
       <div id="projectList" class="project-list"></div>
@@ -40,12 +40,14 @@
     </article>
   </section>
 
-  <section class="workspace panel">
+  <section class="workspace panel no-print">
     <div class="panel-head"><div><p class="eyebrow">Project workspace</p><h3>Field records</h3></div></div>
     <div class="tabs" role="tablist">
       <button class="tab active" data-tab="checklist">Checklist</button>
       <button class="tab" data-tab="alarms">Alarms</button>
       <button class="tab" data-tab="outlets">Outlets</button>
+      <button class="tab" data-tab="tests">Tests</button>
+      <button class="tab" data-tab="photos">Photos</button>
       <button class="tab" data-tab="notes">Notes</button>
     </div>
 
@@ -64,11 +66,23 @@
       <div id="outletList" class="record-list"></div>
     </div>
 
+    <div class="tab-panel" id="tab-tests">
+      <div class="section-actions"><h4>Inspection & test records</h4><button id="addTestBtn" class="secondary">+ Add test</button></div>
+      <div id="testList" class="record-list"></div>
+    </div>
+
+    <div class="tab-panel" id="tab-photos">
+      <div class="section-actions"><div><h4>Project photos</h4><small class="helper">Stored on this device. Keep images small to avoid browser storage limits.</small></div><label class="secondary file-button">+ Add photo<input id="photoInput" type="file" accept="image/*" capture="environment" /></label></div>
+      <div id="photoList" class="photo-grid"></div>
+    </div>
+
     <div class="tab-panel" id="tab-notes">
       <div class="section-actions"><h4>Field notes</h4><button id="saveNotesBtn" class="primary">Save notes</button></div>
       <textarea id="fieldNotes" rows="10" placeholder="Walkthrough notes, coordination items, deficiencies, test observations..."></textarea>
     </div>
   </section>
+
+  <section id="report" class="report print-only"></section>
 </main>
 
 <dialog id="projectDialog"><form id="projectForm" method="dialog">
@@ -106,7 +120,29 @@
   <div class="dialog-actions"><button type="button" class="secondary" data-close>Cancel</button><button class="primary">Save outlet</button></div>
 </form></dialog>
 
-<footer><p>Field organization prototype only. Use applicable codes, adopted standards, manufacturer instructions, inspection requirements, qualified personnel, and required verification procedures for actual medical-gas work.</p></footer>
+<dialog id="testDialog"><form id="testForm" method="dialog">
+  <div class="dialog-head"><h3>Add inspection / test record</h3><button type="button" class="icon-btn" data-close>×</button></div>
+  <label>Test / inspection<input name="type" required placeholder="Example: Pressure test, alarm functional test" /></label>
+  <label>System / gas<input name="system" placeholder="Oxygen, vacuum, zone valve box..." /></label>
+  <label>Location<input name="location" placeholder="Level 2 / Room 204" /></label>
+  <label>Date<input name="date" type="date" /></label>
+  <label>Result<select name="status"><option>Not checked</option><option>Pass</option><option>Needs attention</option></select></label>
+  <label>Performed / observed by<input name="person" placeholder="Name or company" /></label>
+  <label>Reading / reference<input name="reading" placeholder="Value, report number, instrument reference..." /></label>
+  <label>Notes<textarea name="notes" rows="3"></textarea></label>
+  <div class="dialog-actions"><button type="button" class="secondary" data-close>Cancel</button><button class="primary">Save test</button></div>
+</form></dialog>
+
+<dialog id="photoDialog"><form id="photoForm" method="dialog">
+  <div class="dialog-head"><h3>Photo details</h3><button type="button" class="icon-btn" data-close>×</button></div>
+  <img id="photoPreview" class="photo-preview" alt="Selected project photo" />
+  <label>Caption<input name="caption" placeholder="Alarm panel at Level 2 nurse station" /></label>
+  <label>Location<input name="location" placeholder="Building / floor / room" /></label>
+  <label>Notes<textarea name="notes" rows="3"></textarea></label>
+  <div class="dialog-actions"><button type="button" class="secondary" data-close>Cancel</button><button class="primary">Save photo</button></div>
+</form></dialog>
+
+<footer class="no-print"><p>Field organization prototype only. Use applicable codes, adopted standards, manufacturer instructions, inspection requirements, qualified personnel, and required verification procedures for actual medical-gas work.</p></footer>
 <script src="app.js"></script>
 </body>
 </html>
