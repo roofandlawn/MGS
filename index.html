@@ -8,85 +8,105 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <header class="topbar">
+<header class="topbar">
+  <div><p class="eyebrow">MGS</p><h1>Med Gas</h1></div>
+  <button id="newProjectBtn" class="primary">+ New project</button>
+</header>
+
+<main class="shell">
+  <section class="hero">
     <div>
-      <p class="eyebrow">MGS</p>
-      <h1>Med Gas</h1>
+      <p class="eyebrow">Field workspace</p>
+      <h2>Medical gas project records, organized by job.</h2>
+      <p>Track facility information, alarms, outlets, verification items and field notes from one project workspace.</p>
     </div>
-    <button id="newProjectBtn" class="primary">+ New project</button>
-  </header>
+    <div class="status-card"><span>Build status</span><strong>Project records enabled</strong></div>
+  </section>
 
-  <main class="shell">
-    <section class="hero">
-      <div>
-        <p class="eyebrow">Field workspace</p>
-        <h2>Keep medical-gas project details in one place.</h2>
-        <p>Track projects, systems, alarms, outlets, verification items, notes, and documents from a phone or laptop.</p>
-      </div>
-      <div class="status-card">
-        <span>Prototype status</span>
-        <strong>Ready to build on</strong>
-      </div>
-    </section>
+  <section class="stats" aria-label="Project summary">
+    <article><span>Projects</span><strong id="projectCount">0</strong></article>
+    <article><span>Open items</span><strong id="openCount">0</strong></article>
+    <article><span>Recorded devices</span><strong id="deviceCount">0</strong></article>
+  </section>
 
-    <section class="stats" aria-label="Project summary">
-      <article><span>Projects</span><strong id="projectCount">0</strong></article>
-      <article><span>Open checklist items</span><strong id="openCount">0</strong></article>
-      <article><span>Completed items</span><strong id="doneCount">0</strong></article>
-    </section>
+  <section class="grid">
+    <article class="panel projects-panel">
+      <div class="panel-head"><div><p class="eyebrow">Projects</p><h3>Current jobs</h3></div></div>
+      <div id="projectList" class="project-list"></div>
+    </article>
+    <article class="panel">
+      <div class="panel-head"><div><p class="eyebrow">Selected project</p><h3 id="selectedTitle">No project selected</h3></div></div>
+      <div id="projectDetail" class="detail-empty">Create or select a project to begin.</div>
+    </article>
+  </section>
 
-    <section class="grid">
-      <article class="panel projects-panel">
-        <div class="panel-head">
-          <div><p class="eyebrow">Projects</p><h3>Current jobs</h3></div>
-        </div>
-        <div id="projectList" class="project-list"></div>
-      </article>
+  <section class="workspace panel">
+    <div class="panel-head"><div><p class="eyebrow">Project workspace</p><h3>Field records</h3></div></div>
+    <div class="tabs" role="tablist">
+      <button class="tab active" data-tab="checklist">Checklist</button>
+      <button class="tab" data-tab="alarms">Alarms</button>
+      <button class="tab" data-tab="outlets">Outlets</button>
+      <button class="tab" data-tab="notes">Notes</button>
+    </div>
 
-      <article class="panel">
-        <div class="panel-head"><div><p class="eyebrow">Selected project</p><h3 id="selectedTitle">No project selected</h3></div></div>
-        <div id="projectDetail" class="detail-empty">Create or select a project to begin.</div>
-      </article>
-    </section>
+    <div class="tab-panel active" id="tab-checklist">
+      <div class="section-actions"><h4>Verification checklist</h4><button id="addTaskBtn" class="secondary">+ Add item</button></div>
+      <div id="checklist" class="record-list"></div>
+    </div>
 
-    <section class="panel checklist-panel">
-      <div class="panel-head">
-        <div><p class="eyebrow">Verification</p><h3>Field checklist</h3></div>
-        <button id="addTaskBtn" class="secondary">+ Add item</button>
-      </div>
-      <div id="checklist" class="checklist"></div>
-    </section>
+    <div class="tab-panel" id="tab-alarms">
+      <div class="section-actions"><h4>Alarm panels & signals</h4><button id="addAlarmBtn" class="secondary">+ Add alarm</button></div>
+      <div id="alarmList" class="record-list"></div>
+    </div>
 
-    <section class="modules">
-      <article class="module"><span class="icon">A</span><div><h3>Alarms</h3><p>Track alarm panels, signals, locations, and notes.</p></div></article>
-      <article class="module"><span class="icon">O</span><div><h3>Outlets</h3><p>Record outlet locations, gas service, labels, and verification status.</p></div></article>
-      <article class="module"><span class="icon">D</span><div><h3>Documents</h3><p>Future home for plans, submittals, photos, test records, and closeout files.</p></div></article>
-    </section>
-  </main>
+    <div class="tab-panel" id="tab-outlets">
+      <div class="section-actions"><h4>Outlets & terminals</h4><button id="addOutletBtn" class="secondary">+ Add outlet</button></div>
+      <div id="outletList" class="record-list"></div>
+    </div>
 
-  <dialog id="projectDialog">
-    <form id="projectForm" method="dialog">
-      <div class="dialog-head"><h3>New project</h3><button type="button" class="icon-btn" data-close>×</button></div>
-      <label>Project name<input name="name" required placeholder="Example: North Wing Renovation" /></label>
-      <label>Facility<input name="facility" placeholder="Hospital or facility" /></label>
-      <label>Location<input name="location" placeholder="City / building / floor" /></label>
-      <label>Notes<textarea name="notes" rows="4" placeholder="Scope, contacts, system notes..."></textarea></label>
-      <div class="dialog-actions"><button type="button" class="secondary" data-close>Cancel</button><button class="primary" value="default">Save project</button></div>
-    </form>
-  </dialog>
+    <div class="tab-panel" id="tab-notes">
+      <div class="section-actions"><h4>Field notes</h4><button id="saveNotesBtn" class="primary">Save notes</button></div>
+      <textarea id="fieldNotes" rows="10" placeholder="Walkthrough notes, coordination items, deficiencies, test observations..."></textarea>
+    </div>
+  </section>
+</main>
 
-  <dialog id="taskDialog">
-    <form id="taskForm" method="dialog">
-      <div class="dialog-head"><h3>Add checklist item</h3><button type="button" class="icon-btn" data-close>×</button></div>
-      <label>Item<input name="task" required placeholder="Example: Verify alarm wiring identification" /></label>
-      <div class="dialog-actions"><button type="button" class="secondary" data-close>Cancel</button><button class="primary" value="default">Add item</button></div>
-    </form>
-  </dialog>
+<dialog id="projectDialog"><form id="projectForm" method="dialog">
+  <div class="dialog-head"><h3>New project</h3><button type="button" class="icon-btn" data-close>×</button></div>
+  <label>Project name<input name="name" required placeholder="North Wing Renovation" /></label>
+  <label>Facility<input name="facility" placeholder="Hospital or facility" /></label>
+  <label>Location<input name="location" placeholder="City / building / floor" /></label>
+  <label>Notes<textarea name="notes" rows="4" placeholder="Scope, contacts, system notes..."></textarea></label>
+  <div class="dialog-actions"><button type="button" class="secondary" data-close>Cancel</button><button class="primary">Save project</button></div>
+</form></dialog>
 
-  <footer>
-    <p>Prototype field organization tool. Always follow applicable codes, manufacturer instructions, inspection requirements, and qualified professional direction.</p>
-  </footer>
+<dialog id="taskDialog"><form id="taskForm" method="dialog">
+  <div class="dialog-head"><h3>Add checklist item</h3><button type="button" class="icon-btn" data-close>×</button></div>
+  <label>Item<input name="task" required placeholder="Verify alarm wiring identification" /></label>
+  <div class="dialog-actions"><button type="button" class="secondary" data-close>Cancel</button><button class="primary">Add item</button></div>
+</form></dialog>
 
-  <script src="app.js"></script>
+<dialog id="alarmDialog"><form id="alarmForm" method="dialog">
+  <div class="dialog-head"><h3>Add alarm record</h3><button type="button" class="icon-btn" data-close>×</button></div>
+  <label>Type<select name="type"><option>Master alarm</option><option>Area alarm</option><option>Local alarm</option><option>Other</option></select></label>
+  <label>Location<input name="location" required placeholder="Level 2 nurse station" /></label>
+  <label>Serves / description<input name="serves" placeholder="Oxygen, vacuum, medical air..." /></label>
+  <label>Status<select name="status"><option>Not checked</option><option>Pass</option><option>Needs attention</option></select></label>
+  <label>Notes<textarea name="notes" rows="3"></textarea></label>
+  <div class="dialog-actions"><button type="button" class="secondary" data-close>Cancel</button><button class="primary">Save alarm</button></div>
+</form></dialog>
+
+<dialog id="outletDialog"><form id="outletForm" method="dialog">
+  <div class="dialog-head"><h3>Add outlet / terminal</h3><button type="button" class="icon-btn" data-close>×</button></div>
+  <label>Gas service<select name="gas"><option>Oxygen</option><option>Medical air</option><option>Vacuum</option><option>WAGD</option><option>Nitrous oxide</option><option>Nitrogen</option><option>Carbon dioxide</option><option>Other</option></select></label>
+  <label>Location<input name="location" required placeholder="Room 204 - headwall" /></label>
+  <label>Identifier / quantity<input name="identifier" placeholder="O2-204-A or Qty 2" /></label>
+  <label>Status<select name="status"><option>Not checked</option><option>Pass</option><option>Needs attention</option></select></label>
+  <label>Notes<textarea name="notes" rows="3"></textarea></label>
+  <div class="dialog-actions"><button type="button" class="secondary" data-close>Cancel</button><button class="primary">Save outlet</button></div>
+</form></dialog>
+
+<footer><p>Field organization prototype only. Use applicable codes, adopted standards, manufacturer instructions, inspection requirements, qualified personnel, and required verification procedures for actual medical-gas work.</p></footer>
+<script src="app.js"></script>
 </body>
 </html>
