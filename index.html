@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0b2545" />
+  <title>Med Gas</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">MGS</p>
+      <h1>Med Gas</h1>
+    </div>
+    <button id="newProjectBtn" class="primary">+ New project</button>
+  </header>
+
+  <main class="shell">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">Field workspace</p>
+        <h2>Keep medical-gas project details in one place.</h2>
+        <p>Track projects, systems, alarms, outlets, verification items, notes, and documents from a phone or laptop.</p>
+      </div>
+      <div class="status-card">
+        <span>Prototype status</span>
+        <strong>Ready to build on</strong>
+      </div>
+    </section>
+
+    <section class="stats" aria-label="Project summary">
+      <article><span>Projects</span><strong id="projectCount">0</strong></article>
+      <article><span>Open checklist items</span><strong id="openCount">0</strong></article>
+      <article><span>Completed items</span><strong id="doneCount">0</strong></article>
+    </section>
+
+    <section class="grid">
+      <article class="panel projects-panel">
+        <div class="panel-head">
+          <div><p class="eyebrow">Projects</p><h3>Current jobs</h3></div>
+        </div>
+        <div id="projectList" class="project-list"></div>
+      </article>
+
+      <article class="panel">
+        <div class="panel-head"><div><p class="eyebrow">Selected project</p><h3 id="selectedTitle">No project selected</h3></div></div>
+        <div id="projectDetail" class="detail-empty">Create or select a project to begin.</div>
+      </article>
+    </section>
+
+    <section class="panel checklist-panel">
+      <div class="panel-head">
+        <div><p class="eyebrow">Verification</p><h3>Field checklist</h3></div>
+        <button id="addTaskBtn" class="secondary">+ Add item</button>
+      </div>
+      <div id="checklist" class="checklist"></div>
+    </section>
+
+    <section class="modules">
+      <article class="module"><span class="icon">A</span><div><h3>Alarms</h3><p>Track alarm panels, signals, locations, and notes.</p></div></article>
+      <article class="module"><span class="icon">O</span><div><h3>Outlets</h3><p>Record outlet locations, gas service, labels, and verification status.</p></div></article>
+      <article class="module"><span class="icon">D</span><div><h3>Documents</h3><p>Future home for plans, submittals, photos, test records, and closeout files.</p></div></article>
+    </section>
+  </main>
+
+  <dialog id="projectDialog">
+    <form id="projectForm" method="dialog">
+      <div class="dialog-head"><h3>New project</h3><button type="button" class="icon-btn" data-close>×</button></div>
+      <label>Project name<input name="name" required placeholder="Example: North Wing Renovation" /></label>
+      <label>Facility<input name="facility" placeholder="Hospital or facility" /></label>
+      <label>Location<input name="location" placeholder="City / building / floor" /></label>
+      <label>Notes<textarea name="notes" rows="4" placeholder="Scope, contacts, system notes..."></textarea></label>
+      <div class="dialog-actions"><button type="button" class="secondary" data-close>Cancel</button><button class="primary" value="default">Save project</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="taskDialog">
+    <form id="taskForm" method="dialog">
+      <div class="dialog-head"><h3>Add checklist item</h3><button type="button" class="icon-btn" data-close>×</button></div>
+      <label>Item<input name="task" required placeholder="Example: Verify alarm wiring identification" /></label>
+      <div class="dialog-actions"><button type="button" class="secondary" data-close>Cancel</button><button class="primary" value="default">Add item</button></div>
+    </form>
+  </dialog>
+
+  <footer>
+    <p>Prototype field organization tool. Always follow applicable codes, manufacturer instructions, inspection requirements, and qualified professional direction.</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
