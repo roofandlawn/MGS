@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0b2545" />
+  <title>MGS Medical Air Source</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="reference.css" />
+  <link rel="stylesheet" href="medical-air.css" />
+</head>
+<body>
+<header class="topbar">
+  <div><p class="eyebrow">MGS · NFPA 99-2024</p><h1>Medical Air Source</h1></div>
+  <div class="top-actions">
+    <a class="secondary nav-button" href="system-path.html">System Path</a>
+    <a class="secondary nav-button" href="reference.html">Reference</a>
+  </div>
+</header>
+
+<main class="shell air-shell">
+  <section class="reference-hero">
+    <div>
+      <p class="eyebrow">Category 1 source overview</p>
+      <h2>See how the major medical-air source components fit together.</h2>
+      <p>This learning view is intentionally high level. It is built for people new to medical gas and ASSE 6010 installers who need system orientation, component relationships, and code-reference locations without a compressor-service or pipe-preparation tutorial.</p>
+    </div>
+    <div class="edition-card"><span>Primary map</span><strong>NFPA 99-2024 §5.1.3.6</strong><small>Reference summaries only. Confirm the adopted licensed edition, project documents, manufacturer instructions, and AHJ requirements before field work.</small></div>
+  </section>
+
+  <section class="air-layout">
+    <article class="panel air-panel">
+      <div class="panel-head">
+        <div><p class="eyebrow">Conceptual source path</p><h3>Compressor source</h3></div>
+        <span class="path-note">Tap a component</span>
+      </div>
+      <div id="airDiagram" class="air-diagram" aria-live="polite"></div>
+      <div class="redundancy-card">
+        <p class="eyebrow">What to notice</p>
+        <strong>Redundancy is part of the source architecture.</strong>
+        <p>The 2024 source requirements address component arrangement so medical air can remain available through a single-fault condition. The exact equipment arrangement varies by technology and project.</p>
+      </div>
+      <p class="diagram-disclaimer">Conceptual learning diagram only. It does not show every valve, monitor, drain, control, alarm point, bypass, or manufacturer-specific component.</p>
+    </article>
+
+    <aside class="panel air-detail" id="airDetail">
+      <div class="detail-empty">Tap a component to see its purpose, field focus, and mapped NFPA 99-2024 section.</div>
+    </aside>
+  </section>
+</main>
+
+<footer><p>MGS is a field organization and learning tool. It does not replace the adopted code, manufacturer instructions, licensing requirements, inspections, certification, verification, AHJ requirements, or qualified professional judgment.</p></footer>
+
+<script src="medical-air.js"></script>
+</body>
+</html>
