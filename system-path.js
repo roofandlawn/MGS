@@ -107,6 +107,10 @@ function renderDetail() {
     return;
   }
 
+  const sourceDeepLink = component.id === 'medical-air-source'
+    ? '<p><a class="primary nav-button" href="medical-air.html">Open interactive medical-air source →</a></p>'
+    : '';
+
   detailEl.innerHTML = `
     <div class="reference-detail-head">
       <div><p class="eyebrow">${escapeHtml(component.group)}</p><h2>${escapeHtml(component.name)}</h2></div>
@@ -119,6 +123,7 @@ function renderDetail() {
     <section class="reference-section field-focus">
       <h3>Why it matters in the path</h3>
       <p>${escapeHtml(component.fieldFocus)}</p>
+      ${sourceDeepLink}
     </section>
     <section class="reference-section">
       <h3>NFPA 99-2024 map</h3>
