@@ -100,6 +100,16 @@ function renderDiagram() {
   });
 }
 
+function getSourceDeepLink(componentId) {
+  if (componentId === 'medical-air-source') {
+    return '<p><a class="primary nav-button" href="medical-air.html">Open interactive medical-air source →</a></p>';
+  }
+  if (componentId === 'vacuum-source') {
+    return '<p><a class="primary nav-button" href="vacuum-source.html">Open interactive medical-surgical vacuum source →</a></p>';
+  }
+  return '';
+}
+
 function renderDetail() {
   const component = getComponent(selectedId);
   if (!component) {
@@ -107,9 +117,7 @@ function renderDetail() {
     return;
   }
 
-  const sourceDeepLink = component.id === 'medical-air-source'
-    ? '<p><a class="primary nav-button" href="medical-air.html">Open interactive medical-air source →</a></p>'
-    : '';
+  const sourceDeepLink = getSourceDeepLink(component.id);
 
   detailEl.innerHTML = `
     <div class="reference-detail-head">
