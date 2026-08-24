@@ -118,6 +118,17 @@ window.MGS_REFERENCE = {
       search: ['vacuum source', 'vacuum pump', 'receiver', 'vacuum exhaust']
     },
     {
+      id: 'wagd-source',
+      name: 'WAGD Source',
+      group: 'Sources',
+      systems: ['WAGD'],
+      nfpa: ['5.1.3.8'],
+      summary: 'The source arrangement that removes waste anesthetic gases through a permitted medical-surgical vacuum, dedicated producer, or venturi approach.',
+      fieldFocus: 'Keep WAGD distinct from medical-surgical vacuum while teaching the permitted source choices, dedicated-producer redundancy, local alarms, controls, exhaust, and terminal relationship.',
+      roles: ['New', '6010', '6020', '6030'],
+      search: ['WAGD', 'waste anesthetic gas disposal', 'scavenging', 'WAGD producer', 'venturi', 'anesthetic exhaust']
+    },
+    {
       id: 'station-outlet',
       name: 'Medical Gas Station Outlet',
       group: 'Outlets & Inlets',
