@@ -25,6 +25,13 @@ const systems = {
     sourceCaption: 'Central vacuum source',
     terminal: 'station-inlet',
     terminalCaption: 'Vacuum inlet'
+  },
+  wagd: {
+    label: 'WAGD',
+    source: 'wagd-source',
+    sourceCaption: 'WAGD source',
+    terminal: 'station-inlet',
+    terminalCaption: 'WAGD inlet'
   }
 };
 
@@ -34,6 +41,11 @@ const commonPath = [
   { id: 'riser-valve', caption: 'Vertical distribution' },
   { id: 'service-valve', caption: 'Branch / lateral isolation' },
   { id: 'zone-valve', caption: 'Patient-area isolation' }
+];
+
+const wagdPath = [
+  { id: 'source-valve', caption: 'Source isolation' },
+  { id: 'zone-valve', caption: 'Area isolation where applicable' }
 ];
 
 let activeSystem = 'oxygen';
@@ -52,9 +64,10 @@ function getComponent(id) {
 
 function getPath() {
   const system = systems[activeSystem];
+  const middlePath = activeSystem === 'wagd' ? wagdPath : commonPath;
   return [
     { id: system.source, caption: system.sourceCaption },
-    ...commonPath,
+    ...middlePath,
     { id: system.terminal, caption: system.terminalCaption }
   ];
 }
@@ -106,6 +119,9 @@ function getSourceDeepLink(componentId) {
   }
   if (componentId === 'vacuum-source') {
     return '<p><a class="primary nav-button" href="vacuum-source.html">Open interactive medical-surgical vacuum source →</a></p>';
+  }
+  if (componentId === 'wagd-source') {
+    return '<p><a class="primary nav-button" href="wagd-source.html">Open interactive WAGD source →</a></p>';
   }
   return '';
 }
