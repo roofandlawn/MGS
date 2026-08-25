@@ -114,6 +114,9 @@ function renderDiagram() {
 }
 
 function getSourceDeepLink(componentId) {
+  if (componentId === 'cylinder-manifold') {
+    return '<p><a class="primary nav-button" href="oxygen-manifold.html">Open interactive oxygen cylinder manifold →</a></p>';
+  }
   if (componentId === 'medical-air-source') {
     return '<p><a class="primary nav-button" href="medical-air.html">Open interactive medical-air source →</a></p>';
   }
