@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0b2545" />
+  <title>MGS Testing & Verification</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="reference.css" />
+  <link rel="stylesheet" href="testing.css" />
+</head>
+<body>
+<header class="topbar">
+  <div><p class="eyebrow">MGS · NFPA 99-2024</p><h1>Testing & Verification</h1></div>
+  <div class="top-actions">
+    <a class="secondary nav-button" href="system-path.html">System Path</a>
+    <a class="secondary nav-button" href="reference.html">Reference</a>
+    <a class="secondary nav-button" href="index.html">Projects</a>
+  </div>
+</header>
+
+<main class="shell testing-shell">
+  <section class="reference-hero">
+    <div>
+      <p class="eyebrow">Know the handoff</p>
+      <h2>See who does what before the system is accepted.</h2>
+      <p>This module separates installer work, system inspection, and final verification so a new medical-gas installer can understand the project sequence without confusing ASSE roles.</p>
+    </div>
+    <div class="edition-card"><span>Reference edition</span><strong>NFPA 99-2024</strong><small>Section map: 5.1.12.2 installer tests · 5.1.12.3 system inspection · 5.1.12.4 system verification.</small></div>
+  </section>
+
+  <section class="panel role-panel">
+    <div class="panel-head">
+      <div><p class="eyebrow">Role view</p><h3>Choose your perspective</h3></div>
+      <span class="path-note">The workflow stays the same; emphasis changes.</span>
+    </div>
+    <div id="roleButtons" class="role-buttons" aria-label="Choose role"></div>
+    <div id="roleSummary" class="role-summary" aria-live="polite"></div>
+  </section>
+
+  <section class="panel cover-warning">
+    <div class="warning-icon" aria-hidden="true">!</div>
+    <div>
+      <p class="eyebrow">Before you cover it</p>
+      <h3>Inspection occurs before piping is concealed.</h3>
+      <p>NFPA 99-2024 §5.1.12.3.1.1 places system inspection before piping distribution systems are hidden in walls, ceilings, chases, trenches, underground, or otherwise concealed.</p>
+    </div>
+  </section>
+
+  <section class="workflow-section">
+    <div class="section-heading"><p class="eyebrow">Project sequence</p><h3>Installation → inspection → verification</h3></div>
+    <div id="workflow" class="workflow" aria-live="polite"></div>
+  </section>
+
+  <section class="testing-grid">
+    <article class="panel">
+      <p class="eyebrow">Inspection checkpoint</p>
+      <h3>What the installer should have ready</h3>
+      <ul class="plain-checks">
+        <li>Installer testing completed and documented as applicable.</li>
+        <li>Initial pressure test ready for required witnessing.</li>
+        <li>Concealed piping still visible for inspection.</li>
+        <li>Required labels and valve tags in place for concealed components.</li>
+        <li>Project records available for the verifier handoff.</li>
+      </ul>
+      <p class="code-note"><strong>NFPA 99-2024:</strong> §5.1.12.3.2.1 addresses witnessing of the installing contractor's initial pressure tests and documentation for the verifier.</p>
+    </article>
+
+    <article class="panel">
+      <p class="eyebrow">Verification preview</p>
+      <h3>What final verification looks at</h3>
+      <div class="verification-list">
+        <button type="button" class="test-card" data-test="standing"><strong>Standing Pressure</strong><span>§5.1.12.4.2</span></button>
+        <button type="button" class="test-card" data-test="cross"><strong>Cross-Connection</strong><span>§5.1.12.4.3</span></button>
+        <button type="button" class="test-card" data-test="alarms"><strong>Alarms</strong><span>§5.1.12.4.5</span></button>
+        <button type="button" class="test-card" data-test="purge"><strong>Piping Purge</strong><span>§5.1.12.4.6</span></button>
+        <button type="button" class="test-card" data-test="particulates"><strong>Piping Particulates</strong><span>§5.1.12.4.7</span></button>
+      </div>
+      <div id="testDetail" class="test-detail">Tap a verification item to see why it matters to the installer.</div>
+    </article>
+  </section>
+
+  <section class="panel ready-panel">
+    <div>
+      <p class="eyebrow">Field tool concept</p>
+      <h3>Ready for Verifier?</h3>
+      <p>This is the next project tool to connect to job records. For now, use the checklist as a handoff reminder—not as proof of compliance.</p>
+    </div>
+    <div class="ready-checks">
+      <label><input type="checkbox" /> Installer testing complete</label>
+      <label><input type="checkbox" /> Required inspection/witness complete</label>
+      <label><input type="checkbox" /> Concealed work inspected before cover</label>
+      <label><input type="checkbox" /> Labels and valve tags complete</label>
+      <label><input type="checkbox" /> Source, alarms, outlets/inlets ready</label>
+      <label><input type="checkbox" /> Documentation ready for verifier</label>
+    </div>
+  </section>
+</main>
+
+<footer><p>MGS is a field organization and learning tool. It does not replace the adopted code, manufacturer instructions, licensing requirements, inspections, certification, verification, AHJ requirements, or qualified professional judgment.</p></footer>
+
+<script src="testing.js"></script>
+</body>
+</html>
