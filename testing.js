@@ -21,10 +21,130 @@ const testDetails={
   particulates:{title:'Piping Particulates',text:'Why it matters to the installer: finished piping needs to be delivered in a condition that can pass final cleanliness-related verification. Protecting completed work matters through the entire project.',ref:'NFPA 99-2024 §5.1.12.4.7'}
 };
 
+const storageKey='mgs-prototype-v3';
+const readinessKeys=['installerTesting','inspectionWitness','concealedInspection','labelsComplete','systemsReady','documentationReady'];
+
 const roleButtons=document.getElementById('roleButtons');
 const roleSummary=document.getElementById('roleSummary');
 const workflow=document.getElementById('workflow');
 const testDetail=document.getElementById('testDetail');
+const projectSelect=document.getElementById('projectSelect');
+const projectSaveStatus=document.getElementById('projectSaveStatus');
+const readyChecks=document.getElementById('readyChecks');
+const readyProgressText=document.getElementById('readyProgressText');
+const readyPercent=document.getElementById('readyPercent');
+const readyProgressBar=document.getElementById('readyProgressBar');
+const resetReadyBtn=document.getElementById('resetReadyBtn');
+
+function loadProjectState(){
+  try{
+    for(const key of [storageKey,'mgs-prototype-v2','mgs-prototype-v1']){
+      const parsed=JSON.parse(localStorage.getItem(key));
+      if(parsed&&Array.isArray(parsed.projects)) return parsed;
+    }
+  }catch(error){
+    console.error('Unable to read project storage',error);
+  }
+  return {projects:[],selectedProjectId:null};
+}
+
+let projectState=loadProjectState();
+
+function selectedProject(){
+  return projectState.projects.find(project=>project.id===projectState.selectedProjectId)||null;
+}
+
+function emptyReadiness(){
+  return {
+    items:Object.fromEntries(readinessKeys.map(key=>[key,false])),
+    updatedAt:null
+  };
+}
+
+function normalizeReadiness(project){
+  const existing=project?.verifierReadiness;
+  return {
+    items:Object.fromEntries(readinessKeys.map(key=>[key,Boolean(existing?.items?.[key])])),
+    updatedAt:existing?.updatedAt||null
+  };
+}
+
+function saveProjectState(message='Saved to project'){
+  try{
+    localStorage.setItem(storageKey,JSON.stringify(projectState));
+    projectSaveStatus.textContent=`${message} · ${new Date().toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})}`;
+    projectSaveStatus.classList.remove('error');
+  }catch(error){
+    projectSaveStatus.textContent='Could not save on this device.';
+    projectSaveStatus.classList.add('error');
+    console.error('Unable to save project storage',error);
+  }
+}
+
+function renderProjectSelect(){
+  if(!projectState.projects.length){
+    projectSelect.innerHTML='<option value="">No projects yet — create one in Projects</option>';
+    projectSelect.disabled=true;
+    projectSaveStatus.textContent='Create a project before saving handoff readiness.';
+    renderReadiness();
+    return;
+  }
+
+  projectSelect.disabled=false;
+  if(!selectedProject()) projectState.selectedProjectId=projectState.projects[0].id;
+  projectSelect.innerHTML=projectState.projects.map(project=>`<option value="${escapeHtml(project.id)}" ${project.id===projectState.selectedProjectId?'selected':''}>${escapeHtml(project.name||'Untitled project')}${project.facility?` — ${escapeHtml(project.facility)}`:''}</option>`).join('');
+  const project=selectedProject();
+  const readiness=normalizeReadiness(project);
+  projectSaveStatus.textContent=readiness.updatedAt?`Last handoff update ${new Date(readiness.updatedAt).toLocaleString()}`:'No handoff progress saved yet.';
+  renderReadiness();
+}
+
+function renderReadiness(){
+  const project=selectedProject();
+  const inputs=[...readyChecks.querySelectorAll('[data-ready-key]')];
+  resetReadyBtn.disabled=!project;
+
+  if(!project){
+    inputs.forEach(input=>{input.checked=false;input.disabled=true;});
+    updateReadinessProgress(0,readinessKeys.length);
+    return;
+  }
+
+  const readiness=normalizeReadiness(project);
+  inputs.forEach(input=>{
+    input.disabled=false;
+    input.checked=Boolean(readiness.items[input.dataset.readyKey]);
+  });
+  const completed=readinessKeys.filter(key=>readiness.items[key]).length;
+  updateReadinessProgress(completed,readinessKeys.length);
+}
+
+function updateReadinessProgress(completed,total){
+  const percent=total?Math.round((completed/total)*100):0;
+  readyProgressText.textContent=`${completed} of ${total} complete`;
+  readyPercent.textContent=`${percent}%`;
+  readyProgressBar.style.width=`${percent}%`;
+}
+
+function updateReadinessItem(key,checked){
+  const project=selectedProject();
+  if(!project||!readinessKeys.includes(key)) return;
+  const readiness=normalizeReadiness(project);
+  readiness.items[key]=Boolean(checked);
+  readiness.updatedAt=new Date().toISOString();
+  project.verifierReadiness=readiness;
+  saveProjectState('Handoff checklist saved');
+  renderReadiness();
+}
+
+function escapeHtml(value){
+  return String(value??'')
+    .replaceAll('&','&amp;')
+    .replaceAll('<','&lt;')
+    .replaceAll('>','&gt;')
+    .replaceAll('"','&quot;')
+    .replaceAll("'",'&#039;');
+}
 
 function renderRole(roleId){
   const role=roles.find(r=>r.id===roleId)||roles[0];
@@ -53,4 +173,27 @@ document.querySelectorAll('.test-card').forEach(button=>{
   });
 });
 
+projectSelect.addEventListener('change',()=>{
+  projectState.selectedProjectId=projectSelect.value||null;
+  saveProjectState('Selected project saved');
+  renderProjectSelect();
+});
+
+readyChecks.addEventListener('change',event=>{
+  const input=event.target.closest('[data-ready-key]');
+  if(!input) return;
+  updateReadinessItem(input.dataset.readyKey,input.checked);
+});
+
+resetReadyBtn.addEventListener('click',()=>{
+  const project=selectedProject();
+  if(!project) return;
+  if(!confirm(`Reset the Ready for Verifier checklist for ${project.name||'this project'}?`)) return;
+  project.verifierReadiness=emptyReadiness();
+  project.verifierReadiness.updatedAt=new Date().toISOString();
+  saveProjectState('Handoff checklist reset');
+  renderProjectSelect();
+});
+
 renderRole('new');
+renderProjectSelect();
