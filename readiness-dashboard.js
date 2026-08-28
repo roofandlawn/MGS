@@ -81,7 +81,9 @@
   }
 
   function decorateSelectedProject(state) {
-    const project = state.projects.find(item => item.id === state.selectedProjectId);
+    const activeProjectId = projectList.querySelector('.project-row.active')?.dataset.projectId || null;
+    const selectedProjectId = state.selectedProjectId || activeProjectId;
+    const project = state.projects.find(item => item.id === selectedProjectId);
     const existing = projectDetail.querySelector('.readiness-summary');
     if (!project) {
       existing?.remove();
@@ -92,9 +94,12 @@
     const updated = readiness.updatedAt
       ? `Updated ${new Date(readiness.updatedAt).toLocaleString()}`
       : 'No handoff checklist activity yet.';
+    const signature = [project.id, readiness.status, readiness.completed, readiness.updatedAt || 'never'].join('|');
+
+    if (existing?.dataset.readinessSignature === signature) return;
 
     const html = `
-      <div class="readiness-summary" data-readiness-project="${escapeHtml(project.id)}">
+      <div class="readiness-summary" data-readiness-project="${escapeHtml(project.id)}" data-readiness-signature="${escapeHtml(signature)}">
         <div class="readiness-summary-head">
           <strong>Verifier handoff</strong>
           <span class="readiness-badge ${readiness.status}">${readiness.label}</span>
@@ -107,10 +112,8 @@
         </div>
       </div>`;
 
-    if (!existing || existing.outerHTML !== html.trim()) {
-      existing?.remove();
-      projectDetail.insertAdjacentHTML('beforeend', html);
-    }
+    existing?.remove();
+    projectDetail.insertAdjacentHTML('beforeend', html);
   }
 
   let scheduled = false;
