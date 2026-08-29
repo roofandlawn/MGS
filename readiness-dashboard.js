@@ -8,6 +8,14 @@
     'systemsReady',
     'documentationReady'
   ];
+  const READINESS_LABELS = {
+    installerTesting: 'Installer testing complete',
+    inspectionWitness: 'Required inspection / witnessing complete',
+    concealedInspection: 'Concealed work inspected before cover',
+    labelsComplete: 'Labels and valve tags complete',
+    systemsReady: 'Source, alarms, outlets / inlets ready',
+    documentationReady: 'Documentation ready for verifier'
+  };
 
   const projectList = document.getElementById('projectList');
   const projectDetail = document.getElementById('projectDetail');
@@ -28,6 +36,11 @@
     .readiness-actions{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
     .readiness-link{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;border:1px solid #dbe3ec;border-radius:9px;padding:8px 10px;color:#102033;background:#fff;font-size:.8rem;font-weight:750}
     .readiness-updated{font-size:.75rem;color:#637083}
+    .readiness-open-items{border-top:1px solid #edf1f5;padding-top:10px}
+    .readiness-open-items summary{cursor:pointer;font-size:.82rem;font-weight:800;color:#102033;list-style-position:outside}
+    .readiness-open-items ul{margin:9px 0 0;padding-left:20px;display:grid;gap:7px}
+    .readiness-open-items li{color:#637083;font-size:.8rem;line-height:1.35}
+    .readiness-complete{margin:0;padding:9px 10px;border-radius:9px;background:#e7f5ed;color:#1f7a4c!important;font-weight:750}
   `;
   document.head.appendChild(styles);
 
@@ -45,12 +58,22 @@
 
   function readinessFor(project) {
     const items = project?.verifierReadiness?.items || {};
-    const completed = READINESS_KEYS.filter(key => Boolean(items[key])).length;
+    const completedKeys = READINESS_KEYS.filter(key => Boolean(items[key]));
+    const missingKeys = READINESS_KEYS.filter(key => !items[key]);
+    const completed = completedKeys.length;
     const total = READINESS_KEYS.length;
     const percent = Math.round((completed / total) * 100);
     const status = completed === 0 ? 'not-started' : completed === total ? 'ready' : 'in-progress';
     const label = status === 'ready' ? 'Ready for Verifier' : status === 'in-progress' ? 'In Progress' : 'Not Started';
-    return { completed, total, percent, status, label, updatedAt: project?.verifierReadiness?.updatedAt || null };
+    return {
+      completed,
+      total,
+      percent,
+      status,
+      label,
+      missingKeys,
+      updatedAt: project?.verifierReadiness?.updatedAt || null
+    };
   }
 
   function escapeHtml(value) {
@@ -76,8 +99,28 @@
       badge.className = `readiness-badge ${readiness.status}`;
       const text = `${readiness.label} · ${readiness.completed}/${readiness.total}`;
       if (badge.textContent !== text) badge.textContent = text;
-      badge.setAttribute('aria-label', `Verifier readiness: ${readiness.label}, ${readiness.completed} of ${readiness.total} handoff items complete`);
+      const openCount = readiness.missingKeys.length;
+      badge.setAttribute(
+        'aria-label',
+        `Verifier readiness: ${readiness.label}, ${readiness.completed} of ${readiness.total} handoff items complete, ${openCount} open`
+      );
     });
+  }
+
+  function openItemsMarkup(readiness) {
+    if (!readiness.missingKeys.length) {
+      return '<p class="readiness-complete">All six handoff items are marked complete. Open Testing & Verification to review the saved project record.</p>';
+    }
+
+    const items = readiness.missingKeys
+      .map(key => `<li>${escapeHtml(READINESS_LABELS[key] || key)}</li>`)
+      .join('');
+
+    return `
+      <details class="readiness-open-items" open>
+        <summary>Open items before verifier (${readiness.missingKeys.length})</summary>
+        <ul>${items}</ul>
+      </details>`;
   }
 
   function decorateSelectedProject(state) {
@@ -94,7 +137,13 @@
     const updated = readiness.updatedAt
       ? `Updated ${new Date(readiness.updatedAt).toLocaleString()}`
       : 'No handoff checklist activity yet.';
-    const signature = [project.id, readiness.status, readiness.completed, readiness.updatedAt || 'never'].join('|');
+    const signature = [
+      project.id,
+      readiness.status,
+      readiness.completed,
+      readiness.missingKeys.join(','),
+      readiness.updatedAt || 'never'
+    ].join('|');
 
     if (existing?.dataset.readinessSignature === signature) return;
 
@@ -106,6 +155,7 @@
         </div>
         <div class="readiness-meter" aria-label="${readiness.percent}% complete"><span style="width:${readiness.percent}%"></span></div>
         <p>${readiness.completed} of ${readiness.total} Ready for Verifier items are complete. This is a project handoff aid, not proof of inspection, compliance, or final verification.</p>
+        ${openItemsMarkup(readiness)}
         <div class="readiness-actions">
           <span class="readiness-updated">${escapeHtml(updated)}</span>
           <a class="readiness-link" href="testing.html">Open Testing & Verification</a>
