@@ -40,6 +40,9 @@
     .readiness-open-items summary{cursor:pointer;font-size:.82rem;font-weight:800;color:#102033;list-style-position:outside}
     .readiness-open-items ul{margin:9px 0 0;padding-left:20px;display:grid;gap:7px}
     .readiness-open-items li{color:#637083;font-size:.8rem;line-height:1.35}
+    .readiness-open-link{color:#102033;text-decoration:none;font-weight:700}
+    .readiness-open-link:hover,.readiness-open-link:focus{text-decoration:underline}
+    .readiness-open-link::after{content:'  →';font-weight:800}
     .readiness-complete{margin:0;padding:9px 10px;border-radius:9px;background:#e7f5ed;color:#1f7a4c!important;font-weight:750}
   `;
   document.head.appendChild(styles);
@@ -85,6 +88,13 @@
       .replaceAll("'", '&#039;');
   }
 
+  function testingLink(projectId, itemKey = null) {
+    const params = new URLSearchParams();
+    if (projectId) params.set('project', projectId);
+    if (itemKey) params.set('item', itemKey);
+    return `testing.html?${params.toString()}#readyForVerifier`;
+  }
+
   function decorateProjectRows(state) {
     projectList.querySelectorAll('[data-project-id]').forEach(row => {
       const project = state.projects.find(item => item.id === row.dataset.projectId);
@@ -107,13 +117,17 @@
     });
   }
 
-  function openItemsMarkup(readiness) {
+  function openItemsMarkup(readiness, projectId) {
     if (!readiness.missingKeys.length) {
       return '<p class="readiness-complete">All six handoff items are marked complete. Open Testing & Verification to review the saved project record.</p>';
     }
 
     const items = readiness.missingKeys
-      .map(key => `<li>${escapeHtml(READINESS_LABELS[key] || key)}</li>`)
+      .map(key => {
+        const label = escapeHtml(READINESS_LABELS[key] || key);
+        const href = escapeHtml(testingLink(projectId, key));
+        return `<li><a class="readiness-open-link" href="${href}">${label}</a></li>`;
+      })
       .join('');
 
     return `
@@ -155,10 +169,10 @@
         </div>
         <div class="readiness-meter" aria-label="${readiness.percent}% complete"><span style="width:${readiness.percent}%"></span></div>
         <p>${readiness.completed} of ${readiness.total} Ready for Verifier items are complete. This is a project handoff aid, not proof of inspection, compliance, or final verification.</p>
-        ${openItemsMarkup(readiness)}
+        ${openItemsMarkup(readiness, project.id)}
         <div class="readiness-actions">
           <span class="readiness-updated">${escapeHtml(updated)}</span>
-          <a class="readiness-link" href="testing.html">Open Testing & Verification</a>
+          <a class="readiness-link" href="${escapeHtml(testingLink(project.id))}">Open Testing & Verification</a>
         </div>
       </div>`;
 
