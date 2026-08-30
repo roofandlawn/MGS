@@ -23,6 +23,10 @@ const testDetails={
 
 const storageKey='mgs-prototype-v3';
 const readinessKeys=['installerTesting','inspectionWitness','concealedInspection','labelsComplete','systemsReady','documentationReady'];
+const urlParams=new URLSearchParams(window.location.search);
+const requestedProjectId=urlParams.get('project');
+const requestedReadinessKey=urlParams.get('item');
+let requestedFocusHandled=false;
 
 const roleButtons=document.getElementById('roleButtons');
 const roleSummary=document.getElementById('roleSummary');
@@ -49,6 +53,9 @@ function loadProjectState(){
 }
 
 let projectState=loadProjectState();
+if(requestedProjectId&&projectState.projects.some(project=>project.id===requestedProjectId)){
+  projectState.selectedProjectId=requestedProjectId;
+}
 
 function selectedProject(){
   return projectState.projects.find(project=>project.id===projectState.selectedProjectId)||null;
@@ -117,6 +124,21 @@ function renderReadiness(){
   });
   const completed=readinessKeys.filter(key=>readiness.items[key]).length;
   updateReadinessProgress(completed,readinessKeys.length);
+  focusRequestedReadiness();
+}
+
+function focusRequestedReadiness(){
+  if(requestedFocusHandled||!requestedReadinessKey||!readinessKeys.includes(requestedReadinessKey)) return;
+  const input=readyChecks.querySelector(`[data-ready-key="${requestedReadinessKey}"]`);
+  if(!input||input.disabled) return;
+  const label=input.closest('label');
+  if(!label) return;
+  requestedFocusHandled=true;
+  label.classList.add('deep-linked');
+  requestAnimationFrame(()=>{
+    label.scrollIntoView({behavior:'smooth',block:'center'});
+    input.focus({preventScroll:true});
+  });
 }
 
 function updateReadinessProgress(completed,total){
@@ -175,6 +197,8 @@ document.querySelectorAll('.test-card').forEach(button=>{
 
 projectSelect.addEventListener('change',()=>{
   projectState.selectedProjectId=projectSelect.value||null;
+  requestedFocusHandled=true;
+  readyChecks.querySelectorAll('.deep-linked').forEach(label=>label.classList.remove('deep-linked'));
   saveProjectState('Selected project saved');
   renderProjectSelect();
 });
@@ -182,6 +206,7 @@ projectSelect.addEventListener('change',()=>{
 readyChecks.addEventListener('change',event=>{
   const input=event.target.closest('[data-ready-key]');
   if(!input) return;
+  input.closest('label')?.classList.remove('deep-linked');
   updateReadinessItem(input.dataset.readyKey,input.checked);
 });
 
