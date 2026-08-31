@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="reference.css" />
   <link rel="stylesheet" href="testing.css" />
+  <link rel="stylesheet" href="readiness-evidence.css" />
 </head>
 <body>
 <header class="topbar">
@@ -33,7 +34,7 @@
     <div>
       <p class="eyebrow">Project record</p>
       <h3>Save handoff readiness to the job</h3>
-      <p>Select a project below. The Ready for Verifier checklist saves automatically to that project on this device and remains separate from the general project checklist.</p>
+      <p>Select a project below. Checklist status and lightweight evidence save automatically to that project on this device and remain separate from the general project checklist.</p>
     </div>
     <div class="project-link-controls">
       <label for="projectSelect">Project</label>
@@ -97,7 +98,7 @@
     <div>
       <p class="eyebrow">Project handoff tool</p>
       <h3>Ready for Verifier?</h3>
-      <p>Use this as a project handoff reminder. Completion is saved to the selected job record, but it is not proof of code compliance, inspection, or verification.</p>
+      <p>Use this as a project handoff reminder. Completion and optional evidence are saved to the selected job record, but they are not proof of code compliance, inspection, or verification.</p>
       <div class="ready-progress" aria-live="polite">
         <div class="ready-progress-head"><strong id="readyProgressText">0 of 6 complete</strong><span id="readyPercent">0%</span></div>
         <div class="ready-progress-track"><span id="readyProgressBar"></span></div>
@@ -118,5 +119,6 @@
 <footer><p>MGS is a field organization and learning tool. It does not replace the adopted code, manufacturer instructions, licensing requirements, inspections, certification, verification, AHJ requirements, or qualified professional judgment.</p></footer>
 
 <script src="testing.js"></script>
+<script src="readiness-evidence.js"></script>
 </body>
 </html>
