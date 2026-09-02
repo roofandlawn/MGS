@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0b2545" />
+  <title>MGS Project Handoff Summary</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="handoff-summary.css" />
+</head>
+<body>
+<header class="topbar no-print">
+  <div><p class="eyebrow">MGS · Project record</p><h1>Verifier Handoff Summary</h1></div>
+  <div class="top-actions">
+    <a class="secondary nav-button" id="testingLink" href="testing.html">Testing & Verification</a>
+    <a class="secondary nav-button" href="index.html">Projects</a>
+    <button id="printSummaryBtn" class="primary" type="button">Print / Save PDF</button>
+  </div>
+</header>
+
+<main class="shell handoff-shell">
+  <section class="handoff-hero no-print">
+    <div>
+      <p class="eyebrow">Project handoff record</p>
+      <h2>One view of readiness status and supporting evidence.</h2>
+      <p>This page compiles the six Ready for Verifier items, completion dates, field notes, and photo/document references already saved to the selected project.</p>
+    </div>
+    <div class="handoff-selector-wrap">
+      <label for="handoffProjectSelect">Project</label>
+      <select id="handoffProjectSelect" aria-label="Select project"></select>
+    </div>
+  </section>
+
+  <section id="handoffEmpty" class="panel handoff-empty" hidden>
+    <h2>No project selected</h2>
+    <p>Create a project first, then return here to build a handoff summary.</p>
+    <a class="primary nav-button" href="index.html">Open Projects</a>
+  </section>
+
+  <section id="handoffSummary" class="handoff-summary" hidden aria-live="polite">
+    <div class="summary-header panel">
+      <div>
+        <p class="eyebrow">MGS · Medical Gas Project Handoff</p>
+        <h2 id="projectName">Project</h2>
+        <p id="projectMeta" class="project-meta"></p>
+      </div>
+      <div class="summary-status">
+        <span id="readinessBadge" class="handoff-status">Not Started</span>
+        <strong id="readinessCount">0 of 6 complete</strong>
+        <span id="generatedAt">Generated —</span>
+      </div>
+    </div>
+
+    <section class="panel progress-panel">
+      <div class="progress-row">
+        <div><span>Handoff readiness</span><strong id="readinessPercent">0%</strong></div>
+        <div class="summary-meter"><span id="readinessBar"></span></div>
+      </div>
+      <div class="progress-row">
+        <div><span>Evidence coverage</span><strong id="evidenceCount">0 of 0 completed items</strong></div>
+        <div class="summary-meter evidence"><span id="evidenceBar"></span></div>
+      </div>
+    </section>
+
+    <section class="handoff-items" id="handoffItems"></section>
+
+    <section class="panel summary-notes">
+      <h3>Project notes</h3>
+      <p id="projectNotes">No project notes saved.</p>
+    </section>
+
+    <section class="panel handoff-disclaimer">
+      <strong>Project handoff aid — not certification.</strong>
+      <p>This summary organizes project-entered information only. A checked item, note, date, or document reference does not by itself establish code compliance, inspection, certification, or final verification. Use the adopted NFPA 99 edition, project documents, manufacturer instructions, applicable licensing requirements, qualified personnel, the verifier, and the AHJ for actual acceptance.</p>
+    </section>
+  </section>
+</main>
+
+<footer class="no-print"><p>MGS is a field organization and learning tool. It does not replace required inspection, certification, verification, or qualified professional judgment.</p></footer>
+<script src="handoff-summary.js"></script>
+</body>
+</html>
