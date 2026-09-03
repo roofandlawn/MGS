@@ -23,7 +23,7 @@
     <div>
       <p class="eyebrow">Project handoff record</p>
       <h2>One view of readiness status and supporting evidence.</h2>
-      <p>This page compiles the six Ready for Verifier items, completion dates, field notes, and photo/document references already saved to the selected project.</p>
+      <p>This page compiles the six Ready for Verifier items, completion dates, field notes, photo/document references, and structured closeout details already saved to the selected project.</p>
     </div>
     <div class="handoff-selector-wrap">
       <label for="handoffProjectSelect">Project</label>
@@ -51,6 +51,50 @@
       </div>
     </div>
 
+    <section class="panel closeout-editor no-print">
+      <div class="closeout-editor-head">
+        <div>
+          <p class="eyebrow">Closeout metadata</p>
+          <h3>Project and verification contacts</h3>
+          <p>Save the identifiers and contacts that should travel with this project's handoff record.</p>
+        </div>
+        <span id="closeoutSaveStatus" class="save-status" aria-live="polite"></span>
+      </div>
+      <form id="closeoutForm" class="closeout-form">
+        <label>Project number<input name="projectNumber" autocomplete="off" placeholder="Project / job number" /></label>
+        <label>Installing contractor / company<input name="installerCompany" autocomplete="organization" placeholder="Installing contractor" /></label>
+        <label>Installer contact<input name="installerContact" autocomplete="name" placeholder="Name, phone, or email" /></label>
+        <label>Verifier name<input name="verifierName" autocomplete="name" placeholder="Qualified verifier" /></label>
+        <label>Verifier company<input name="verifierCompany" autocomplete="organization" placeholder="Verification company" /></label>
+        <label>AHJ / inspecting authority<input name="ahjName" autocomplete="organization" placeholder="Authority / inspector" /></label>
+        <label>AHJ contact<input name="ahjContact" autocomplete="off" placeholder="Name, phone, or email" /></label>
+        <label>Verification / inspection report ID<input name="reportId" autocomplete="off" placeholder="Report or certificate reference" /></label>
+        <label class="full">Drawing / closeout document set<input name="documentSet" autocomplete="off" placeholder="Drawing revision, closeout binder, test package, or document set reference" /></label>
+        <div class="closeout-actions full">
+          <button class="primary" type="submit">Save closeout details</button>
+          <span>Saved to this project only. These fields organize the handoff record and do not create certification.</span>
+        </div>
+      </form>
+    </section>
+
+    <section class="panel closeout-record" aria-labelledby="closeoutRecordTitle">
+      <div class="closeout-record-head">
+        <div><p class="eyebrow">Project closeout details</p><h3 id="closeoutRecordTitle">Handoff identifiers and contacts</h3></div>
+        <span id="closeoutUpdatedAt">Last updated —</span>
+      </div>
+      <div class="closeout-record-grid">
+        <div><span>Project number</span><strong id="closeoutProjectNumber">—</strong></div>
+        <div><span>Installing contractor / company</span><strong id="closeoutInstallerCompany">—</strong></div>
+        <div><span>Installer contact</span><strong id="closeoutInstallerContact">—</strong></div>
+        <div><span>Verifier name</span><strong id="closeoutVerifierName">—</strong></div>
+        <div><span>Verifier company</span><strong id="closeoutVerifierCompany">—</strong></div>
+        <div><span>AHJ / inspecting authority</span><strong id="closeoutAhjName">—</strong></div>
+        <div><span>AHJ contact</span><strong id="closeoutAhjContact">—</strong></div>
+        <div><span>Verification / inspection report ID</span><strong id="closeoutReportId">—</strong></div>
+        <div class="full"><span>Drawing / closeout document set</span><strong id="closeoutDocumentSet">—</strong></div>
+      </div>
+    </section>
+
     <section class="panel progress-panel">
       <div class="progress-row">
         <div><span>Handoff readiness</span><strong id="readinessPercent">0%</strong></div>
@@ -71,7 +115,7 @@
 
     <section class="panel handoff-disclaimer">
       <strong>Project handoff aid — not certification.</strong>
-      <p>This summary organizes project-entered information only. A checked item, note, date, or document reference does not by itself establish code compliance, inspection, certification, or final verification. Use the adopted NFPA 99 edition, project documents, manufacturer instructions, applicable licensing requirements, qualified personnel, the verifier, and the AHJ for actual acceptance.</p>
+      <p>This summary organizes project-entered information only. A checked item, note, date, document reference, contact, or report identifier does not by itself establish code compliance, inspection, certification, or final verification. Use the adopted NFPA 99 edition, project documents, manufacturer instructions, applicable licensing requirements, qualified personnel, the verifier, and the AHJ for actual acceptance.</p>
     </section>
   </section>
 </main>
