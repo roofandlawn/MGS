@@ -8,11 +8,24 @@
     {key:'systemsReady',label:'Source, alarms, outlets / inlets ready',hint:'Relevant system components are marked ready for the verifier handoff.'},
     {key:'documentationReady',label:'Documentation ready for verifier',hint:'Project handoff documents and references are assembled for review.'}
   ];
+  const CLOSEOUT_FIELDS=[
+    {key:'projectNumber',displayId:'closeoutProjectNumber'},
+    {key:'installerCompany',displayId:'closeoutInstallerCompany'},
+    {key:'installerContact',displayId:'closeoutInstallerContact'},
+    {key:'verifierName',displayId:'closeoutVerifierName'},
+    {key:'verifierCompany',displayId:'closeoutVerifierCompany'},
+    {key:'ahjName',displayId:'closeoutAhjName'},
+    {key:'ahjContact',displayId:'closeoutAhjContact'},
+    {key:'reportId',displayId:'closeoutReportId'},
+    {key:'documentSet',displayId:'closeoutDocumentSet'}
+  ];
 
   const projectSelect=document.getElementById('handoffProjectSelect');
   const summary=document.getElementById('handoffSummary');
   const empty=document.getElementById('handoffEmpty');
   const testingLink=document.getElementById('testingLink');
+  const closeoutForm=document.getElementById('closeoutForm');
+  const closeoutSaveStatus=document.getElementById('closeoutSaveStatus');
 
   function loadState(){
     try{
@@ -55,6 +68,13 @@
     };
   }
 
+  function closeout(project){
+    const record=project?.handoffMetadata||{};
+    const normalized={updatedAt:record.updatedAt||null};
+    CLOSEOUT_FIELDS.forEach(field=>{normalized[field.key]=record[field.key]||'';});
+    return normalized;
+  }
+
   function hasEvidence(record){
     return Boolean(record.note||record.completionDate||record.attachmentRef);
   }
@@ -83,9 +103,19 @@
     return {completed,total,percent,status,label,completedWithEvidence,evidencePercent};
   }
 
+  function saveState(){
+    try{
+      localStorage.setItem(storageKey,JSON.stringify(state));
+      return true;
+    }catch(error){
+      console.error('Unable to save MGS project data',error);
+      return false;
+    }
+  }
+
   function persistSelection(projectId){
     state.selectedProjectId=projectId;
-    try{localStorage.setItem(storageKey,JSON.stringify(state));}catch(error){console.error('Unable to save selected project',error);}
+    saveState();
     const url=new URL(window.location.href);
     url.searchParams.set('project',projectId);
     history.replaceState({},'',url);
@@ -127,6 +157,17 @@
       </article>`;
   }
 
+  function renderCloseout(project){
+    const record=closeout(project);
+    CLOSEOUT_FIELDS.forEach(field=>{
+      const input=closeoutForm.elements.namedItem(field.key);
+      if(input) input.value=record[field.key];
+      const output=document.getElementById(field.displayId);
+      if(output) output.textContent=record[field.key]||'—';
+    });
+    document.getElementById('closeoutUpdatedAt').textContent=record.updatedAt?`Last updated ${formatDateTime(record.updatedAt)}`:'Last updated —';
+  }
+
   function render(){
     populateProjects();
     const project=selectedProject();
@@ -134,6 +175,8 @@
       summary.hidden=true;
       empty.hidden=false;
       testingLink.href='testing.html';
+      closeoutForm.reset();
+      closeoutSaveStatus.textContent='';
       return;
     }
 
@@ -143,10 +186,12 @@
     testingLink.href=`testing.html?project=${encodeURIComponent(project.id)}#readyForVerifier`;
 
     const r=readiness(project);
+    const closeoutRecord=closeout(project);
     document.getElementById('projectName').textContent=project.name||'Untitled project';
-    const meta=[project.facility,project.location,project.createdAt?`Created ${project.createdAt}`:''].filter(Boolean).join(' · ');
+    const meta=[closeoutRecord.projectNumber?`Project ${closeoutRecord.projectNumber}`:'',project.facility,project.location,project.createdAt?`Created ${project.createdAt}`:''].filter(Boolean).join(' · ');
     document.getElementById('projectMeta').textContent=meta||'No facility or location entered.';
     document.getElementById('projectNotes').textContent=project.notes||project.fieldNotes||'No project notes saved.';
+    renderCloseout(project);
 
     const badge=document.getElementById('readinessBadge');
     badge.textContent=r.label;
@@ -163,8 +208,27 @@
   projectSelect.addEventListener('change',()=>{
     const id=projectSelect.value;
     if(!id) return;
+    closeoutSaveStatus.textContent='';
     persistSelection(id);
     render();
+  });
+
+  closeoutForm.addEventListener('submit',event=>{
+    event.preventDefault();
+    const project=selectedProject();
+    if(!project) return;
+    const data=new FormData(closeoutForm);
+    const existing=closeout(project);
+    const next={...existing,updatedAt:new Date().toISOString()};
+    CLOSEOUT_FIELDS.forEach(field=>{next[field.key]=String(data.get(field.key)||'').trim();});
+    project.handoffMetadata=next;
+    if(saveState()){
+      closeoutSaveStatus.textContent='Saved';
+      render();
+      closeoutSaveStatus.textContent='Saved';
+    }else{
+      closeoutSaveStatus.textContent='Unable to save';
+    }
   });
 
   document.getElementById('printSummaryBtn').addEventListener('click',()=>{
@@ -177,6 +241,7 @@
     const loaded=loadState();
     state=loaded.state;
     storageKey=loaded.storageKey;
+    closeoutSaveStatus.textContent='';
     render();
   });
 
