@@ -16,6 +16,17 @@
     systemsReady: 'Source, alarms, outlets / inlets ready',
     documentationReady: 'Documentation ready for verifier'
   };
+  const CLOSEOUT_FIELDS = [
+    { key: 'projectNumber', label: 'Project / job number' },
+    { key: 'installerCompany', label: 'Installing contractor / company' },
+    { key: 'installerContact', label: 'Installer contact' },
+    { key: 'verifierName', label: 'Verifier name' },
+    { key: 'verifierCompany', label: 'Verifier company' },
+    { key: 'ahjName', label: 'AHJ / inspecting authority' },
+    { key: 'ahjContact', label: 'AHJ contact' },
+    { key: 'reportId', label: 'Verification / inspection report ID' },
+    { key: 'documentSet', label: 'Drawing / closeout document set' }
+  ];
 
   const projectList = document.getElementById('projectList');
   const projectDetail = document.getElementById('projectDetail');
@@ -27,8 +38,9 @@
     .readiness-badge.not-started{background:#edf1f5;color:#637083}
     .readiness-badge.in-progress{background:#fff1dc;color:#9a6400}
     .readiness-badge.ready{background:#e7f5ed;color:#1f7a4c}
-    .readiness-evidence-badge{display:inline-flex!important;align-items:center;width:max-content;margin-top:6px!important;padding:4px 7px;border:1px solid #dbe3ec;border-radius:999px;background:#fff;color:#637083;font-size:.68rem!important;font-weight:750;line-height:1.2}
-    .readiness-evidence-badge.complete{background:#eef7ff;border-color:#cfe4f7;color:#245f8f}
+    .readiness-evidence-badge,.closeout-record-badge,.project-number-badge{display:inline-flex!important;align-items:center;width:max-content;margin-top:6px!important;padding:4px 7px;border:1px solid #dbe3ec;border-radius:999px;background:#fff;color:#637083;font-size:.68rem!important;font-weight:750;line-height:1.2}
+    .readiness-evidence-badge.complete,.closeout-record-badge.complete{background:#eef7ff;border-color:#cfe4f7;color:#245f8f}
+    .project-number-badge{background:#f7fafc;color:#102033}
     .readiness-summary{margin-top:14px;padding:14px;border:1px solid #dbe3ec;border-radius:12px;background:#fff;display:grid;gap:10px}
     .readiness-summary-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
     .readiness-summary-head strong{font-size:.95rem}
@@ -36,6 +48,7 @@
     .readiness-meter{height:8px;background:#edf1f5;border-radius:999px;overflow:hidden}
     .readiness-meter span{display:block;height:100%;background:#1565c0;border-radius:999px;transition:width .2s ease}
     .readiness-actions{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+    .readiness-action-links{display:flex;gap:8px;flex-wrap:wrap}
     .readiness-link{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;border:1px solid #dbe3ec;border-radius:9px;padding:8px 10px;color:#102033;background:#fff;font-size:.8rem;font-weight:750}
     .readiness-updated{font-size:.75rem;color:#637083}
     .readiness-open-items{border-top:1px solid #edf1f5;padding-top:10px}
@@ -46,16 +59,19 @@
     .readiness-open-link:hover,.readiness-open-link:focus{text-decoration:underline}
     .readiness-open-link::after{content:'  →';font-weight:800}
     .readiness-complete{margin:0;padding:9px 10px;border-radius:9px;background:#e7f5ed;color:#1f7a4c!important;font-weight:750}
-    .readiness-evidence{border-top:1px solid #edf1f5;padding-top:10px;display:grid;gap:8px}
-    .readiness-evidence-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
-    .readiness-evidence-head strong{font-size:.82rem;color:#102033}
-    .readiness-evidence-count{font-size:.74rem;color:#637083;font-weight:750}
-    .readiness-evidence-meter{height:6px;background:#edf1f5;border-radius:999px;overflow:hidden}
-    .readiness-evidence-meter span{display:block;height:100%;background:#4e86b4;border-radius:999px;transition:width .2s ease}
-    .readiness-evidence-missing{margin:0;padding-left:20px;display:grid;gap:6px}
-    .readiness-evidence-missing li{color:#637083;font-size:.78rem;line-height:1.35}
-    .readiness-evidence-note{margin:0;padding:8px 10px;border-radius:9px;background:#f7fafc;color:#637083!important;font-size:.78rem!important}
-    .readiness-evidence-good{margin:0;padding:8px 10px;border-radius:9px;background:#eef7ff;color:#245f8f!important;font-size:.78rem!important;font-weight:750}
+    .readiness-evidence,.closeout-record{border-top:1px solid #edf1f5;padding-top:10px;display:grid;gap:8px}
+    .readiness-evidence-head,.closeout-record-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+    .readiness-evidence-head strong,.closeout-record-head strong{font-size:.82rem;color:#102033}
+    .readiness-evidence-count,.closeout-record-count{font-size:.74rem;color:#637083;font-weight:750}
+    .readiness-evidence-meter,.closeout-record-meter{height:6px;background:#edf1f5;border-radius:999px;overflow:hidden}
+    .readiness-evidence-meter span,.closeout-record-meter span{display:block;height:100%;background:#4e86b4;border-radius:999px;transition:width .2s ease}
+    .readiness-evidence-missing,.closeout-record-missing{margin:0;padding-left:20px;display:grid;gap:6px}
+    .readiness-evidence-missing li,.closeout-record-missing li{color:#637083;font-size:.78rem;line-height:1.35}
+    .readiness-evidence-note,.closeout-record-note{margin:0;padding:8px 10px;border-radius:9px;background:#f7fafc;color:#637083!important;font-size:.78rem!important}
+    .readiness-evidence-good,.closeout-record-good{margin:0;padding:8px 10px;border-radius:9px;background:#eef7ff;color:#245f8f!important;font-size:.78rem!important;font-weight:750}
+    .closeout-project-number{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+    .closeout-project-number span{font-size:.74rem;color:#637083}
+    .closeout-project-number strong{font-size:.92rem;color:#102033}
   `;
   document.head.appendChild(styles);
 
@@ -135,6 +151,35 @@
     };
   }
 
+  function closeoutFor(project) {
+    const record = project?.handoffMetadata || {};
+    const completedKeys = CLOSEOUT_FIELDS
+      .filter(field => String(record[field.key] || '').trim())
+      .map(field => field.key);
+    const missingKeys = CLOSEOUT_FIELDS
+      .filter(field => !String(record[field.key] || '').trim())
+      .map(field => field.key);
+    const completed = completedKeys.length;
+    const total = CLOSEOUT_FIELDS.length;
+    const percent = Math.round((completed / total) * 100);
+    const projectNumber = String(record.projectNumber || '').trim();
+    const fingerprint = CLOSEOUT_FIELDS
+      .map(field => `${field.key}:${String(record[field.key] || '').trim()}`)
+      .concat(record.updatedAt || '')
+      .join('|');
+
+    return {
+      completed,
+      total,
+      percent,
+      completedKeys,
+      missingKeys,
+      projectNumber,
+      updatedAt: record.updatedAt || null,
+      fingerprint
+    };
+  }
+
   function escapeHtml(value) {
     return String(value ?? '')
       .replaceAll('&', '&amp;')
@@ -151,12 +196,19 @@
     return `testing.html?${params.toString()}#readyForVerifier`;
   }
 
+  function handoffLink(projectId) {
+    const params = new URLSearchParams();
+    if (projectId) params.set('project', projectId);
+    return `handoff-summary.html?${params.toString()}`;
+  }
+
   function decorateProjectRows(state) {
     projectList.querySelectorAll('[data-project-id]').forEach(row => {
       const project = state.projects.find(item => item.id === row.dataset.projectId);
       if (!project) return;
       const readiness = readinessFor(project);
       const evidence = evidenceFor(project, readiness);
+      const closeout = closeoutFor(project);
       let badge = row.querySelector('.readiness-badge');
       if (!badge) {
         badge = document.createElement('span');
@@ -187,6 +239,31 @@
         evidence.completed
           ? `Evidence is saved for ${evidence.supported} of ${evidence.completed} completed handoff items`
           : 'No verifier handoff items are complete, so no evidence coverage is expected yet'
+      );
+
+      let projectNumberBadge = row.querySelector('.project-number-badge');
+      if (!projectNumberBadge) {
+        projectNumberBadge = document.createElement('span');
+        projectNumberBadge.className = 'project-number-badge';
+        row.appendChild(projectNumberBadge);
+      }
+      projectNumberBadge.textContent = closeout.projectNumber ? `Project # ${closeout.projectNumber}` : 'Project # —';
+      projectNumberBadge.setAttribute(
+        'aria-label',
+        closeout.projectNumber ? `Project or job number ${closeout.projectNumber}` : 'Project or job number has not been entered'
+      );
+
+      let closeoutBadge = row.querySelector('.closeout-record-badge');
+      if (!closeoutBadge) {
+        closeoutBadge = document.createElement('span');
+        closeoutBadge.className = 'closeout-record-badge';
+        row.appendChild(closeoutBadge);
+      }
+      closeoutBadge.classList.toggle('complete', closeout.completed === closeout.total);
+      closeoutBadge.textContent = `Closeout record ${closeout.completed}/${closeout.total}`;
+      closeoutBadge.setAttribute(
+        'aria-label',
+        `${closeout.completed} of ${closeout.total} closeout metadata fields are filled in`
       );
     });
   }
@@ -246,6 +323,35 @@
       </div>`;
   }
 
+  function closeoutMarkup(closeout, projectId) {
+    const missing = closeout.missingKeys
+      .map(key => {
+        const field = CLOSEOUT_FIELDS.find(item => item.key === key);
+        return `<li>${escapeHtml(field?.label || key)}</li>`;
+      })
+      .join('');
+
+    const detail = closeout.missingKeys.length
+      ? `<ul class="closeout-record-missing">${missing}</ul>`
+      : '<p class="closeout-record-good">All closeout metadata fields are filled in.</p>';
+
+    return `
+      <div class="closeout-record">
+        <div class="closeout-record-head">
+          <strong>Closeout record</strong>
+          <span class="closeout-record-count">${closeout.completed}/${closeout.total} fields</span>
+        </div>
+        <div class="closeout-project-number">
+          <span>Project / job number</span>
+          <strong>${escapeHtml(closeout.projectNumber || 'Not entered')}</strong>
+        </div>
+        <div class="closeout-record-meter" aria-label="${closeout.percent}% of closeout metadata fields are filled in"><span style="width:${closeout.percent}%"></span></div>
+        ${detail}
+        <p class="closeout-record-note">This is a record-completeness check only. A blank field can be acceptable when it is not applicable to the project.</p>
+        <a class="readiness-link" href="${escapeHtml(handoffLink(projectId))}">Open Handoff Summary / Closeout Record</a>
+      </div>`;
+  }
+
   function decorateSelectedProject(state) {
     const activeProjectId = projectList.querySelector('.project-row.active')?.dataset.projectId || null;
     const selectedProjectId = state.selectedProjectId || activeProjectId;
@@ -258,11 +364,15 @@
 
     const readiness = readinessFor(project);
     const evidence = evidenceFor(project, readiness);
+    const closeout = closeoutFor(project);
     const updated = readiness.updatedAt
       ? `Checklist updated ${new Date(readiness.updatedAt).toLocaleString()}`
       : 'No handoff checklist activity yet.';
     const evidenceUpdated = evidence.latestUpdate
       ? ` Evidence updated ${new Date(evidence.latestUpdate).toLocaleString()}.`
+      : '';
+    const closeoutUpdated = closeout.updatedAt
+      ? ` Closeout record updated ${new Date(closeout.updatedAt).toLocaleString()}.`
       : '';
     const signature = [
       project.id,
@@ -272,7 +382,8 @@
       readiness.updatedAt || 'never',
       evidence.supported,
       evidence.unsupportedKeys.join(','),
-      evidence.fingerprint
+      evidence.fingerprint,
+      closeout.fingerprint
     ].join('|');
 
     if (existing?.dataset.readinessSignature === signature) return;
@@ -287,9 +398,13 @@
         <p>${readiness.completed} of ${readiness.total} Ready for Verifier items are complete. This is a project handoff aid, not proof of inspection, compliance, or final verification.</p>
         ${openItemsMarkup(readiness, project.id)}
         ${evidenceMarkup(evidence, project.id)}
+        ${closeoutMarkup(closeout, project.id)}
         <div class="readiness-actions">
-          <span class="readiness-updated">${escapeHtml(updated + evidenceUpdated)}</span>
-          <a class="readiness-link" href="${escapeHtml(testingLink(project.id))}">Open Testing & Verification</a>
+          <span class="readiness-updated">${escapeHtml(updated + evidenceUpdated + closeoutUpdated)}</span>
+          <div class="readiness-action-links">
+            <a class="readiness-link" href="${escapeHtml(testingLink(project.id))}">Open Testing & Verification</a>
+            <a class="readiness-link" href="${escapeHtml(handoffLink(project.id))}">Open Handoff Summary</a>
+          </div>
         </div>
       </div>`;
 
