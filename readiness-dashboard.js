@@ -17,15 +17,15 @@
     documentationReady: 'Documentation ready for verifier'
   };
   const CLOSEOUT_FIELDS = [
-    { key: 'projectNumber', label: 'Project / job number' },
-    { key: 'installerCompany', label: 'Installing contractor / company' },
-    { key: 'installerContact', label: 'Installer contact' },
-    { key: 'verifierName', label: 'Verifier name' },
-    { key: 'verifierCompany', label: 'Verifier company' },
-    { key: 'ahjName', label: 'AHJ / inspecting authority' },
-    { key: 'ahjContact', label: 'AHJ contact' },
-    { key: 'reportId', label: 'Verification / inspection report ID' },
-    { key: 'documentSet', label: 'Drawing / closeout document set' }
+    { key: 'projectNumber', label: 'Project / job number', requirement: 'required' },
+    { key: 'installerCompany', label: 'Installing contractor / company', requirement: 'required' },
+    { key: 'installerContact', label: 'Installer contact', requirement: 'optional' },
+    { key: 'verifierName', label: 'Verifier name', requirement: 'optional' },
+    { key: 'verifierCompany', label: 'Verifier company', requirement: 'optional' },
+    { key: 'ahjName', label: 'AHJ / inspecting authority', requirement: 'optional' },
+    { key: 'ahjContact', label: 'AHJ contact', requirement: 'optional' },
+    { key: 'reportId', label: 'Verification / inspection report ID', requirement: 'optional' },
+    { key: 'documentSet', label: 'Drawing / closeout document set', requirement: 'required' }
   ];
 
   const projectList = document.getElementById('projectList');
@@ -72,6 +72,11 @@
     .closeout-project-number{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
     .closeout-project-number span{font-size:.74rem;color:#637083}
     .closeout-project-number strong{font-size:.92rem;color:#102033}
+    .closeout-state-pill{display:inline-flex;align-items:center;margin-left:5px;padding:2px 5px;border-radius:999px;font-size:.62rem;font-weight:850;line-height:1.2;vertical-align:middle}
+    .closeout-state-pill.required{background:#fff1dc;color:#8c5b00}
+    .closeout-state-pill.optional{background:#edf1f5;color:#637083}
+    .closeout-state-pill.na{background:#eef2f6;color:#687383}
+    .closeout-na-summary{font-size:.76rem!important;color:#637083!important}
   `;
   document.head.appendChild(styles);
 
@@ -153,18 +158,27 @@
 
   function closeoutFor(project) {
     const record = project?.handoffMetadata || {};
-    const completedKeys = CLOSEOUT_FIELDS
+    const fieldStates = {};
+    CLOSEOUT_FIELDS.forEach(field => {
+      fieldStates[field.key] = field.requirement === 'optional' && record.fieldStates?.[field.key] === 'na' ? 'na' : 'active';
+    });
+
+    const applicableFields = CLOSEOUT_FIELDS.filter(field => fieldStates[field.key] !== 'na');
+    const naKeys = CLOSEOUT_FIELDS.filter(field => fieldStates[field.key] === 'na').map(field => field.key);
+    const completedKeys = applicableFields
       .filter(field => String(record[field.key] || '').trim())
       .map(field => field.key);
-    const missingKeys = CLOSEOUT_FIELDS
+    const missingKeys = applicableFields
       .filter(field => !String(record[field.key] || '').trim())
       .map(field => field.key);
+    const missingRequiredKeys = missingKeys.filter(key => CLOSEOUT_FIELDS.find(field => field.key === key)?.requirement === 'required');
+    const missingOptionalKeys = missingKeys.filter(key => CLOSEOUT_FIELDS.find(field => field.key === key)?.requirement === 'optional');
     const completed = completedKeys.length;
-    const total = CLOSEOUT_FIELDS.length;
-    const percent = Math.round((completed / total) * 100);
+    const total = applicableFields.length;
+    const percent = total ? Math.round((completed / total) * 100) : 100;
     const projectNumber = String(record.projectNumber || '').trim();
     const fingerprint = CLOSEOUT_FIELDS
-      .map(field => `${field.key}:${String(record[field.key] || '').trim()}`)
+      .map(field => `${field.key}:${String(record[field.key] || '').trim()}:${fieldStates[field.key]}`)
       .concat(record.updatedAt || '')
       .join('|');
 
@@ -174,6 +188,10 @@
       percent,
       completedKeys,
       missingKeys,
+      missingRequiredKeys,
+      missingOptionalKeys,
+      naKeys,
+      fieldStates,
       projectNumber,
       updatedAt: record.updatedAt || null,
       fingerprint
@@ -259,11 +277,11 @@
         closeoutBadge.className = 'closeout-record-badge';
         row.appendChild(closeoutBadge);
       }
-      closeoutBadge.classList.toggle('complete', closeout.completed === closeout.total);
-      closeoutBadge.textContent = `Closeout record ${closeout.completed}/${closeout.total}`;
+      closeoutBadge.classList.toggle('complete', closeout.missingKeys.length === 0);
+      closeoutBadge.textContent = `Closeout ${closeout.completed}/${closeout.total} applicable${closeout.naKeys.length ? ` · ${closeout.naKeys.length} N/A` : ''}`;
       closeoutBadge.setAttribute(
         'aria-label',
-        `${closeout.completed} of ${closeout.total} closeout metadata fields are filled in`
+        `${closeout.completed} of ${closeout.total} applicable closeout fields are filled in, ${closeout.naKeys.length} optional fields marked not applicable, ${closeout.missingRequiredKeys.length} required fields missing`
       );
     });
   }
@@ -327,27 +345,34 @@
     const missing = closeout.missingKeys
       .map(key => {
         const field = CLOSEOUT_FIELDS.find(item => item.key === key);
-        return `<li>${escapeHtml(field?.label || key)}</li>`;
+        const requirement = field?.requirement || 'optional';
+        const label = escapeHtml(field?.label || key);
+        return `<li>${label}<span class="closeout-state-pill ${requirement}">${requirement === 'required' ? 'Required' : 'Optional'}</span></li>`;
       })
       .join('');
 
     const detail = closeout.missingKeys.length
       ? `<ul class="closeout-record-missing">${missing}</ul>`
-      : '<p class="closeout-record-good">All closeout metadata fields are filled in.</p>';
+      : '<p class="closeout-record-good">All applicable MGS closeout fields are complete.</p>';
+
+    const naSummary = closeout.naKeys.length
+      ? `<p class="closeout-na-summary"><span class="closeout-state-pill na">N/A</span> ${closeout.naKeys.length} optional field${closeout.naKeys.length === 1 ? ' is' : 's are'} excluded from this project's completeness score.</p>`
+      : '';
 
     return `
       <div class="closeout-record">
         <div class="closeout-record-head">
           <strong>Closeout record</strong>
-          <span class="closeout-record-count">${closeout.completed}/${closeout.total} fields</span>
+          <span class="closeout-record-count">${closeout.completed}/${closeout.total} applicable${closeout.naKeys.length ? ` · ${closeout.naKeys.length} N/A` : ''}</span>
         </div>
         <div class="closeout-project-number">
           <span>Project / job number</span>
           <strong>${escapeHtml(closeout.projectNumber || 'Not entered')}</strong>
         </div>
-        <div class="closeout-record-meter" aria-label="${closeout.percent}% of closeout metadata fields are filled in"><span style="width:${closeout.percent}%"></span></div>
+        <div class="closeout-record-meter" aria-label="${closeout.percent}% of applicable closeout fields are filled in"><span style="width:${closeout.percent}%"></span></div>
         ${detail}
-        <p class="closeout-record-note">This is a record-completeness check only. A blank field can be acceptable when it is not applicable to the project.</p>
+        ${naSummary}
+        <p class="closeout-record-note">Required and Optional are MGS workflow labels, not NFPA 99 requirements. Optional fields marked N/A do not count as missing.</p>
         <a class="readiness-link" href="${escapeHtml(handoffLink(projectId))}">Open Handoff Summary / Closeout Record</a>
       </div>`;
   }
