@@ -56,23 +56,56 @@
         <div>
           <p class="eyebrow">Closeout metadata</p>
           <h3>Project and verification contacts</h3>
-          <p>Save the identifiers and contacts that should travel with this project's handoff record.</p>
+          <p>Save the identifiers and contacts that should travel with this project's handoff record. Required and Optional labels are MGS workflow labels, not NFPA 99 requirements.</p>
         </div>
         <span id="closeoutSaveStatus" class="save-status" aria-live="polite"></span>
       </div>
       <form id="closeoutForm" class="closeout-form">
-        <label>Project number<input name="projectNumber" autocomplete="off" placeholder="Project / job number" /></label>
-        <label>Installing contractor / company<input name="installerCompany" autocomplete="organization" placeholder="Installing contractor" /></label>
-        <label>Installer contact<input name="installerContact" autocomplete="name" placeholder="Name, phone, or email" /></label>
-        <label>Verifier name<input name="verifierName" autocomplete="name" placeholder="Qualified verifier" /></label>
-        <label>Verifier company<input name="verifierCompany" autocomplete="organization" placeholder="Verification company" /></label>
-        <label>AHJ / inspecting authority<input name="ahjName" autocomplete="organization" placeholder="Authority / inspector" /></label>
-        <label>AHJ contact<input name="ahjContact" autocomplete="off" placeholder="Name, phone, or email" /></label>
-        <label>Verification / inspection report ID<input name="reportId" autocomplete="off" placeholder="Report or certificate reference" /></label>
-        <label class="full">Drawing / closeout document set<input name="documentSet" autocomplete="off" placeholder="Drawing revision, closeout binder, test package, or document set reference" /></label>
+        <div class="closeout-field">
+          <div class="field-label-row"><label for="closeoutProjectNumberInput">Project number</label><span class="field-status required">Required</span></div>
+          <input id="closeoutProjectNumberInput" name="projectNumber" autocomplete="off" placeholder="Project / job number" />
+        </div>
+        <div class="closeout-field">
+          <div class="field-label-row"><label for="closeoutInstallerCompanyInput">Installing contractor / company</label><span class="field-status required">Required</span></div>
+          <input id="closeoutInstallerCompanyInput" name="installerCompany" autocomplete="organization" placeholder="Installing contractor" />
+        </div>
+        <div class="closeout-field">
+          <div class="field-label-row"><label for="closeoutInstallerContactInput">Installer contact</label><span class="field-status optional">Optional</span></div>
+          <input id="closeoutInstallerContactInput" name="installerContact" autocomplete="name" placeholder="Name, phone, or email" />
+          <label class="na-control"><input type="checkbox" name="installerContact__na" value="na" /> Not applicable</label>
+        </div>
+        <div class="closeout-field">
+          <div class="field-label-row"><label for="closeoutVerifierNameInput">Verifier name</label><span class="field-status optional">Optional</span></div>
+          <input id="closeoutVerifierNameInput" name="verifierName" autocomplete="name" placeholder="Qualified verifier" />
+          <label class="na-control"><input type="checkbox" name="verifierName__na" value="na" /> Not applicable / not assigned</label>
+        </div>
+        <div class="closeout-field">
+          <div class="field-label-row"><label for="closeoutVerifierCompanyInput">Verifier company</label><span class="field-status optional">Optional</span></div>
+          <input id="closeoutVerifierCompanyInput" name="verifierCompany" autocomplete="organization" placeholder="Verification company" />
+          <label class="na-control"><input type="checkbox" name="verifierCompany__na" value="na" /> Not applicable / not assigned</label>
+        </div>
+        <div class="closeout-field">
+          <div class="field-label-row"><label for="closeoutAhjNameInput">AHJ / inspecting authority</label><span class="field-status optional">Optional</span></div>
+          <input id="closeoutAhjNameInput" name="ahjName" autocomplete="organization" placeholder="Authority / inspector" />
+          <label class="na-control"><input type="checkbox" name="ahjName__na" value="na" /> Not applicable / not assigned</label>
+        </div>
+        <div class="closeout-field">
+          <div class="field-label-row"><label for="closeoutAhjContactInput">AHJ contact</label><span class="field-status optional">Optional</span></div>
+          <input id="closeoutAhjContactInput" name="ahjContact" autocomplete="off" placeholder="Name, phone, or email" />
+          <label class="na-control"><input type="checkbox" name="ahjContact__na" value="na" /> Not applicable</label>
+        </div>
+        <div class="closeout-field">
+          <div class="field-label-row"><label for="closeoutReportIdInput">Verification / inspection report ID</label><span class="field-status optional">Optional</span></div>
+          <input id="closeoutReportIdInput" name="reportId" autocomplete="off" placeholder="Report or certificate reference" />
+          <label class="na-control"><input type="checkbox" name="reportId__na" value="na" /> Not applicable / not issued yet</label>
+        </div>
+        <div class="closeout-field full">
+          <div class="field-label-row"><label for="closeoutDocumentSetInput">Drawing / closeout document set</label><span class="field-status required">Required</span></div>
+          <input id="closeoutDocumentSetInput" name="documentSet" autocomplete="off" placeholder="Drawing revision, closeout binder, test package, or document set reference" />
+        </div>
         <div class="closeout-actions full">
           <button class="primary" type="submit">Save closeout details</button>
-          <span>Saved to this project only. These fields organize the handoff record and do not create certification.</span>
+          <span>Saved to this project only. N/A excludes an optional field from the completeness score. These fields organize the handoff record and do not create certification.</span>
         </div>
       </form>
     </section>
@@ -83,15 +116,15 @@
         <span id="closeoutUpdatedAt">Last updated —</span>
       </div>
       <div class="closeout-record-grid">
-        <div><span>Project number</span><strong id="closeoutProjectNumber">—</strong></div>
-        <div><span>Installing contractor / company</span><strong id="closeoutInstallerCompany">—</strong></div>
-        <div><span>Installer contact</span><strong id="closeoutInstallerContact">—</strong></div>
-        <div><span>Verifier name</span><strong id="closeoutVerifierName">—</strong></div>
-        <div><span>Verifier company</span><strong id="closeoutVerifierCompany">—</strong></div>
-        <div><span>AHJ / inspecting authority</span><strong id="closeoutAhjName">—</strong></div>
-        <div><span>AHJ contact</span><strong id="closeoutAhjContact">—</strong></div>
-        <div><span>Verification / inspection report ID</span><strong id="closeoutReportId">—</strong></div>
-        <div class="full"><span>Drawing / closeout document set</span><strong id="closeoutDocumentSet">—</strong></div>
+        <div><span>Project number</span><strong id="closeoutProjectNumber">—</strong><small id="closeoutProjectNumberState"></small></div>
+        <div><span>Installing contractor / company</span><strong id="closeoutInstallerCompany">—</strong><small id="closeoutInstallerCompanyState"></small></div>
+        <div><span>Installer contact</span><strong id="closeoutInstallerContact">—</strong><small id="closeoutInstallerContactState"></small></div>
+        <div><span>Verifier name</span><strong id="closeoutVerifierName">—</strong><small id="closeoutVerifierNameState"></small></div>
+        <div><span>Verifier company</span><strong id="closeoutVerifierCompany">—</strong><small id="closeoutVerifierCompanyState"></small></div>
+        <div><span>AHJ / inspecting authority</span><strong id="closeoutAhjName">—</strong><small id="closeoutAhjNameState"></small></div>
+        <div><span>AHJ contact</span><strong id="closeoutAhjContact">—</strong><small id="closeoutAhjContactState"></small></div>
+        <div><span>Verification / inspection report ID</span><strong id="closeoutReportId">—</strong><small id="closeoutReportIdState"></small></div>
+        <div class="full"><span>Drawing / closeout document set</span><strong id="closeoutDocumentSet">—</strong><small id="closeoutDocumentSetState"></small></div>
       </div>
     </section>
 
@@ -104,6 +137,11 @@
         <div><span>Evidence coverage</span><strong id="evidenceCount">0 of 0 completed items</strong></div>
         <div class="summary-meter evidence"><span id="evidenceBar"></span></div>
       </div>
+      <div class="progress-row">
+        <div><span>Closeout completeness</span><strong id="closeoutCount">0 of 9 applicable fields</strong></div>
+        <div class="summary-meter closeout"><span id="closeoutBar"></span></div>
+        <p id="closeoutStatusNote" class="closeout-status-note"></p>
+      </div>
     </section>
 
     <section class="handoff-items" id="handoffItems"></section>
@@ -115,7 +153,7 @@
 
     <section class="panel handoff-disclaimer">
       <strong>Project handoff aid — not certification.</strong>
-      <p>This summary organizes project-entered information only. A checked item, note, date, document reference, contact, or report identifier does not by itself establish code compliance, inspection, certification, or final verification. Use the adopted NFPA 99 edition, project documents, manufacturer instructions, applicable licensing requirements, qualified personnel, the verifier, and the AHJ for actual acceptance.</p>
+      <p>This summary organizes project-entered information only. A checked item, note, date, document reference, contact, report identifier, or MGS workflow status does not by itself establish code compliance, inspection, certification, or final verification. Use the adopted NFPA 99 edition, project documents, manufacturer instructions, applicable licensing requirements, qualified personnel, the verifier, and the AHJ for actual acceptance.</p>
     </section>
   </section>
 </main>
