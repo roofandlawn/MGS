@@ -9,15 +9,15 @@
     {key:'documentationReady',label:'Documentation ready for verifier',hint:'Project handoff documents and references are assembled for review.'}
   ];
   const CLOSEOUT_FIELDS=[
-    {key:'projectNumber',displayId:'closeoutProjectNumber'},
-    {key:'installerCompany',displayId:'closeoutInstallerCompany'},
-    {key:'installerContact',displayId:'closeoutInstallerContact'},
-    {key:'verifierName',displayId:'closeoutVerifierName'},
-    {key:'verifierCompany',displayId:'closeoutVerifierCompany'},
-    {key:'ahjName',displayId:'closeoutAhjName'},
-    {key:'ahjContact',displayId:'closeoutAhjContact'},
-    {key:'reportId',displayId:'closeoutReportId'},
-    {key:'documentSet',displayId:'closeoutDocumentSet'}
+    {key:'projectNumber',displayId:'closeoutProjectNumber',label:'Project / job number',requirement:'required'},
+    {key:'installerCompany',displayId:'closeoutInstallerCompany',label:'Installing contractor / company',requirement:'required'},
+    {key:'installerContact',displayId:'closeoutInstallerContact',label:'Installer contact',requirement:'optional'},
+    {key:'verifierName',displayId:'closeoutVerifierName',label:'Verifier name',requirement:'optional'},
+    {key:'verifierCompany',displayId:'closeoutVerifierCompany',label:'Verifier company',requirement:'optional'},
+    {key:'ahjName',displayId:'closeoutAhjName',label:'AHJ / inspecting authority',requirement:'optional'},
+    {key:'ahjContact',displayId:'closeoutAhjContact',label:'AHJ contact',requirement:'optional'},
+    {key:'reportId',displayId:'closeoutReportId',label:'Verification / inspection report ID',requirement:'optional'},
+    {key:'documentSet',displayId:'closeoutDocumentSet',label:'Drawing / closeout document set',requirement:'required'}
   ];
 
   const projectSelect=document.getElementById('handoffProjectSelect');
@@ -70,9 +70,32 @@
 
   function closeout(project){
     const record=project?.handoffMetadata||{};
-    const normalized={updatedAt:record.updatedAt||null};
-    CLOSEOUT_FIELDS.forEach(field=>{normalized[field.key]=record[field.key]||'';});
+    const normalized={updatedAt:record.updatedAt||null,fieldStates:{}};
+    CLOSEOUT_FIELDS.forEach(field=>{
+      normalized[field.key]=record[field.key]||'';
+      const requestedState=record.fieldStates?.[field.key];
+      normalized.fieldStates[field.key]=field.requirement==='optional'&&requestedState==='na'?'na':'active';
+    });
     return normalized;
+  }
+
+  function closeoutProgress(record){
+    const applicable=CLOSEOUT_FIELDS.filter(field=>record.fieldStates[field.key]!=='na');
+    const naFields=CLOSEOUT_FIELDS.filter(field=>record.fieldStates[field.key]==='na');
+    const completed=applicable.filter(field=>String(record[field.key]||'').trim());
+    const missing=applicable.filter(field=>!String(record[field.key]||'').trim());
+    const missingRequired=missing.filter(field=>field.requirement==='required');
+    const missingOptional=missing.filter(field=>field.requirement==='optional');
+    const percent=applicable.length?Math.round((completed.length/applicable.length)*100):100;
+    return {
+      applicable:applicable.length,
+      completed:completed.length,
+      na:naFields.length,
+      missing:missing.length,
+      missingRequired:missingRequired.length,
+      missingOptional:missingOptional.length,
+      percent
+    };
   }
 
   function hasEvidence(record){
@@ -161,11 +184,44 @@
     const record=closeout(project);
     CLOSEOUT_FIELDS.forEach(field=>{
       const input=closeoutForm.elements.namedItem(field.key);
-      if(input) input.value=record[field.key];
+      const naToggle=closeoutForm.elements.namedItem(`${field.key}__na`);
+      const isNa=record.fieldStates[field.key]==='na';
+      if(input){
+        input.value=record[field.key];
+        input.disabled=isNa;
+        input.closest('.closeout-field')?.classList.toggle('is-na',isNa);
+      }
+      if(naToggle) naToggle.checked=isNa;
       const output=document.getElementById(field.displayId);
-      if(output) output.textContent=record[field.key]||'—';
+      if(output) output.textContent=isNa?'N/A':record[field.key]||'—';
+      const stateOutput=document.getElementById(`${field.displayId}State`);
+      if(stateOutput){
+        const filled=Boolean(String(record[field.key]||'').trim());
+        const stateLabel=isNa?'N/A · Optional':filled?`Complete · ${field.requirement==='required'?'Required':'Optional'}`:`Missing · ${field.requirement==='required'?'Required':'Optional'}`;
+        stateOutput.textContent=stateLabel;
+        stateOutput.className=`field-record-state ${isNa?'na':filled?'complete':'missing'} ${field.requirement}`;
+      }
     });
     document.getElementById('closeoutUpdatedAt').textContent=record.updatedAt?`Last updated ${formatDateTime(record.updatedAt)}`:'Last updated —';
+    return record;
+  }
+
+  function renderCloseoutProgress(record){
+    const progress=closeoutProgress(record);
+    const suffix=progress.na?` · ${progress.na} N/A`:'';
+    document.getElementById('closeoutCount').textContent=`${progress.completed} of ${progress.applicable} applicable fields${suffix}`;
+    document.getElementById('closeoutBar').style.width=`${progress.percent}%`;
+    const note=document.getElementById('closeoutStatusNote');
+    if(!progress.missing){
+      note.textContent=`All applicable MGS closeout fields are complete.${progress.na?` ${progress.na} optional field${progress.na===1?' is':'s are'} marked N/A.`:''}`;
+      note.className='closeout-status-note complete';
+      return;
+    }
+    const pieces=[];
+    if(progress.missingRequired) pieces.push(`${progress.missingRequired} required missing`);
+    if(progress.missingOptional) pieces.push(`${progress.missingOptional} optional missing`);
+    note.textContent=`${pieces.join(' · ')}${progress.na?` · ${progress.na} optional N/A`:''}.`;
+    note.className=`closeout-status-note ${progress.missingRequired?'needs-required':'needs-optional'}`;
   }
 
   function render(){
@@ -186,12 +242,12 @@
     testingLink.href=`testing.html?project=${encodeURIComponent(project.id)}#readyForVerifier`;
 
     const r=readiness(project);
-    const closeoutRecord=closeout(project);
+    const closeoutRecord=renderCloseout(project);
     document.getElementById('projectName').textContent=project.name||'Untitled project';
     const meta=[closeoutRecord.projectNumber?`Project ${closeoutRecord.projectNumber}`:'',project.facility,project.location,project.createdAt?`Created ${project.createdAt}`:''].filter(Boolean).join(' · ');
     document.getElementById('projectMeta').textContent=meta||'No facility or location entered.';
     document.getElementById('projectNotes').textContent=project.notes||project.fieldNotes||'No project notes saved.';
-    renderCloseout(project);
+    renderCloseoutProgress(closeoutRecord);
 
     const badge=document.getElementById('readinessBadge');
     badge.textContent=r.label;
@@ -213,14 +269,35 @@
     render();
   });
 
+  closeoutForm.addEventListener('change',event=>{
+    const toggle=event.target.closest('input[name$="__na"]');
+    if(!toggle) return;
+    const key=toggle.name.replace(/__na$/,'');
+    const input=closeoutForm.elements.namedItem(key);
+    if(input){
+      input.disabled=toggle.checked;
+      input.closest('.closeout-field')?.classList.toggle('is-na',toggle.checked);
+    }
+    closeoutSaveStatus.textContent='Unsaved changes';
+  });
+
+  closeoutForm.addEventListener('input',event=>{
+    if(event.target.matches('input:not([name$="__na"])')) closeoutSaveStatus.textContent='Unsaved changes';
+  });
+
   closeoutForm.addEventListener('submit',event=>{
     event.preventDefault();
     const project=selectedProject();
     if(!project) return;
-    const data=new FormData(closeoutForm);
     const existing=closeout(project);
-    const next={...existing,updatedAt:new Date().toISOString()};
-    CLOSEOUT_FIELDS.forEach(field=>{next[field.key]=String(data.get(field.key)||'').trim();});
+    const next={...existing,fieldStates:{...existing.fieldStates},updatedAt:new Date().toISOString()};
+    CLOSEOUT_FIELDS.forEach(field=>{
+      const input=closeoutForm.elements.namedItem(field.key);
+      const naToggle=closeoutForm.elements.namedItem(`${field.key}__na`);
+      const isNa=field.requirement==='optional'&&Boolean(naToggle?.checked);
+      next.fieldStates[field.key]=isNa?'na':'active';
+      next[field.key]=isNa?existing[field.key]:String(input?.value||'').trim();
+    });
     project.handoffMetadata=next;
     if(saveState()){
       closeoutSaveStatus.textContent='Saved';
