@@ -18,7 +18,7 @@
     <div>
       <p class="eyebrow">Field workspace</p>
       <h2>Medical gas project records, organized by job.</h2>
-      <p>Track facility information, alarms, outlets, test records, photos, verification items and field notes from one project workspace.</p>
+      <p>Track facility information, system scope, alarms, outlets, test records, photos, verification items and field notes from one project workspace.</p>
     </div>
     <div class="status-card"><span>Build status</span><strong>Field reporting enabled</strong></div>
   </section>
@@ -44,6 +44,7 @@
     <div class="panel-head"><div><p class="eyebrow">Project workspace</p><h3>Field records</h3></div></div>
     <div class="tabs" role="tablist">
       <button class="tab active" data-tab="checklist">Checklist</button>
+      <button class="tab" data-tab="systems">Systems</button>
       <button class="tab" data-tab="alarms">Alarms</button>
       <button class="tab" data-tab="outlets">Outlets</button>
       <button class="tab" data-tab="tests">Tests</button>
@@ -54,6 +55,14 @@
     <div class="tab-panel active" id="tab-checklist">
       <div class="section-actions"><h4>Verification checklist</h4><button id="addTaskBtn" class="secondary">+ Add item</button></div>
       <div id="checklist" class="record-list"></div>
+    </div>
+
+    <div class="tab-panel" id="tab-systems">
+      <div class="section-actions">
+        <div><h4>Project system scope</h4><small class="helper">Select only systems that are part of this job. This scope will drive future system-specific checklists, drawings, references and closeout records.</small></div>
+        <button id="saveSystemScopeBtn" class="primary">Save system scope</button>
+      </div>
+      <div id="systemScopeEditor"></div>
     </div>
 
     <div class="tab-panel" id="tab-alarms">
@@ -90,6 +99,12 @@
   <label>Project name<input name="name" required placeholder="North Wing Renovation" /></label>
   <label>Facility<input name="facility" placeholder="Hospital or facility" /></label>
   <label>Location<input name="location" placeholder="City / building / floor" /></label>
+  <fieldset class="scope-fieldset">
+    <legend>Systems on this project</legend>
+    <small class="helper">Select the known scope now. You can change it later from the Systems tab.</small>
+    <div id="newProjectSystemScope" class="scope-grid"></div>
+    <label>Other / specialty system<input name="systemScopeOther" placeholder="Example: Helium or facility-specific service" /></label>
+  </fieldset>
   <label>Notes<textarea name="notes" rows="4" placeholder="Scope, contacts, system notes..."></textarea></label>
   <div class="dialog-actions"><button type="button" class="secondary" data-close>Cancel</button><button class="primary">Save project</button></div>
 </form></dialog>
@@ -112,7 +127,7 @@
 
 <dialog id="outletDialog"><form id="outletForm" method="dialog">
   <div class="dialog-head"><h3>Add outlet / terminal</h3><button type="button" class="icon-btn" data-close>×</button></div>
-  <label>Gas service<select name="gas"><option>Oxygen</option><option>Medical air</option><option>Vacuum</option><option>WAGD</option><option>Nitrous oxide</option><option>Nitrogen</option><option>Carbon dioxide</option><option>Other</option></select></label>
+  <label>Gas service<select name="gas"><option>Oxygen</option><option>Medical air</option><option>Medical-surgical vacuum</option><option>WAGD</option><option>Nitrous oxide</option><option>Nitrogen</option><option>Instrument air</option><option>Carbon dioxide</option><option>Other</option></select></label>
   <label>Location<input name="location" required placeholder="Room 204 - headwall" /></label>
   <label>Identifier / quantity<input name="identifier" placeholder="O2-204-A or Qty 2" /></label>
   <label>Status<select name="status"><option>Not checked</option><option>Pass</option><option>Needs attention</option></select></label>
