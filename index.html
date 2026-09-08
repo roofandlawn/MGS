@@ -7,6 +7,7 @@
   <title>Med Gas</title>
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="scope-aware-records.css" />
+  <link rel="stylesheet" href="scope-field-checklist.css" />
 </head>
 <body>
 <header class="topbar no-print">
@@ -54,13 +55,24 @@
     </div>
 
     <div class="tab-panel active" id="tab-checklist">
-      <div class="section-actions"><h4>Verification checklist</h4><button id="addTaskBtn" class="secondary">+ Add item</button></div>
+      <section class="scope-field-plan">
+        <div class="scope-field-plan-head">
+          <div>
+            <h4>Project field plan</h4>
+            <p>Generated from this job’s selected system scope. Mark prompts Open, Complete, or N/A as field records are organized.</p>
+          </div>
+          <span id="scopeFieldChecklistSummary" class="scope-field-summary">Select a project to generate its field plan.</span>
+        </div>
+        <p class="scope-field-notice">MGS workflow prompts only — confirm actual requirements using the adopted code edition, project documents, manufacturer instructions, and AHJ requirements.</p>
+        <div id="scopeFieldChecklist"></div>
+      </section>
+      <div class="section-actions custom-checklist-head"><h4>Custom checklist items</h4><button id="addTaskBtn" class="secondary">+ Add item</button></div>
       <div id="checklist" class="record-list"></div>
     </div>
 
     <div class="tab-panel" id="tab-systems">
       <div class="section-actions">
-        <div><h4>Project system scope</h4><small class="helper">Select only systems that are part of this job. This scope will drive future system-specific checklists, drawings, references and closeout records.</small></div>
+        <div><h4>Project system scope</h4><small class="helper">Select only systems that are part of this job. This scope drives system-specific field prompts, drawings, references and closeout records.</small></div>
         <button id="saveSystemScopeBtn" class="primary">Save system scope</button>
       </div>
       <div id="systemScopeEditor"></div>
@@ -161,6 +173,7 @@
 <footer class="no-print"><p>Field organization prototype only. Use applicable codes, adopted standards, manufacturer instructions, inspection requirements, qualified personnel, and required verification procedures for actual medical-gas work.</p></footer>
 <script src="app.js"></script>
 <script src="scope-aware-records.js"></script>
+<script src="scope-field-checklist.js"></script>
 <script src="readiness-dashboard.js"></script>
 </body>
 </html>
