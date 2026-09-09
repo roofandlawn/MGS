@@ -5,38 +5,222 @@ const SCOPE_FIELD_STATUS = {
 };
 
 const pressureFieldPrompts = [
-  { suffix: 'source', title: 'Source / supply impact reviewed', detail: 'Confirm whether this project changes, extends, or only connects to the existing source/supply arrangement.', actionTab: 'systems' },
-  { suffix: 'valves', title: 'Valve coverage and locations recorded', detail: 'Record the valves that control this system for the project area and note any coordination or access issue.', actionTab: 'notes' },
-  { suffix: 'alarms', title: 'Alarm coverage and interfaces reviewed', detail: 'Identify the alarm panels, signals, and project interfaces that apply to this system.', actionTab: 'alarms' },
-  { suffix: 'terminals', title: 'Outlets / terminals recorded', detail: 'Capture terminal locations, identifiers or quantities, and field status for the project area.', actionTab: 'outlets' },
-  { suffix: 'identification', title: 'Identification / labeling checkpoints reviewed', detail: 'Confirm the project has a plan to document required piping and component identification before closeout.', actionTab: 'photos' },
-  { suffix: 'testing', title: 'Installer test / inspection records planned', detail: 'Identify the installer test, inspection, and supporting records that must be captured for this system before handoff.', actionTab: 'tests' }
+  {
+    suffix: 'source',
+    title: 'Source / supply impact reviewed',
+    detail: 'Confirm whether this project changes, extends, or only connects to the existing source/supply arrangement.',
+    actionTab: 'systems',
+    nfpaFamily: '§5.1.3 — Sources',
+    evidenceType: 'Drawing',
+    evidenceDetail: 'Cite the current system drawing or project document that shows the source/supply relationship; add a field note when the work only connects downstream.'
+  },
+  {
+    suffix: 'valves',
+    title: 'Valve coverage and locations recorded',
+    detail: 'Record the valves that control this system for the project area and note any coordination or access issue.',
+    actionTab: 'notes',
+    nfpaFamily: '§5.1.4 — Valves',
+    evidenceType: 'Field record',
+    evidenceDetail: 'Record the applicable isolation points, areas served, and field location. Photos can support access and identification conditions.'
+  },
+  {
+    suffix: 'alarms',
+    title: 'Alarm coverage and interfaces reviewed',
+    detail: 'Identify the alarm panels, signals, and project interfaces that apply to this system.',
+    actionTab: 'alarms',
+    nfpaFamily: '§5.1.9 — Warning Systems',
+    evidenceType: 'Field record',
+    evidenceDetail: 'Create the applicable alarm record with location, service/interface, and field status; functional test evidence belongs in Tests.'
+  },
+  {
+    suffix: 'terminals',
+    title: 'Outlets / terminals recorded',
+    detail: 'Capture terminal locations, identifiers or quantities, and field status for the project area.',
+    actionTab: 'outlets',
+    nfpaFamily: '§5.1.5 — Station Outlets and Inlets',
+    evidenceType: 'Field record',
+    evidenceDetail: 'Create outlet/terminal records for the project area with location, identifier or quantity, and field status.'
+  },
+  {
+    suffix: 'identification',
+    title: 'Identification / labeling checkpoints reviewed',
+    detail: 'Confirm the project has a plan to document required piping and component identification before closeout.',
+    actionTab: 'photos',
+    nfpaFamily: '§5.1.11 — Labeling and Identification',
+    evidenceType: 'Photo',
+    evidenceDetail: 'Capture representative project photos showing piping/component identification and any location-specific issue that needs correction.'
+  },
+  {
+    suffix: 'testing',
+    title: 'Installer test / inspection records planned',
+    detail: 'Identify the installer test, inspection, and supporting records that must be captured for this system before handoff.',
+    actionTab: 'tests',
+    nfpaFamily: '§5.1.12 — Performance Criteria and Testing',
+    evidenceType: 'Test record',
+    evidenceDetail: 'Create the applicable test/inspection record with date, person/company, result, reading or report reference, and notes.'
+  }
 ];
 
 const vacuumFieldPrompts = [
-  { suffix: 'source', title: 'Vacuum source impact reviewed', detail: 'Confirm whether the work affects the central vacuum source, receiver, controls, exhaust, or only downstream distribution.', actionTab: 'systems' },
-  { suffix: 'valves', title: 'Isolation valve coverage and locations recorded', detail: 'Record the isolation points serving the project area and note access or coordination concerns.', actionTab: 'notes' },
-  { suffix: 'alarms', title: 'Vacuum alarm coverage reviewed', detail: 'Identify the alarm panels, signals, and project interfaces that apply to the vacuum work.', actionTab: 'alarms' },
-  { suffix: 'terminals', title: 'Vacuum inlets recorded', detail: 'Capture inlet locations, identifiers or quantities, and field status for the project area.', actionTab: 'outlets' },
-  { suffix: 'identification', title: 'Vacuum identification checkpoints reviewed', detail: 'Confirm the project has a plan to document required piping and component identification before closeout.', actionTab: 'photos' },
-  { suffix: 'testing', title: 'Vacuum test / inspection records planned', detail: 'Identify the installer test, inspection, and supporting records that must be captured before handoff.', actionTab: 'tests' }
+  {
+    suffix: 'source',
+    title: 'Vacuum source impact reviewed',
+    detail: 'Confirm whether the work affects the central vacuum source, receiver, controls, exhaust, or only downstream distribution.',
+    actionTab: 'systems',
+    nfpaFamily: '§5.1.3.7 — Medical-Surgical Vacuum Sources',
+    evidenceType: 'Drawing',
+    evidenceDetail: 'Cite the drawing or project document showing the vacuum source/interface and note whether source equipment, exhaust, controls, or only downstream piping is affected.'
+  },
+  {
+    suffix: 'valves',
+    title: 'Isolation valve coverage and locations recorded',
+    detail: 'Record the isolation points serving the project area and note access or coordination concerns.',
+    actionTab: 'notes',
+    nfpaFamily: '§5.1.4 — Valves',
+    evidenceType: 'Field record',
+    evidenceDetail: 'Record the applicable isolation points, areas served, and field location. Photos can support access and identification conditions.'
+  },
+  {
+    suffix: 'alarms',
+    title: 'Vacuum alarm coverage reviewed',
+    detail: 'Identify the alarm panels, signals, and project interfaces that apply to the vacuum work.',
+    actionTab: 'alarms',
+    nfpaFamily: '§5.1.9 — Warning Systems',
+    evidenceType: 'Field record',
+    evidenceDetail: 'Create the applicable vacuum alarm record with location, interface, and field status; functional test evidence belongs in Tests.'
+  },
+  {
+    suffix: 'terminals',
+    title: 'Vacuum inlets recorded',
+    detail: 'Capture inlet locations, identifiers or quantities, and field status for the project area.',
+    actionTab: 'outlets',
+    nfpaFamily: '§5.1.5 — Station Outlets and Inlets',
+    evidenceType: 'Field record',
+    evidenceDetail: 'Create vacuum inlet records for the project area with location, identifier or quantity, and field status.'
+  },
+  {
+    suffix: 'identification',
+    title: 'Vacuum identification checkpoints reviewed',
+    detail: 'Confirm the project has a plan to document required piping and component identification before closeout.',
+    actionTab: 'photos',
+    nfpaFamily: '§5.1.11 — Labeling and Identification',
+    evidenceType: 'Photo',
+    evidenceDetail: 'Capture representative project photos showing vacuum piping/component identification and any issue that needs correction.'
+  },
+  {
+    suffix: 'testing',
+    title: 'Vacuum test / inspection records planned',
+    detail: 'Identify the installer test, inspection, and supporting records that must be captured before handoff.',
+    actionTab: 'tests',
+    nfpaFamily: '§5.1.12 — Performance Criteria and Testing',
+    evidenceType: 'Test record',
+    evidenceDetail: 'Create the applicable vacuum test/inspection record with date, person/company, result, reading or report reference, and notes.'
+  }
 ];
 
 const wagdFieldPrompts = [
-  { suffix: 'source', title: 'WAGD disposal / source arrangement reviewed', detail: 'Confirm the project arrangement and whether the work affects the disposal source, interface, or only downstream distribution.', actionTab: 'systems' },
-  { suffix: 'valves', title: 'WAGD isolation / control points recorded', detail: 'Record the project control or isolation points and note access or coordination concerns.', actionTab: 'notes' },
-  { suffix: 'alarms', title: 'WAGD alarm / monitoring interfaces reviewed', detail: 'Identify any project alarm or monitoring interfaces that apply to this WAGD system.', actionTab: 'alarms' },
-  { suffix: 'terminals', title: 'WAGD terminals recorded', detail: 'Capture terminal locations, identifiers or quantities, and field status for the project area.', actionTab: 'outlets' },
-  { suffix: 'identification', title: 'WAGD identification checkpoints reviewed', detail: 'Confirm the project has a plan to document required piping and component identification before closeout.', actionTab: 'photos' },
-  { suffix: 'testing', title: 'WAGD test / inspection records planned', detail: 'Identify the installer test, inspection, and supporting records that must be captured before handoff.', actionTab: 'tests' }
+  {
+    suffix: 'source',
+    title: 'WAGD disposal / source arrangement reviewed',
+    detail: 'Confirm the project arrangement and whether the work affects the disposal source, interface, or only downstream distribution.',
+    actionTab: 'systems',
+    nfpaFamily: '§5.1.3.8 — WAGD Sources',
+    evidenceType: 'Drawing',
+    evidenceDetail: 'Cite the current drawing or project document showing the WAGD source/disposal arrangement and the project interface.'
+  },
+  {
+    suffix: 'valves',
+    title: 'WAGD isolation / control points recorded',
+    detail: 'Record the project control or isolation points and note access or coordination concerns.',
+    actionTab: 'notes',
+    nfpaFamily: '§5.1.4 — Valves',
+    evidenceType: 'Field record',
+    evidenceDetail: 'Record the applicable WAGD control/isolation points, areas served, and field location; add photos where identification or access matters.'
+  },
+  {
+    suffix: 'alarms',
+    title: 'WAGD alarm / monitoring interfaces reviewed',
+    detail: 'Identify any project alarm or monitoring interfaces that apply to this WAGD system.',
+    actionTab: 'alarms',
+    nfpaFamily: '§5.1.9 — Warning Systems',
+    evidenceType: 'Field record',
+    evidenceDetail: 'Create the applicable WAGD alarm/monitoring record with location, interface, and field status; functional test evidence belongs in Tests.'
+  },
+  {
+    suffix: 'terminals',
+    title: 'WAGD terminals recorded',
+    detail: 'Capture terminal locations, identifiers or quantities, and field status for the project area.',
+    actionTab: 'outlets',
+    nfpaFamily: '§5.1.5 — Station Outlets and Inlets',
+    evidenceType: 'Field record',
+    evidenceDetail: 'Create WAGD terminal records for the project area with location, identifier or quantity, and field status.'
+  },
+  {
+    suffix: 'identification',
+    title: 'WAGD identification checkpoints reviewed',
+    detail: 'Confirm the project has a plan to document required piping and component identification before closeout.',
+    actionTab: 'photos',
+    nfpaFamily: '§5.1.11 — Labeling and Identification',
+    evidenceType: 'Photo',
+    evidenceDetail: 'Capture representative project photos showing WAGD piping/component identification and any issue that needs correction.'
+  },
+  {
+    suffix: 'testing',
+    title: 'WAGD test / inspection records planned',
+    detail: 'Identify the installer test, inspection, and supporting records that must be captured before handoff.',
+    actionTab: 'tests',
+    nfpaFamily: '§5.1.12 — Performance Criteria and Testing',
+    evidenceType: 'Test record',
+    evidenceDetail: 'Create the applicable WAGD test/inspection record with date, person/company, result, reading or report reference, and notes.'
+  }
 ];
 
 const specialtyFieldPrompts = [
-  { suffix: 'arrangement', title: 'System arrangement and project limits reviewed', detail: 'Document where the specialty system starts and stops within this job and which equipment is affected.', actionTab: 'systems' },
-  { suffix: 'controls', title: 'Isolation / control points recorded', detail: 'Record the control or isolation points that apply to the project area.', actionTab: 'notes' },
-  { suffix: 'terminals', title: 'Terminal devices / connections recorded', detail: 'Capture terminal devices, connections, locations, identifiers, or quantities as applicable.', actionTab: 'outlets' },
-  { suffix: 'identification', title: 'Identification checkpoints reviewed', detail: 'Document the project identification and labeling plan for the specialty system.', actionTab: 'photos' },
-  { suffix: 'testing', title: 'Test / inspection records planned', detail: 'Identify the project-specific testing, inspection, manufacturer, or AHJ records that must be captured before handoff.', actionTab: 'tests' }
+  {
+    suffix: 'arrangement',
+    title: 'System arrangement and project limits reviewed',
+    detail: 'Document where the specialty system starts and stops within this job and which equipment is affected.',
+    actionTab: 'systems',
+    nfpaFamily: 'NFPA 99 Ch. 5 — confirm system-specific applicability',
+    evidenceType: 'Drawing',
+    evidenceDetail: 'Cite the drawing, specification, manufacturer document, or approved project detail that defines this specialty system and its limits.'
+  },
+  {
+    suffix: 'controls',
+    title: 'Isolation / control points recorded',
+    detail: 'Record the control or isolation points that apply to the project area.',
+    actionTab: 'notes',
+    nfpaFamily: 'NFPA 99 Ch. 5 — confirm system-specific applicability',
+    evidenceType: 'Field record',
+    evidenceDetail: 'Record the specialty system control/isolation points and note the project document, manufacturer instruction, or AHJ direction used.'
+  },
+  {
+    suffix: 'terminals',
+    title: 'Terminal devices / connections recorded',
+    detail: 'Capture terminal devices, connections, locations, identifiers, or quantities as applicable.',
+    actionTab: 'outlets',
+    nfpaFamily: 'NFPA 99 Ch. 5 — confirm system-specific applicability',
+    evidenceType: 'Field record',
+    evidenceDetail: 'Create field records for specialty terminals/connections with location, identifier or quantity, and field status.'
+  },
+  {
+    suffix: 'identification',
+    title: 'Identification checkpoints reviewed',
+    detail: 'Document the project identification and labeling plan for the specialty system.',
+    actionTab: 'photos',
+    nfpaFamily: '§5.1.11 — Labeling and Identification, where applicable',
+    evidenceType: 'Photo',
+    evidenceDetail: 'Capture representative photos and cite any project-specific identification requirement that applies to the specialty system.'
+  },
+  {
+    suffix: 'testing',
+    title: 'Test / inspection records planned',
+    detail: 'Identify the project-specific testing, inspection, manufacturer, or AHJ records that must be captured before handoff.',
+    actionTab: 'tests',
+    nfpaFamily: '§5.1.12 — Performance Criteria and Testing, where applicable',
+    evidenceType: 'Test record',
+    evidenceDetail: 'Create the project-specific test/inspection record and cite manufacturer, project, verifier, or AHJ criteria used for the specialty system.'
+  }
 ];
 
 function fieldPromptSet(systemId) {
@@ -57,7 +241,10 @@ function scopeFieldItems(project) {
     group: 'Project setup',
     title: 'System scope reviewed against current project documents',
     detail: 'Confirm the selected systems still match the current contract documents, approved changes, and field conditions.',
-    actionTab: 'systems'
+    actionTab: 'systems',
+    nfpaFamily: 'NFPA 99 Ch. 5 — Gas and Vacuum Systems',
+    evidenceType: 'Drawing',
+    evidenceDetail: 'Cite the current drawing, specification, addendum, or approved change used to define the project system scope.'
   }];
 
   (project.systemScope || []).map(systemForId).filter(Boolean).forEach(system => {
@@ -67,7 +254,10 @@ function scopeFieldItems(project) {
       title: prompt.title,
       detail: prompt.detail,
       actionTab: prompt.actionTab,
-      module: prompt.suffix === 'source' ? system.module : null
+      module: prompt.suffix === 'source' ? system.module : null,
+      nfpaFamily: prompt.nfpaFamily,
+      evidenceType: prompt.evidenceType,
+      evidenceDetail: prompt.evidenceDetail
     }));
   });
 
@@ -79,7 +269,10 @@ function scopeFieldItems(project) {
       group: specialty,
       title: prompt.title,
       detail: prompt.detail,
-      actionTab: prompt.actionTab
+      actionTab: prompt.actionTab,
+      nfpaFamily: prompt.nfpaFamily,
+      evidenceType: prompt.evidenceType,
+      evidenceDetail: prompt.evidenceDetail
     }));
   }
 
@@ -88,7 +281,10 @@ function scopeFieldItems(project) {
     group: 'Project closeout',
     title: 'Handoff evidence path reviewed',
     detail: 'Confirm where project test records, photos, drawings, and verifier/AHJ closeout information will be collected.',
-    actionTab: 'tests'
+    actionTab: 'tests',
+    nfpaFamily: '§5.1.12 — Performance Criteria and Testing',
+    evidenceType: 'Closeout document',
+    evidenceDetail: 'Cite the closeout package, verification/inspection report, drawing set, or other project record used for final handoff when available.'
   });
 
   return items;
@@ -173,6 +369,11 @@ function renderScopeFieldChecklist() {
               <div class="scope-field-item-main">
                 <strong>${escapeHtml(item.title)}</strong>
                 <span>${escapeHtml(item.detail)}</span>
+                <div class="scope-field-meta" aria-label="Reference and evidence guidance">
+                  <span class="scope-field-meta-chip"><b>NFPA family</b>${escapeHtml(item.nfpaFamily || 'Confirm applicable NFPA 99 section')}</span>
+                  <span class="scope-field-meta-chip"><b>Evidence</b>${escapeHtml(item.evidenceType || 'Project record')}</span>
+                </div>
+                ${item.evidenceDetail ? `<small class="scope-field-evidence-detail">${escapeHtml(item.evidenceDetail)}</small>` : ''}
                 ${completeDate && record.status === 'done' ? `<small>Completed ${escapeHtml(completeDate)}</small>` : ''}
               </div>
               <div class="scope-field-item-actions">
