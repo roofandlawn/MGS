@@ -92,7 +92,7 @@
 
 .scope-field-item-main {
   display: grid;
-  gap: .22rem;
+  gap: .28rem;
 }
 
 .scope-field-item-main strong {
@@ -105,12 +105,47 @@
   line-height: 1.4;
 }
 
-.scope-field-item-main span {
+.scope-field-item-main > span {
   font-size: .82rem;
 }
 
 .scope-field-item-main small {
   font-size: .74rem;
+}
+
+.scope-field-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .35rem;
+  margin-top: .2rem;
+}
+
+.scope-field-meta-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  width: fit-content;
+  max-width: 100%;
+  padding: .3rem .48rem;
+  border: 1px solid #dce4ec;
+  border-radius: 8px;
+  background: #f8fafc;
+  font-size: .72rem !important;
+  line-height: 1.25 !important;
+  color: #43556a !important;
+}
+
+.scope-field-meta-chip b {
+  color: #22364e;
+  font-size: .68rem;
+  letter-spacing: .01em;
+  white-space: nowrap;
+}
+
+.scope-field-evidence-detail {
+  display: block;
+  margin-top: .05rem;
+  color: #59697b !important;
 }
 
 .scope-field-item-actions {
@@ -180,6 +215,15 @@
 
   .scope-field-summary {
     justify-self: start;
+  }
+
+  .scope-field-meta {
+    display: grid;
+  }
+
+  .scope-field-meta-chip {
+    width: 100%;
+    align-items: flex-start;
   }
 
   .scope-field-item-actions {
