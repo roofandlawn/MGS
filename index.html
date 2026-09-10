@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="scope-aware-records.css" />
   <link rel="stylesheet" href="scope-field-checklist.css" />
+  <link rel="stylesheet" href="scope-field-evidence-live.css" />
 </head>
 <body>
 <header class="topbar no-print">
@@ -63,7 +64,7 @@
           </div>
           <span id="scopeFieldChecklistSummary" class="scope-field-summary">Select a project to generate its field plan.</span>
         </div>
-        <p class="scope-field-notice">MGS workflow prompts only — confirm actual requirements using the adopted code edition, project documents, manufacturer instructions, and AHJ requirements.</p>
+        <p class="scope-field-notice">MGS workflow prompts and evidence matching only — “Evidence found” means a candidate project record exists; it does not establish code compliance, inspection, certification, or verification. Confirm actual requirements using the adopted code edition, project documents, manufacturer instructions, and AHJ requirements.</p>
         <div id="scopeFieldChecklist"></div>
       </section>
       <div class="section-actions custom-checklist-head"><h4>Custom checklist items</h4><button id="addTaskBtn" class="secondary">+ Add item</button></div>
@@ -174,6 +175,7 @@
 <script src="app.js"></script>
 <script src="scope-aware-records.js"></script>
 <script src="scope-field-checklist.js"></script>
+<script src="scope-field-evidence-live.js"></script>
 <script src="readiness-dashboard.js"></script>
 </body>
 </html>
