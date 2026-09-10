@@ -38,7 +38,7 @@
     if (parts[0] === 'specialty') {
       return {
         kind: 'specialty',
-        suffix: parts.at(-1) || '',
+        suffix: parts[parts.length - 1] || '',
         label: String(project?.systemScopeOther || '').trim()
       };
     }
@@ -150,6 +150,10 @@
     return `${preview}${more}. Matching evidence does not by itself establish compliance, inspection, or verification.`;
   }
 
+  function setText(element, value) {
+    if (element && element.textContent !== value) element.textContent = value;
+  }
+
   function setAction(article, project, evidenceType, count, isNa) {
     const button = article.querySelector('.scope-field-item-actions [data-open-field-tab], .scope-field-item-actions [data-evidence-tab], .scope-field-item-actions [data-evidence-handoff]');
     if (!button) return;
@@ -158,7 +162,7 @@
     if (originalTab) button.dataset.evidenceTab = originalTab;
 
     if (isNa) {
-      button.textContent = 'Open records';
+      setText(button, 'Open records');
       button.removeAttribute('data-evidence-handoff');
       if (originalTab) button.dataset.openFieldTab = originalTab;
       return;
@@ -168,14 +172,14 @@
     if (documentTarget) {
       button.removeAttribute('data-open-field-tab');
       button.dataset.evidenceHandoff = project.id;
-      button.textContent = count ? `View document (${count})` : 'Add document ref';
+      setText(button, count ? `View document (${count})` : 'Add document ref');
       button.title = 'Open the project Handoff Summary / Closeout Record.';
       return;
     }
 
     button.removeAttribute('data-evidence-handoff');
     if (originalTab) button.dataset.openFieldTab = originalTab;
-    button.textContent = count ? `View evidence (${count})` : 'Add evidence';
+    setText(button, count ? `View evidence (${count})` : 'Add evidence');
     button.title = count ? 'Open the matching project record area.' : 'Open the project record area to add supporting evidence.';
   }
 
@@ -209,9 +213,10 @@
 
       if (!badge) return;
       badge.className = `scope-field-evidence-state ${isNa ? 'na' : found ? 'found' : 'missing'}`;
-      badge.textContent = isNa ? 'Evidence not tracked · N/A' : found ? `Evidence found · ${matches.length} ${matches.length === 1 ? 'record' : 'records'}` : 'Evidence missing';
+      const badgeText = isNa ? 'Evidence not tracked · N/A' : found ? `Evidence found · ${matches.length} ${matches.length === 1 ? 'record' : 'records'}` : 'Evidence missing';
+      setText(badge, badgeText);
       badge.title = isNa ? 'This checklist prompt is marked N/A.' : evidenceTitle(matches);
-      badge.setAttribute('aria-label', badge.textContent);
+      badge.setAttribute('aria-label', badgeText);
 
       article.classList.toggle('evidence-found', found && !isNa);
       article.classList.toggle('evidence-missing', !found && !isNa);
@@ -221,7 +226,7 @@
     if (summary && applicable) {
       const base = summary.textContent.replace(/\s·\sEvidence\s\d+\/\d+.*$/i, '');
       const next = `${base} · Evidence ${supported}/${applicable}`;
-      if (summary.textContent !== next) summary.textContent = next;
+      setText(summary, next);
       summary.title = 'Evidence coverage counts candidate saved records for applicable prompts. It does not automatically mark a prompt complete or compliant.';
     }
   }
