@@ -64,6 +64,23 @@
     return systemTerms(context).some(term => containsTerm(value, term));
   }
 
+  function structuredTagMatch(record, context) {
+    const systemIds = Array.isArray(record?.systemIds) ? record.systemIds.map(String).filter(Boolean) : [];
+    const systemOther = String(record?.systemOther || '').trim();
+    const hasStructuredTags = systemIds.length > 0 || Boolean(systemOther);
+    if (!hasStructuredTags) return { hasStructuredTags: false, matches: false };
+    if (context.kind === 'project') return { hasStructuredTags: true, matches: true };
+    if (context.kind === 'system') return { hasStructuredTags: true, matches: systemIds.includes(context.systemId) };
+    if (context.kind === 'specialty') return { hasStructuredTags: true, matches: normalize(systemOther) === normalize(context.label) };
+    return { hasStructuredTags: true, matches: false };
+  }
+
+  function recordMatchesContext(record, legacyText, context) {
+    const tagMatch = structuredTagMatch(record, context);
+    if (tagMatch.hasStructuredTags) return tagMatch.matches;
+    return textMatchesContext(legacyText, context);
+  }
+
   function candidate(label, detail) {
     return { label, detail: String(detail || '').trim() };
   }
@@ -86,7 +103,7 @@
 
   function photoEvidence(project, context) {
     return (project?.photos || [])
-      .filter(photo => textMatchesContext([photo.caption, photo.location, photo.notes].filter(Boolean).join(' '), context))
+      .filter(photo => recordMatchesContext(photo, [photo.caption, photo.location, photo.notes].filter(Boolean).join(' '), context))
       .map(photo => candidate('Project photo', photo.caption || photo.location || 'Saved photo'));
   }
 
@@ -104,8 +121,14 @@
 
   function alarmEvidence(project, context) {
     return (project?.alarms || [])
-      .filter(record => textMatchesContext([record.serves, record.notes].filter(Boolean).join(' '), context))
+      .filter(record => recordMatchesContext(record, [record.serves, record.notes].filter(Boolean).join(' '), context))
       .map(record => candidate('Alarm record', [record.type, record.location, record.serves].filter(Boolean).join(' · ')));
+  }
+
+  function valveEvidence(project, context) {
+    return (project?.valves || [])
+      .filter(record => recordMatchesContext(record, [record.type, record.location, record.identifier, record.serves, record.notes].filter(Boolean).join(' '), context))
+      .map(record => candidate('Valve / control record', [record.type, record.location, record.identifier, record.serves].filter(Boolean).join(' · ')));
   }
 
   function noteEvidence(project, context) {
@@ -120,7 +143,10 @@
   function fieldRecordEvidence(project, context) {
     if (context.suffix === 'alarms') return alarmEvidence(project, context);
     if (context.suffix === 'terminals') return outletEvidence(project, context);
-    if (['valves', 'controls'].includes(context.suffix)) return noteEvidence(project, context);
+    if (['valves', 'controls'].includes(context.suffix)) {
+      const structured = valveEvidence(project, context);
+      return structured.length ? structured : noteEvidence(project, context);
+    }
     return noteEvidence(project, context);
   }
 
@@ -251,4 +277,17 @@
   observer.observe(container, { childList: true, subtree: true });
 
   decorate();
+
+  if (!document.querySelector('link[href="structured-system-records.css"]')) {
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = 'structured-system-records.css';
+    document.head.append(link);
+  }
+  if (!document.querySelector('script[src="structured-system-records.js"]')) {
+    const script = document.createElement('script');
+    script.src = 'structured-system-records.js';
+    script.async = false;
+    document.body.append(script);
+  }
 })();
