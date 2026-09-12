@@ -1,5 +1,18 @@
 const storageKey = 'mgs-prototype-v3';
 
+const SYSTEM_CATALOG = [
+  { id: 'oxygen', label: 'Oxygen', note: 'Pressure gas', module: 'oxygen-manifold.html' },
+  { id: 'medicalAir', label: 'Medical Air', note: 'Pressure gas', module: 'medical-air.html' },
+  { id: 'medicalVacuum', label: 'Medical-Surgical Vacuum', note: 'Vacuum system', module: 'vacuum-source.html' },
+  { id: 'wagd', label: 'WAGD', note: 'Waste anesthetic gas disposal', module: 'wagd-source.html' },
+  { id: 'nitrousOxide', label: 'Nitrous Oxide', note: 'Pressure gas' },
+  { id: 'nitrogen', label: 'Nitrogen', note: 'Pressure / support gas' },
+  { id: 'instrumentAir', label: 'Instrument Air', note: 'Support gas' },
+  { id: 'carbonDioxide', label: 'Carbon Dioxide', note: 'Pressure gas' }
+];
+
+const systemIds = new Set(SYSTEM_CATALOG.map(system => system.id));
+
 const seedTasks = () => [
   { id: crypto.randomUUID(), text: 'Confirm project scope and applicable requirements', done: false },
   { id: crypto.randomUUID(), text: 'Record alarm panel and device locations', done: false },
@@ -15,7 +28,10 @@ function normalizeProject(project) {
     outlets: Array.isArray(project.outlets) ? project.outlets : [],
     tests: Array.isArray(project.tests) ? project.tests : [],
     photos: Array.isArray(project.photos) ? project.photos : [],
-    fieldNotes: project.fieldNotes || ''
+    fieldNotes: project.fieldNotes || '',
+    systemScope: Array.isArray(project.systemScope) ? project.systemScope.filter(id => systemIds.has(id)) : [],
+    systemScopeOther: project.systemScopeOther || '',
+    systemScopeUpdatedAt: project.systemScopeUpdatedAt || null
   };
 }
 
@@ -42,6 +58,7 @@ const projectList = $('#projectList');
 const selectedTitle = $('#selectedTitle');
 const projectDetail = $('#projectDetail');
 const checklist = $('#checklist');
+const systemScopeEditor = $('#systemScopeEditor');
 const alarmList = $('#alarmList');
 const outletList = $('#outletList');
 const testList = $('#testList');
@@ -87,6 +104,46 @@ function formatDate(value) {
   return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString();
 }
 
+function formatDateTime(value) {
+  if (!value) return 'Not saved yet';
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? value : date.toLocaleString();
+}
+
+function systemForId(id) {
+  return SYSTEM_CATALOG.find(system => system.id === id) || null;
+}
+
+function systemScopeCount(project) {
+  return project.systemScope.length + (String(project.systemScopeOther || '').trim() ? 1 : 0);
+}
+
+function systemOptionMarkup(selected = [], mode = 'editor') {
+  const selectedIds = new Set(selected);
+  return SYSTEM_CATALOG.map(system => {
+    const inputAttrs = mode === 'form'
+      ? `name="systems" value="${system.id}"`
+      : `data-system-scope="${system.id}" value="${system.id}"`;
+    return `
+      <label class="scope-option">
+        <input type="checkbox" ${inputAttrs} ${selectedIds.has(system.id) ? 'checked' : ''}>
+        <span>${escapeHtml(system.label)}<small>${escapeHtml(system.note)}</small></span>
+      </label>`;
+  }).join('');
+}
+
+function systemChipMarkup(project) {
+  const chips = project.systemScope
+    .map(systemForId)
+    .filter(Boolean)
+    .map(system => `<span class="system-chip">${escapeHtml(system.label)}</span>`);
+  const other = String(project.systemScopeOther || '').trim();
+  if (other) chips.push(`<span class="system-chip other">${escapeHtml(other)}</span>`);
+  return chips.length
+    ? `<div class="system-chip-list">${chips.join('')}</div>`
+    : '<div class="scope-empty">System scope has not been set for this project.</div>';
+}
+
 function renderProjects() {
   if (!state.projects.length) {
     projectList.innerHTML = '<div class="empty">No projects yet. Create the first Med Gas project.</div>';
@@ -96,10 +153,15 @@ function renderProjects() {
   }
 
   if (!selectedProject()) state.selectedProjectId = state.projects[0].id;
-  projectList.innerHTML = state.projects.map(p => `
-    <button class="project-row ${p.id === state.selectedProjectId ? 'active' : ''}" data-project-id="${p.id}">
-      <strong>${escapeHtml(p.name)}</strong><span>${escapeHtml(p.facility || p.location || 'No facility entered')}</span>
-    </button>`).join('');
+  projectList.innerHTML = state.projects.map(p => {
+    const count = systemScopeCount(p);
+    return `
+      <button class="project-row ${p.id === state.selectedProjectId ? 'active' : ''}" data-project-id="${p.id}">
+        <strong>${escapeHtml(p.name)}</strong>
+        <span>${escapeHtml(p.facility || p.location || 'No facility entered')}</span>
+        <span class="project-scope-count">${count ? `${count} system${count === 1 ? '' : 's'} in scope` : 'System scope not set'}</span>
+      </button>`;
+  }).join('');
 
   const p = selectedProject();
   selectedTitle.textContent = p.name;
@@ -112,6 +174,7 @@ function renderProjects() {
       <div><span>Test records</span><strong>${p.tests.length}</strong></div>
       <div><span>Photos</span><strong>${p.photos.length}</strong></div>
     </div>
+    <div class="system-scope-summary"><span>Systems in scope</span>${systemChipMarkup(p)}</div>
     <div class="detail-notes">${escapeHtml(p.notes || 'No project notes yet.')}</div>`;
 }
 
@@ -125,6 +188,26 @@ function renderChecklist() {
       <span>${escapeHtml(t.text)}</span>
       <button type="button" data-task-delete="${t.id}">Delete</button>
     </label>`).join('');
+}
+
+function renderSystemScope() {
+  const p = selectedProject();
+  const saveButton = $('#saveSystemScopeBtn');
+  if (!systemScopeEditor || !saveButton) return;
+  saveButton.disabled = !p;
+  if (!p) {
+    systemScopeEditor.innerHTML = '<div class="empty">Select a project first.</div>';
+    return;
+  }
+
+  systemScopeEditor.innerHTML = `
+    <div class="scope-editor">
+      <div class="scope-grid">${systemOptionMarkup(p.systemScope)}</div>
+      <label class="scope-other">Other / specialty system
+        <input id="systemScopeOtherEditor" value="${escapeHtml(p.systemScopeOther || '')}" placeholder="Example: Helium or facility-specific service">
+      </label>
+      <p class="scope-save-note">Last updated: ${escapeHtml(formatDateTime(p.systemScopeUpdatedAt))}. Project scope is an MGS organization field; applicable code requirements still depend on the actual facility, adopted edition and authority having jurisdiction.</p>
+    </div>`;
 }
 
 function renderAlarms() {
@@ -200,6 +283,15 @@ function reportRows(items, cells) {
   return `<table><tbody>${items.map(item => `<tr>${cells(item).map(c => `<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
 }
 
+function reportSystemMarkup(project) {
+  const labels = project.systemScope.map(systemForId).filter(Boolean).map(system => system.label);
+  const other = String(project.systemScopeOther || '').trim();
+  if (other) labels.push(other);
+  return labels.length
+    ? `<div class="report-systems">${labels.map(label => `<span class="report-system">${escapeHtml(label)}</span>`).join('')}</div>`
+    : '<p class="report-empty">System scope not recorded.</p>';
+}
+
 function renderReport() {
   const p = selectedProject();
   const report = $('#report');
@@ -207,7 +299,7 @@ function renderReport() {
   const done = p.tasks.filter(t => t.done).length;
   report.innerHTML = `
     <div class="report-head"><div><p class="eyebrow">MGS</p><h1>Med Gas Project Report</h1></div><div class="report-date">Generated ${escapeHtml(new Date().toLocaleString())}</div></div>
-    <section class="report-summary"><h2>${escapeHtml(p.name)}</h2><p><strong>Facility:</strong> ${escapeHtml(p.facility || '—')}<br><strong>Location:</strong> ${escapeHtml(p.location || '—')}<br><strong>Created:</strong> ${escapeHtml(p.createdAt || '—')}</p>${p.notes ? `<p>${escapeHtml(p.notes)}</p>` : ''}</section>
+    <section class="report-summary"><h2>${escapeHtml(p.name)}</h2><p><strong>Facility:</strong> ${escapeHtml(p.facility || '—')}<br><strong>Location:</strong> ${escapeHtml(p.location || '—')}<br><strong>Created:</strong> ${escapeHtml(p.createdAt || '—')}</p><strong>Systems in scope:</strong>${reportSystemMarkup(p)}${p.notes ? `<p>${escapeHtml(p.notes)}</p>` : ''}</section>
     <section><h3>Checklist (${done}/${p.tasks.length} complete)</h3>${reportRows(p.tasks, t => [`${t.done ? '✓' : '○'} ${escapeHtml(t.text)}`])}</section>
     <section><h3>Alarm records</h3>${reportRows(p.alarms, a => [`<strong>${escapeHtml(a.type)}</strong><br>${escapeHtml(a.location)}<br><small>${escapeHtml(a.serves || '')}</small>`, `<strong>${escapeHtml(a.status)}</strong>${a.notes ? `<br>${escapeHtml(a.notes)}` : ''}`])}</section>
     <section><h3>Outlet / terminal records</h3>${reportRows(p.outlets, o => [`<strong>${escapeHtml(o.gas)}</strong><br>${escapeHtml(o.location)}<br><small>${escapeHtml(o.identifier || '')}</small>`, `<strong>${escapeHtml(o.status)}</strong>${o.notes ? `<br>${escapeHtml(o.notes)}` : ''}`])}</section>
@@ -218,10 +310,13 @@ function renderReport() {
 }
 
 function render() {
-  renderProjects(); renderChecklist(); renderAlarms(); renderOutlets(); renderTests(); renderPhotos(); renderNotes(); renderStats(); renderReport();
+  renderProjects(); renderChecklist(); renderSystemScope(); renderAlarms(); renderOutlets(); renderTests(); renderPhotos(); renderNotes(); renderStats(); renderReport();
 }
 
-$('#newProjectBtn').onclick = () => projectDialog.showModal();
+$('#newProjectBtn').onclick = () => {
+  $('#newProjectSystemScope').innerHTML = systemOptionMarkup([], 'form');
+  projectDialog.showModal();
+};
 $('#addTaskBtn').onclick = () => selectedProject() ? taskDialog.showModal() : alert('Create or select a project first.');
 $('#addAlarmBtn').onclick = () => selectedProject() ? alarmDialog.showModal() : alert('Create or select a project first.');
 $('#addOutletBtn').onclick = () => selectedProject() ? outletDialog.showModal() : alert('Create or select a project first.');
@@ -240,13 +335,28 @@ document.querySelectorAll('.tab').forEach(tab => tab.onclick = () => {
 
 $('#projectForm').addEventListener('submit', e => {
   e.preventDefault(); const f = new FormData(e.currentTarget);
+  const selectedSystems = f.getAll('systems').map(String).filter(id => systemIds.has(id));
+  const otherSystem = String(f.get('systemScopeOther') || '').trim();
   const p = normalizeProject({
     id: crypto.randomUUID(), name: f.get('name').trim(), facility: f.get('facility').trim(),
-    location: f.get('location').trim(), notes: f.get('notes').trim(), createdAt: new Date().toLocaleDateString()
+    location: f.get('location').trim(), notes: f.get('notes').trim(), createdAt: new Date().toLocaleDateString(),
+    systemScope: selectedSystems, systemScopeOther: otherSystem,
+    systemScopeUpdatedAt: selectedSystems.length || otherSystem ? new Date().toISOString() : null
   });
   if (!p.name) return;
   state.projects.unshift(p); state.selectedProjectId = p.id;
   e.currentTarget.reset(); projectDialog.close(); save();
+});
+
+$('#saveSystemScopeBtn').addEventListener('click', () => {
+  const p = selectedProject();
+  if (!p || !systemScopeEditor) return;
+  p.systemScope = [...systemScopeEditor.querySelectorAll('[data-system-scope]:checked')]
+    .map(input => input.value)
+    .filter(id => systemIds.has(id));
+  p.systemScopeOther = String($('#systemScopeOtherEditor')?.value || '').trim();
+  p.systemScopeUpdatedAt = new Date().toISOString();
+  save();
 });
 
 $('#taskForm').addEventListener('submit', e => {
