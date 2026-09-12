@@ -109,13 +109,13 @@
 
   function testEvidence(project, context) {
     return (project?.tests || [])
-      .filter(record => textMatchesContext(record.system, context))
+      .filter(record => recordMatchesContext(record, record.system, context))
       .map(record => candidate('Test record', [record.type, record.system, record.location, record.date].filter(Boolean).join(' · ')));
   }
 
   function outletEvidence(project, context) {
     return (project?.outlets || [])
-      .filter(record => textMatchesContext(record.gas, context))
+      .filter(record => recordMatchesContext(record, record.gas, context))
       .map(record => candidate('Outlet / terminal record', [record.gas, record.location, record.identifier].filter(Boolean).join(' · ')));
   }
 
@@ -287,6 +287,12 @@
   if (!document.querySelector('script[src="structured-system-records.js"]')) {
     const script = document.createElement('script');
     script.src = 'structured-system-records.js';
+    script.async = false;
+    document.body.append(script);
+  }
+  if (!document.querySelector('script[src="canonical-system-records.js"]')) {
+    const script = document.createElement('script');
+    script.src = 'canonical-system-records.js';
     script.async = false;
     document.body.append(script);
   }
