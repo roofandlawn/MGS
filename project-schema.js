@@ -84,10 +84,11 @@
   function migrateProject(project, migratedAt) {
     const source = project && typeof project === 'object' ? project : {};
     const hadFormalSchema = Number(source.projectSchemaVersion) >= CURRENT_PROJECT_SCHEMA_VERSION;
+    const normalizedTasks = Array.isArray(source.tasks) ? source.tasks.map(normalizeTask) : null;
 
     return {
       ...source,
-      tasks: Array.isArray(source.tasks) ? source.tasks.map(normalizeTask) : [],
+      ...(normalizedTasks ? { tasks: normalizedTasks } : {}),
       alarms: (Array.isArray(source.alarms) ? source.alarms : []).map(record => normalizeRecord(record, 'alarm', migratedAt)),
       outlets: (Array.isArray(source.outlets) ? source.outlets : []).map(record => normalizeRecord(record, 'outlet', migratedAt)),
       tests: (Array.isArray(source.tests) ? source.tests : []).map(record => normalizeRecord(record, 'test', migratedAt)),
@@ -122,7 +123,7 @@
         ...project,
         tasks: Array.isArray(project?.tasks)
           ? project.tasks
-          : (sourceKey === 'mgs-prototype-v1' && index === 0 && Array.isArray(source.tasks) ? source.tasks : [])
+          : (sourceKey === 'mgs-prototype-v1' && index === 0 && Array.isArray(source.tasks) ? source.tasks : undefined)
       };
       return migrateProject(withLegacyTasks, migratedAt);
     });
