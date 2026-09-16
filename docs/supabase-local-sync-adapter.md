@@ -67,12 +67,28 @@ The current v1 round trip does the following in order:
 11. Save the rebuilt project back through the normal schema-aware local save path.
 12. Store the highest server `revision` seen as that user/device/project's acknowledged cursor.
 
-The adapter dispatches an `mgs:supabase-sync` browser event with `syncing`, `synced`, or `error` status so a later mobile UI can show cloud state without coupling the data layer to a particular visual design.
+The adapter dispatches an `mgs:supabase-sync` browser event with `syncing`, `synced`, or `error` status so the visual layer can report cloud state without coupling the data layer to a particular design.
+
+## Visible sync-state instrumentation
+
+The field workspace now loads `sync-status-ui.js` and `sync-status-ui.css` after the cloud adapter. The top bar shows the state that matters to a field user without exposing a Sync button before the two-browser validation gate is passed:
+
+- **Local save active** when cloud sync is disabled or unavailable.
+- **Offline · saved locally** when the browser loses connectivity.
+- **Cloud sign-in needed** when Supabase is configured but no authenticated session is present.
+- **Cloud ready** when the browser has an authenticated session.
+- **Syncing project** while the adapter is running a selected-project round trip.
+- **Cloud synced** after a successful sync, including the highest server revision seen.
+- **Synced · photos pending** when structured records synced but one or more current photo bytes are still local-only.
+- **Sync issue · saved locally** when cloud synchronization fails; the wording deliberately reinforces that the normal local save path remains intact.
+
+This is status instrumentation only. It does not add automatic sync or a field-facing Sync button and therefore does not bypass the validation gate below.
 
 ## What is intentionally not enabled yet
 
 - No automatic sync on every field save.
 - No background sync while the browser/app is closed.
+- No field-facing Sync button yet.
 - No Supabase Storage upload for photos yet.
 - No two-device merge guarantee yet. The schema's v1 conflict model is still whole-row last-write-wins by server receipt order.
 - No multi-user invitation UI yet, even though owner/editor/viewer membership is represented in the database.
@@ -80,4 +96,4 @@ The adapter dispatches an `mgs:supabase-sync` browser event with `syncing`, `syn
 
 ## Next validation gate
 
-Before exposing a Sync button in the field UI, apply the migration to a development Supabase project and run a two-browser test with one project containing at least two systems, one alarm, one outlet, one test, one valve/control record, one checklist completion, one N/A closeout field, and one local photo. Confirm that a push/pull round trip preserves every structured field, does not place photo bytes in Postgres, and produces a monotonic server revision cursor.
+Before exposing a Sync button in the field UI, apply the migration to a development Supabase project and run a two-browser test with one project containing at least two systems, one alarm, one outlet, one test, one valve/control record, one checklist completion, one N/A closeout field, and one local photo. Confirm that a push/pull round trip preserves every structured field, does not place photo bytes in Postgres, and produces a monotonic server revision cursor. The new top-bar status indicator should be used during this test to confirm the UI transitions through Cloud ready → Syncing project → Cloud synced (or Synced · photos pending) and that a forced network failure reports Sync issue · saved locally without affecting the local project record.
