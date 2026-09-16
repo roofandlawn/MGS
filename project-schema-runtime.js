@@ -22,7 +22,29 @@
     });
   }
 
-  loadLocalScript('supabase-sync-contract.js')
+  function loadLocalStylesheet(href) {
+    return new Promise((resolve, reject) => {
+      if (document.querySelector(`link[data-mgs-runtime-href="${href}"]`)) return resolve();
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = href;
+      link.dataset.mgsRuntimeHref = href;
+      link.onload = resolve;
+      link.onerror = () => reject(new Error(`Unable to load ${href}`));
+      document.head.appendChild(link);
+    });
+  }
+
+  const cloudAdapterReady = loadLocalScript('supabase-sync-contract.js')
     .then(() => loadLocalScript('supabase-local-sync.js'))
-    .catch(error => console.warn('MGS cloud-sync adapter was not loaded; local storage remains active.', error));
+    .catch(error => {
+      console.warn('MGS cloud-sync adapter was not loaded; local storage remains active.', error);
+    });
+
+  Promise.all([
+    cloudAdapterReady,
+    loadLocalStylesheet('sync-status-ui.css')
+  ])
+    .then(() => loadLocalScript('sync-status-ui.js'))
+    .catch(error => console.warn('MGS sync status UI was not loaded.', error));
 })();
