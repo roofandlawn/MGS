@@ -41,6 +41,10 @@
       console.warn('MGS cloud-sync adapter was not loaded; local storage remains active.', error);
     });
 
+  cloudAdapterReady
+    .then(() => loadLocalScript('supabase-sync-validation.js'))
+    .catch(error => console.warn('MGS cloud-sync validation harness was not loaded.', error));
+
   Promise.all([
     cloudAdapterReady,
     loadLocalStylesheet('sync-status-ui.css')
