@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0b2545" />
+  <title>MGS Reference Library</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="reference.css" />
+</head>
+<body>
+<header class="topbar">
+  <div><p class="eyebrow">MGS · NFPA 99-2024</p><h1>Field Reference</h1></div>
+  <div class="top-actions"><a class="secondary nav-button" href="system-path.html">System Path</a><a class="secondary nav-button" href="index.html">Projects</a></div>
+</header>
+
+<main class="shell reference-shell">
+  <section class="reference-hero">
+    <div>
+      <p class="eyebrow">Medical gas systems</p>
+      <h2>Find the component, understand where it fits, then jump to the code reference.</h2>
+      <p>This first reference module is written for people new to medical gas and qualified installers who already know the plumbing trade. It focuses on system relationships, not basic pipe preparation or brazing instruction.</p>
+    </div>
+    <div class="edition-card"><span>Master edition</span><strong id="editionLabel">NFPA 99-2024</strong><small>Project adoption and AHJ requirements still control.</small></div>
+  </section>
+
+  <section class="reference-controls panel" aria-label="Reference search and filters">
+    <label class="search-label">Search components, systems, or terms
+      <input id="referenceSearch" type="search" placeholder="Try: zone valve, area alarm, medical air..." autocomplete="off" />
+    </label>
+    <div id="groupFilters" class="filter-row" aria-label="Component groups"></div>
+  </section>
+
+  <section class="reference-grid">
+    <aside class="panel reference-list-panel">
+      <div class="panel-head"><div><p class="eyebrow">Library</p><h3 id="resultCount">Components</h3></div></div>
+      <div id="referenceList" class="reference-list"></div>
+    </aside>
+
+    <article class="panel reference-detail-panel" id="referenceDetail">
+      <div class="detail-empty">Select a component to open its field-reference page.</div>
+    </article>
+  </section>
+
+  <section class="source-note panel">
+    <p class="eyebrow">Reference policy</p>
+    <h3>Code reference and field explanation stay separate.</h3>
+    <p id="sourceNote"></p>
+  </section>
+</main>
+
+<footer><p>MGS is a field organization and learning tool. It does not replace the adopted code, manufacturer instructions, licensing requirements, inspections, certification, verification, AHJ requirements, or qualified professional judgment.</p></footer>
+
+<script src="reference-data.js"></script>
+<script src="reference.js"></script>
+</body>
+</html>

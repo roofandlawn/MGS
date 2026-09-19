@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0b2545" />
+  <title>MGS Oxygen Cylinder Manifold</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="reference.css" />
+  <link rel="stylesheet" href="oxygen-manifold.css" />
+</head>
+<body>
+<header class="topbar">
+  <div><p class="eyebrow">MGS · NFPA 99-2024</p><h1>Oxygen Cylinder Manifold</h1></div>
+  <div class="top-actions">
+    <a class="secondary nav-button" href="system-path.html">System Path</a>
+    <a class="secondary nav-button" href="reference.html">Reference</a>
+  </div>
+</header>
+
+<main class="shell oxygen-shell">
+  <section class="reference-hero">
+    <div>
+      <p class="eyebrow">Category 1 source overview</p>
+      <h2>Understand the source architecture without turning the app into a cylinder-handling or regulator-service manual.</h2>
+      <p>This view is for people new to medical gas and ASSE 6010 installers. It focuses on primary/secondary headers, changeover, pressure control, relief, status signaling, and the source-valve relationship.</p>
+    </div>
+    <div class="edition-card"><span>Primary map</span><strong>NFPA 99-2024 §5.1.3.5.10</strong><small>Reference summaries only. Confirm the adopted licensed edition, project documents, manufacturer instructions, and AHJ requirements before field work.</small></div>
+  </section>
+
+  <section class="source-options panel">
+    <div class="panel-head">
+      <div><p class="eyebrow">What this source is doing</p><h3>Two headers, one continuous supply path</h3></div>
+      <span class="path-note">Tap a concept</span>
+    </div>
+    <div id="sourceOptions" class="option-grid" aria-live="polite"></div>
+  </section>
+
+  <section class="oxygen-layout">
+    <article class="panel oxygen-panel">
+      <div class="panel-head">
+        <div><p class="eyebrow">Conceptual source relationship</p><h3>Cylinder banks → manifold controls → facility pipeline</h3></div>
+        <span class="path-note">Tap a component</span>
+      </div>
+      <div id="oxygenDiagram" class="oxygen-diagram" aria-live="polite"></div>
+      <div class="distinction-card">
+        <p class="eyebrow">What to notice</p>
+        <strong>The source is more than two banks of cylinders.</strong>
+        <p>The important field relationship is header components, automatic changeover, pressure control, relief protection, source-status signaling, and isolation before the distribution system begins.</p>
+      </div>
+      <p class="diagram-disclaimer">Conceptual learning diagram only. Actual manifold arrangements vary by manufacturer and project. This view does not replace listed equipment instructions, the adopted code, project documents, or qualified source-equipment service.</p>
+    </article>
+
+    <aside class="panel oxygen-detail" id="oxygenDetail">
+      <div class="detail-empty">Tap a concept or component to see its purpose, field focus, and mapped NFPA 99-2024 section.</div>
+    </aside>
+  </section>
+</main>
+
+<footer><p>MGS is a field organization and learning tool. It does not replace the adopted code, manufacturer instructions, licensing requirements, inspections, certification, verification, AHJ requirements, or qualified professional judgment.</p></footer>
+
+<script src="oxygen-manifold.js"></script>
+</body>
+</html>
