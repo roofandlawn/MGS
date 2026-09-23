@@ -28,6 +28,10 @@
     return window.MGSSyncValidation || null;
   }
 
+  function photoHarness() {
+    return window.MGSPhotoStorageValidation || null;
+  }
+
   function lifecycleHarness() {
     return window.MGSLifecycleValidation || null;
   }
@@ -83,6 +87,17 @@
       : JSON.stringify(value, null, 2);
   }
 
+  function renderStatusRows(rows) {
+    ui.status.replaceChildren();
+    rows.forEach(([labelText, valueText]) => {
+      const dt = document.createElement('dt');
+      const dd = document.createElement('dd');
+      dt.textContent = text(labelText);
+      dd.textContent = text(valueText);
+      ui.status.append(dt, dd);
+    });
+  }
+
   async function refreshStatus() {
     const sync = syncAdapter();
     const lifecycle = lifecycleHarness();
@@ -101,17 +116,13 @@
       }
     }
 
-    const rows = [
+    renderStatusRows([
       ['Validation mode', 'Enabled'],
       ['Cloud feature flag', enabled ? 'Enabled' : 'Disabled'],
       ['Supabase session', sessionLabel],
       ['Lifecycle harness', lifecycle ? 'Loaded' : 'Missing'],
       ['Fixture project', base?.fixtureProjectId || 'Harness missing']
-    ];
-
-    ui.status.innerHTML = rows.map(([label, value]) => (
-      `<dt>${label}</dt><dd>${text(value)}</dd>`
-    )).join('');
+    ]);
 
     return { enabled, signedIn, lifecycleLoaded: Boolean(lifecycle), baseLoaded: Boolean(base) };
   }
@@ -140,11 +151,27 @@
 
   function runLocalPreflight() {
     const harness = baseHarness();
+    const photos = photoHarness();
     if (!harness?.installFixture || !harness?.runContractPreflight) {
       throw new Error('Base sync validation harness is not loaded.');
     }
+    if (!photos?.runStoragePreflight) {
+      throw new Error('Photo-storage validation harness is not loaded.');
+    }
+
     const fixture = harness.installFixture();
-    return harness.runContractPreflight(fixture);
+    const contract = harness.runContractPreflight(fixture);
+    const storage = photos.runStoragePreflight();
+    return {
+      phase: 'local-preflight',
+      passed: Boolean(contract?.passed && storage?.passed),
+      failed: [
+        ...(contract?.failed || []).map(item => `contract: ${item}`),
+        ...(storage?.failed || []).map(item => `storage: ${item}`)
+      ],
+      contract,
+      storage
+    };
   }
 
   async function sendMagicLink() {
