@@ -95,5 +95,32 @@
     }
   });
 
+  function loadValidationUi() {
+    let enabled = false;
+    try {
+      enabled = new URLSearchParams(location.search).get('mgsValidation') === '1';
+    } catch {
+      enabled = false;
+    }
+    if (!enabled) return;
+
+    if (!document.querySelector('link[data-mgs-validation-ui]')) {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = 'sync-validation-ui.css';
+      link.dataset.mgsValidationUi = 'true';
+      document.head.appendChild(link);
+    }
+
+    if (!document.querySelector('script[data-mgs-validation-ui]')) {
+      const script = document.createElement('script');
+      script.src = 'sync-validation-ui.js';
+      script.async = true;
+      script.dataset.mgsValidationUi = 'true';
+      document.body.appendChild(script);
+    }
+  }
+
+  loadValidationUi();
   refreshBaseState();
 })();
