@@ -12,6 +12,13 @@ const systems = {
     terminal: 'station-outlet',
     terminalCaption: 'Oxygen outlet'
   },
+  'nitrous-oxide': {
+    label: 'Nitrous Oxide',
+    source: 'cylinder-manifold',
+    sourceCaption: 'Cylinder manifold source',
+    terminal: 'station-outlet',
+    terminalCaption: 'Nitrous oxide outlet'
+  },
   'medical-air': {
     label: 'Medical Air',
     source: 'medical-air-source',
@@ -115,6 +122,9 @@ function renderDiagram() {
 
 function getSourceDeepLink(componentId) {
   if (componentId === 'cylinder-manifold') {
+    if (activeSystem === 'nitrous-oxide') {
+      return '<p><a class="primary nav-button" href="nitrous-manifold.html">Open interactive nitrous oxide cylinder manifold →</a></p>';
+    }
     return '<p><a class="primary nav-button" href="oxygen-manifold.html">Open interactive oxygen cylinder manifold →</a></p>';
   }
   if (componentId === 'medical-air-source') {
