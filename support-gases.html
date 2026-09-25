@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0b2545" />
+  <title>MGS Medical Support Gases</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="reference.css" />
+  <link rel="stylesheet" href="oxygen-manifold.css" />
+</head>
+<body>
+<header class="topbar">
+  <div><p class="eyebrow">MGS · NFPA 99-2024</p><h1>Medical Support Gases</h1></div>
+  <div class="top-actions">
+    <a class="secondary nav-button" href="system-path.html">System Path</a>
+    <a class="secondary nav-button" href="testing.html">Testing</a>
+    <a class="secondary nav-button" href="reference.html">Reference</a>
+  </div>
+</header>
+<main class="shell oxygen-shell">
+  <section class="reference-hero">
+    <div>
+      <p class="eyebrow">Nitrogen NF + Instrument Air</p>
+      <h2>Keep support gases separate from patient-breathing medical gases.</h2>
+      <p>This view teaches the field relationship from source to equipment outlet for nitrogen NF and instrument air. The emphasis is source recognition, higher-pressure hazards, pressure control, warning-system relationships, distribution, identification, and verification — not compressor repair or cylinder-handling technique.</p>
+    </div>
+    <div class="edition-card">
+      <span>Primary map</span>
+      <strong>NFPA 99-2024 §5.1.13</strong>
+      <small>Reference summaries only. Confirm the adopted licensed edition, project documents, manufacturer instructions, verifier requirements, and AHJ requirements before field work.</small>
+    </div>
+  </section>
+  <section class="source-options panel">
+    <div class="panel-head">
+      <div><p class="eyebrow">Choose the support service</p><h3>Nitrogen NF and instrument air share a support-gas chapter but have different source architectures.</h3></div>
+      <span class="path-note">Tap a service</span>
+    </div>
+    <div id="supportGasButtons" class="option-grid" aria-live="polite"></div>
+  </section>
+  <section class="oxygen-layout">
+    <article class="panel oxygen-panel">
+      <div class="panel-head">
+        <div><p class="eyebrow" id="supportEyebrow">Support gas path</p><h3 id="supportTitle">Source → pressure control → distribution → equipment outlet</h3></div>
+        <span class="path-note">Tap a component</span>
+      </div>
+      <div id="supportDiagram" class="oxygen-diagram" aria-live="polite"></div>
+      <div class="distinction-card">
+        <p class="eyebrow">Field distinction</p>
+        <strong id="supportDistinctionTitle">Medical support gas is not a breathing-gas service.</strong>
+        <p id="supportDistinctionText">NFPA 99 treats nitrogen NF and instrument air as medical support gases used primarily to power equipment used in patient-care procedures. Confirm the designed service pressure and equipment requirements instead of assuming the 50–55 psig range used by many patient gases.</p>
+      </div>
+      <p class="diagram-disclaimer">Conceptual learning diagram only. Actual sources and piping arrangements vary by project and manufacturer. This view does not replace the adopted code, design documents, manufacturer instructions, verifier procedures, or qualified source-equipment service.</p>
+    </article>
+    <aside class="panel oxygen-detail" id="supportDetail">
+      <div class="detail-empty">Tap a support-gas service or component to see its purpose, field focus, and mapped NFPA 99-2024 section.</div>
+    </aside>
+  </section>
+</main>
+<footer><p>MGS is a field organization and learning tool. It does not replace the adopted code, manufacturer instructions, licensing requirements, inspections, certification, verification, AHJ requirements, or qualified professional judgment.</p></footer>
+<script src="support-gases.js"></script>
+</body>
+</html>
