@@ -5,9 +5,9 @@ const SYSTEM_CATALOG = [
   { id: 'medicalAir', label: 'Medical Air', note: 'Pressure gas', module: 'medical-air.html' },
   { id: 'medicalVacuum', label: 'Medical-Surgical Vacuum', note: 'Vacuum system', module: 'vacuum-source.html' },
   { id: 'wagd', label: 'WAGD', note: 'Waste anesthetic gas disposal', module: 'wagd-source.html' },
-  { id: 'nitrousOxide', label: 'Nitrous Oxide', note: 'Pressure gas' },
-  { id: 'nitrogen', label: 'Nitrogen', note: 'Pressure / support gas' },
-  { id: 'instrumentAir', label: 'Instrument Air', note: 'Support gas' },
+  { id: 'nitrousOxide', label: 'Nitrous Oxide', note: 'Pressure gas', module: 'nitrous-manifold.html' },
+  { id: 'nitrogen', label: 'Nitrogen NF', note: 'Medical support gas', module: 'support-gases.html#nitrogen' },
+  { id: 'instrumentAir', label: 'Instrument Air', note: 'Medical support gas', module: 'support-gases.html#instrument-air' },
   { id: 'carbonDioxide', label: 'Carbon Dioxide', note: 'Pressure gas' }
 ];
 
