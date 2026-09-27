@@ -42,6 +42,11 @@ const systems = {
   }
 };
 
+const supportSystemLinks = [
+  { id: 'nitrogen', label: 'Nitrogen NF', href: 'support-gases.html#nitrogen' },
+  { id: 'instrument-air', label: 'Instrument Air', href: 'support-gases.html#instrument-air' }
+];
+
 const commonPath = [
   { id: 'source-valve', caption: 'Source isolation' },
   { id: 'main-line-valve', caption: 'Main distribution' },
@@ -80,15 +85,25 @@ function getPath() {
 }
 
 function renderSystemButtons() {
-  buttonsEl.innerHTML = Object.entries(systems).map(([id, system]) => `
+  const pathButtons = Object.entries(systems).map(([id, system]) => `
     <button type="button" class="filter-chip ${id === activeSystem ? 'active' : ''}" data-system="${id}">${escapeHtml(system.label)}</button>
   `).join('');
+  const supportButtons = supportSystemLinks.map(system => `
+    <button type="button" class="filter-chip" data-support-system="${escapeHtml(system.href)}">${escapeHtml(system.label)}</button>
+  `).join('');
+  buttonsEl.innerHTML = pathButtons + supportButtons;
 
   buttonsEl.querySelectorAll('[data-system]').forEach(button => {
     button.addEventListener('click', () => {
       activeSystem = button.dataset.system;
       selectedId = systems[activeSystem].source;
       render();
+    });
+  });
+
+  buttonsEl.querySelectorAll('[data-support-system]').forEach(button => {
+    button.addEventListener('click', () => {
+      window.location.href = button.dataset.supportSystem;
     });
   });
 }
