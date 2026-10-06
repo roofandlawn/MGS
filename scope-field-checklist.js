@@ -175,6 +175,72 @@ const wagdFieldPrompts = [
   }
 ];
 
+const instrumentAirFieldPrompts = [
+  {
+    suffix: 'source',
+    title: 'Instrument air source and redundancy reviewed',
+    detail: 'Confirm whether the project affects the compressor source, standby arrangement, source room, controls, or only downstream distribution.',
+    actionTab: 'systems',
+    nfpaFamily: '§5.1.13.3.7 — Instrument Air Supply Systems',
+    evidenceType: 'Drawing',
+    evidenceDetail: 'Cite the current drawing or equipment schedule showing the instrument-air source arrangement, redundancy or standby provision, and project interface.'
+  },
+  {
+    suffix: 'treatment',
+    title: 'Drying and filtration train recorded',
+    detail: 'Trace the treatment path through separators, dryers, filters, drains, and final filtration; record flow direction, isolation, and status indications.',
+    actionTab: 'notes',
+    nfpaFamily: '§5.1.13.3.7 — Instrument Air quality, treatment, and source components',
+    evidenceType: 'Field record',
+    evidenceDetail: 'Record treatment components in flow order and note filter/dryer status indications, drains, isolation points, and any project deficiency. Use the adopted code and manufacturer instructions for acceptance criteria.'
+  },
+  {
+    suffix: 'pressure',
+    title: 'Pressure-control path and equipment ratings reviewed',
+    detail: 'Confirm the project design pressure, pressure-control arrangement, relief/overpressure protection, and connected equipment ratings.',
+    actionTab: 'notes',
+    nfpaFamily: '§5.1.13.3.7.3 — Instrument Air source pressure characteristics',
+    evidenceType: 'Field record',
+    evidenceDetail: 'Record design/observed pressure information and the project document or equipment data used. Do not infer an acceptable setpoint from the app.'
+  },
+  {
+    suffix: 'alarms',
+    title: 'Instrument air source and warning signals reviewed',
+    detail: 'Identify the applicable local/source and remote warning signals and trace the project interfaces to the alarm records.',
+    actionTab: 'alarms',
+    nfpaFamily: '§5.1.13.3.7 and §5.1.13.9 — Instrument Air monitoring / warning systems',
+    evidenceType: 'Field record',
+    evidenceDetail: 'Create alarm records for the applicable source and warning conditions with location, interface, and field status; functional evidence belongs in Tests.'
+  },
+  {
+    suffix: 'terminals',
+    title: 'Instrument air equipment outlets recorded',
+    detail: 'Capture outlet locations, identifiers or quantities, designed pressure, and intended equipment use. Keep this service distinct from Medical Air.',
+    actionTab: 'outlets',
+    nfpaFamily: '§5.1.13.5 — Support-Gas Station Outlets',
+    evidenceType: 'Field record',
+    evidenceDetail: 'Create instrument-air outlet records with location, identifier or quantity, intended equipment use, and field status.'
+  },
+  {
+    suffix: 'identification',
+    title: 'Instrument air identification and Medical Air separation reviewed',
+    detail: 'Confirm the project documentation clearly maintains Instrument Air identity through piping, valves, alarm references, and outlets without treating it as Medical Air.',
+    actionTab: 'photos',
+    nfpaFamily: '§5.1.13.10–§5.1.13.11 — Distribution and Identification',
+    evidenceType: 'Photo',
+    evidenceDetail: 'Capture representative photos showing instrument-air piping/component identification and any location where service identity could be confused with Medical Air.'
+  },
+  {
+    suffix: 'testing',
+    title: 'Instrument air installer records and verifier handoff planned',
+    detail: 'Identify installer inspection/test records and the separate verifier or AHJ documentation required for project closeout. Checklist completion does not mean the system is verified.',
+    actionTab: 'tests',
+    nfpaFamily: '§5.1.13 — Medical Support Gases; confirm adopted testing / verification requirements',
+    evidenceType: 'Test record',
+    evidenceDetail: 'Create installer test/inspection records with date, person/company, result, readings or report reference, and notes. Record external verifier outcomes separately when available.'
+  }
+];
+
 const specialtyFieldPrompts = [
   {
     suffix: 'arrangement',
@@ -226,6 +292,7 @@ const specialtyFieldPrompts = [
 function fieldPromptSet(systemId) {
   if (systemId === 'medicalVacuum') return vacuumFieldPrompts;
   if (systemId === 'wagd') return wagdFieldPrompts;
+  if (systemId === 'instrumentAir') return instrumentAirFieldPrompts;
   return pressureFieldPrompts;
 }
 
