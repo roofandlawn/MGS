@@ -175,6 +175,99 @@ const wagdFieldPrompts = [
   }
 ];
 
+const medicalAirFieldPrompts = [
+  {
+    "suffix": "source",
+    "title": "Medical Air source type and project limits identified",
+    "detail": "Record whether the supply is a medical-air compressor system or an approved proportioning system; identify existing-versus-new source equipment and the downstream work boundary.",
+    "actionTab": "systems",
+    "nfpaFamily": "§5.1.3.6 — Medical Air; §5.1.3.6.3.14 — Proportioning Sources",
+    "evidenceType": "Drawing",
+    "evidenceDetail": "Reference source schematic, equipment schedule, and approved design. Mark compressor-only prompts N/A when a different approved source technology is used."
+  },
+  {
+    "suffix": "intake",
+    "title": "Compressor intake location and protection reviewed",
+    "detail": "For compressor sources, document the outdoor or permitted alternate-air intake, nearby exhaust/vent/vehicle risks, intake routing, screening, and service label.",
+    "actionTab": "photos",
+    "nfpaFamily": "§5.1.3.6.3.11 — Compressor Intake",
+    "evidenceType": "Photo",
+    "evidenceDetail": "Record intake location and annotated nearby openings, exhaust discharges and potential contamination sources; cite plans and adopted clearance criteria. N/A if no compressor intake."
+  },
+  {
+    "suffix": "compressors",
+    "title": "Compressor redundancy, controls and power interface recorded",
+    "detail": "For compressor sources, identify duty/standby units, isolation/check-valve path, lead/lag controls, motor power and emergency electrical interfaces. Do not operate equipment from this checklist.",
+    "actionTab": "notes",
+    "nfpaFamily": "§5.1.3.6.3.4 and §5.1.3.6.3.10 — Compressors / Controls",
+    "evidenceType": "Field record",
+    "evidenceDetail": "Record equipment tags, standby arrangements, control interfaces and source-room readiness; cite approved sequence and manufacturer commissioning procedures."
+  },
+  {
+    "suffix": "receiver",
+    "title": "Receiver, drains and maintenance-bypass path reviewed",
+    "detail": "For compressor sources, identify receiver connections, water/condensate removal, isolation, and the means to maintain service during receiver maintenance.",
+    "actionTab": "notes",
+    "nfpaFamily": "§5.1.3.6.3.9 — Medical Air Source Arrangement",
+    "evidenceType": "Field record",
+    "evidenceDetail": "Record receiver tag, drain type/routing, maintenance bypass and isolation points with a drawing or field photograph."
+  },
+  {
+    "suffix": "treatment",
+    "title": "Dryer, filtration and aftercooler train documented",
+    "detail": "For compressor sources, trace the flow through applicable aftercoolers, dryers, filters, sample points and redundant treatment branches. Identify how an off-line branch can be serviced or returned to service.",
+    "actionTab": "photos",
+    "nfpaFamily": "§5.1.3.6.3.7–§5.1.3.6.3.9 — Dryers, Filters and Arrangement",
+    "evidenceType": "Photo",
+    "evidenceDetail": "Label flow direction, equipment tags, branch selection, sample ports, drains and maintenance isolation; cite OEM requirements for any operating procedure."
+  },
+  {
+    "suffix": "regulators",
+    "title": "Final regulation and source valve path reviewed",
+    "detail": "Record the line regulators, relief protection, source shutoff valve and downstream sampling/monitoring location, using the approved pressure criteria rather than app defaults.",
+    "actionTab": "notes",
+    "nfpaFamily": "§5.1.3.6.3 — Medical Air Supply Components / Arrangement",
+    "evidenceType": "Field record",
+    "evidenceDetail": "Identify regulator branches, pressure-reference documents, relief devices and the source boundary; record observed readings only under authorized commissioning procedures."
+  },
+  {
+    "suffix": "quality",
+    "title": "Dew-point and CO monitoring interfaces mapped",
+    "detail": "For compressor sources, locate dew-point and carbon-monoxide monitoring, sample points, monitor power and alarm contacts. For proportioning sources, document the applicable oxygen-analysis and failover scheme instead.",
+    "actionTab": "alarms",
+    "nfpaFamily": "§5.1.3.6.3.13–§5.1.3.6.3.14 — Quality Monitoring / Proportioning",
+    "evidenceType": "Field record",
+    "evidenceDetail": "Record monitor make/model, sensor location, display, signal path, project alarm matrix and calibration/inspection record reference. Never label air quality accepted based on a checkbox."
+  },
+  {
+    "suffix": "alarms",
+    "title": "Source status and local/master warning interfaces recorded",
+    "detail": "Trace compressor fault, reserve capacity, high dew point, CO and other applicable signals from source devices through local and required master alarm panels. Use the approved alarm matrix.",
+    "actionTab": "alarms",
+    "nfpaFamily": "§5.1.3.6.3.12 and §5.1.9 — Medical Air Warning Signals",
+    "evidenceType": "Field record",
+    "evidenceDetail": "Enter each applicable alarm point, label, point of connection and panel location. Put witnessed function-test results in Tests, not the checklist status."
+  },
+  {
+    "suffix": "outlets",
+    "title": "Medical Air outlets, zone valves and service identity recorded",
+    "detail": "Document impacted clinical outlets and isolation valves and confirm the service remains clearly identified as Medical Air, distinct from Instrument Air.",
+    "actionTab": "outlets",
+    "nfpaFamily": "§5.1.4, §5.1.5 and §5.1.11 — Valves, Outlets and Identification",
+    "evidenceType": "Field record",
+    "evidenceDetail": "Record affected room/outlet IDs, valve boxes, service labels and representative photos; include project drawing references."
+  },
+  {
+    "suffix": "testing",
+    "title": "Installer records and independent verifier handoff planned",
+    "detail": "Identify the installer inspections and testing evidence, source manufacturer startup reports and separate independent verifier/AHJ documentation required by the adopted code and project. Checklist completion never certifies the system.",
+    "actionTab": "tests",
+    "nfpaFamily": "§5.1.12 — Performance Criteria and Testing",
+    "evidenceType": "Test record",
+    "evidenceDetail": "Reference installer test IDs, personnel, dates, measurements, OEM startup record and separate verifier report. Keep deficiencies and subsequent re-test evidence in project history."
+  }
+];
+
 const instrumentAirFieldPrompts = [
   {
     suffix: 'source',
@@ -292,6 +385,7 @@ const specialtyFieldPrompts = [
 function fieldPromptSet(systemId) {
   if (systemId === 'medicalVacuum') return vacuumFieldPrompts;
   if (systemId === 'wagd') return wagdFieldPrompts;
+  if (systemId === 'medicalAir') return medicalAirFieldPrompts;
   if (systemId === 'instrumentAir') return instrumentAirFieldPrompts;
   return pressureFieldPrompts;
 }
