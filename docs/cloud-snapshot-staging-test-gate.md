@@ -27,7 +27,7 @@ MGS_STAGING_READ_ONLY_TEST=YES,
 MGS_STAGING_SUPABASE_URL, MGS_STAGING_ANON_KEY, MGS_STAGING_PROJECT_ID,
 and MGS_{OWNER,EDITOR,VIEWER,OUTSIDER}_{EMAIL,PASSWORD}.
 Run: node scripts/verify-snapshot-staging.mjs (from the handoff package).
-It logs no tokens or passwords and does not write any database rows.
+It logs no tokens or passwords and does not change MGS project data. Signing in may update ordinary Supabase Auth session or audit metadata.
 It tests the first five access/envelope checks but does NOT prove revision increments or concurrency.
 
 ## Release gate
