@@ -1,0 +1,24 @@
+const B=document.querySelector('#supportGasButtons'),D=document.querySelector('#supportDiagram'),X=document.querySelector('#supportDetail');
+const T=document.querySelector('#supportTitle'),E=document.querySelector('#supportEyebrow'),DT=document.querySelector('#supportDistinctionTitle'),DX=document.querySelector('#supportDistinctionText');
+const S={
+ nitrogen:{label:'Nitrogen NF',note:'Support gas for equipment, not a breathing-gas service.',dist:'Confirm project pressure, outlet identity, connected equipment rating, and verifier requirements.',path:[
+ ['n2src','Source','Nitrogen NF Source',['5.1.13.3.6'],'Recognize the approved nitrogen central-supply arrangement and keep service identity continuous.'],
+ ['n2press','Pressure control','Line Pressure Control',['5.1.13.3.6.4'],'Confirm project operating pressure, downstream ratings, relief arrangement, and outlet labeling.'],
+ ['valves','Isolation','Support-Gas Valves',['5.1.13.4'],'Trace what each valve isolates before shutdown work.'],
+ ['alarms','Monitoring','Warning Systems',['5.1.13.9'],'Record the alarm identity and the condition it monitors.'],
+ ['dist','Distribution','Piping + Identification',['5.1.13.10','5.1.13.11'],'Keep nitrogen identity continuous through piping, valves, panels, and outlets.'],
+ ['outlet','Use point','Equipment Outlet',['5.1.13.5'],'Verify service, location, connection, designed pressure, and equipment intent.']]},
+ 'instrument-air':{label:'Instrument Air',note:'Dedicated equipment-support air, separate from medical air.',dist:'Keep source, pressure, filtration, alarms, identification, and outlets tied to instrument air.',path:[
+ ['iasrc','Source','Instrument Air Source',['5.1.13.3.7'],'Keep instrument air separate from medical air and trace source redundancy or standby provisions.'],
+ ['iatreat','Treatment','Drying + Filtration',['5.1.13.3.7.8','5.1.13.3.7.9'],'Identify treatment components, flow direction, status indication, and isolation.'],
+ ['iapress','Pressure control','Line Pressure Control',['5.1.13.8'],'Confirm design pressure, redundancy, overpressure protection, and equipment ratings.'],
+ ['iaalarms','Monitoring','Source + Warning Alarms',['5.1.13.3.7.11','5.1.13.9'],'Trace initiating conditions to local and master indication.'],
+ ['dist','Distribution','Piping + Identification',['5.1.13.10','5.1.13.11'],'Keep instrument-air identity continuous through piping, valves, panels, and outlets.'],
+ ['outlet','Use point','Equipment Outlet',['5.1.13.5'],'Verify service, location, connection, designed pressure, and equipment intent.']]}};
+let A=location.hash==='#instrument-air'?'instrument-air':'nitrogen',Q=S[A].path[0][0];
+function c(t,v,k){const e=document.createElement(t);e.textContent=v;if(k)e.className=k;return e}
+function z(e){while(e.firstChild)e.removeChild(e.firstChild)}
+function rb(){z(B);Object.entries(S).forEach(([id,s])=>{const b=c('button','', 'source-option'+(id===A?' active':''));b.type='button';b.append(c('small','Medical support gas'),c('strong',s.label),c('span',s.note));b.onclick=()=>{A=id;Q=s.path[0][0];history.replaceState(null,'',id==='instrument-air'?'#instrument-air':'#nitrogen');r()};B.append(b)})}
+function rd(){const s=S[A];z(D);E.textContent=s.label+' path';T.textContent=A==='instrument-air'?'Dedicated source → treatment → pressure control → monitoring → distribution → equipment outlet':'Approved source → pressure control → isolation/monitoring → distribution → equipment outlet';DT.textContent=A==='instrument-air'?'Instrument air and medical air are different services.':'Nitrogen NF is a support gas, not a breathing gas.';DX.textContent=s.dist;s.path.forEach((p,i)=>{const w=c('div','', 'oxygen-step'),b=c('button','', 'oxygen-node'+(Q===p[0]?' active':''));b.type='button';b.append(c('small',p[1]),c('strong',p[2]),c('span',p[3].map(x=>'NFPA 99 §'+x).join(' · ')));b.onclick=()=>{Q=p[0];rd();rx()};w.append(b);if(i<s.path.length-1)w.append(c('span','→','oxygen-arrow'));D.append(w)})}
+function rx(){z(X);const p=S[A].path.find(x=>x[0]===Q)||S[A].path[0],h=c('div','', 'reference-detail-head'),d=document.createElement('div');d.append(c('p',p[1],'eyebrow'),c('h2',p[2]));h.append(d,c('span','2024 map','verified-badge'));X.append(h);const f=c('section','', 'reference-section field-focus');f.append(c('h3','Field focus'),c('p',p[4]));X.append(f);const m=c('section','', 'reference-section');m.append(c('h3','NFPA 99-2024 map'));const links=c('div','', 'code-links');p[3].forEach(sec=>{const row=document.createElement('div');row.append(c('strong','§ '+sec),c('span','Reference location only — open the adopted licensed code for the full requirement.'));links.append(row)});m.append(links);X.append(m)}
+function r(){rb();rd();rx()}r();
