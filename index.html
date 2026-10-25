@@ -115,6 +115,21 @@
   <label>Facility<input name="facility" placeholder="Hospital or facility" /></label>
   <label>Location<input name="location" placeholder="City / building / floor" /></label>
   <fieldset class="scope-fieldset">
+    <legend>Project code basis (confirm with AHJ)</legend>
+    <label>NFPA 99 edition
+      <select name="codeEdition">
+        <option value="unconfirmed" selected>Not confirmed</option>
+        <option value="2018">2018 edition</option>
+        <option value="2024">2024 edition</option>
+        <option value="other">Other edition (record in notes)</option>
+      </select>
+    </label>
+    <label>Jurisdiction<input name="codeJurisdiction" maxlength="160" placeholder="State / locality / facility" /></label>
+    <label>Authority having jurisdiction<input name="codeAhj" maxlength="160" placeholder="Agency or official, if known" /></label>
+    <label>Code basis notes<textarea name="codeNotes" rows="2" maxlength="400" placeholder="Amendments, plan review, other edition..."></textarea></label>
+    <small class="helper">Do not assume the newest NFPA edition is adopted. Confirm governing requirements and local amendments.</small>
+  </fieldset>
+  <fieldset class="scope-fieldset">
     <legend>Systems on this project</legend>
     <small class="helper">Select the known scope now. You can change it later from the Systems tab.</small>
     <div id="newProjectSystemScope" class="scope-grid"></div>
