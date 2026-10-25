@@ -2,7 +2,7 @@
   const APP_STORAGE_KEY = 'mgs-prototype-v3';
   const LEGACY_STORAGE_KEYS = [APP_STORAGE_KEY, 'mgs-prototype-v2', 'mgs-prototype-v1'];
   const CURRENT_STATE_SCHEMA_VERSION = 1;
-  const CURRENT_PROJECT_SCHEMA_VERSION = 1;
+  const CURRENT_PROJECT_SCHEMA_VERSION = 2;
   const CURRENT_RECORD_SCHEMA_VERSION = 1;
 
   const CANONICAL_SYSTEM_IDS = new Set([
@@ -15,6 +15,18 @@
     'instrumentAir',
     'carbonDioxide'
   ]);
+
+  const ALLOWED_CODE_EDITIONS = new Set(['unconfirmed', '2018', '2024', 'other']);
+  function normalizeCodeBasis(raw) {
+    const basis = raw && typeof raw === 'object' ? raw : {};
+    return {
+      edition: ALLOWED_CODE_EDITIONS.has(basis.edition) ? basis.edition : 'unconfirmed',
+      jurisdiction: String(basis.jurisdiction || '').trim().slice(0, 160),
+      ahj: String(basis.ahj || '').trim().slice(0, 160),
+      notes: String(basis.notes || '').trim().slice(0, 400),
+      updatedAt: basis.updatedAt || null
+    };
+  }
 
   const SYSTEM_ALIASES = [
     { id: 'oxygen', patterns: [/\boxygen\b/i, /\bo2\b/i] },
@@ -98,6 +110,7 @@
       systemScope: cleanSystemIds(source.systemScope),
       systemScopeOther: String(source.systemScopeOther || '').trim(),
       systemScopeUpdatedAt: source.systemScopeUpdatedAt || null,
+      codeBasis: normalizeCodeBasis(source.codeBasis),
       projectSchemaVersion: CURRENT_PROJECT_SCHEMA_VERSION,
       projectSchemaMigratedAt: source.projectSchemaMigratedAt || (hadFormalSchema ? null : migratedAt),
       dataModel: 'mgs-project-record-v1'
