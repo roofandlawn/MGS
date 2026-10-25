@@ -13,6 +13,36 @@ const SYSTEM_CATALOG = [
 
 const systemIds = new Set(SYSTEM_CATALOG.map(system => system.id));
 
+const CODE_EDITION_CHOICES = [
+  { value: 'unconfirmed', label: 'Not confirmed' },
+  { value: '2018', label: '2018 edition' },
+  { value: '2024', label: '2024 edition' },
+  { value: 'other', label: 'Other edition (record in notes)' }
+];
+
+function normalizeCodeBasis(raw) {
+  const basis = raw && typeof raw === 'object' ? raw : {};
+  const edition = CODE_EDITION_CHOICES.some(choice => choice.value === basis.edition)
+    ? basis.edition : 'unconfirmed';
+  return {
+    edition,
+    jurisdiction: String(basis.jurisdiction || '').trim().slice(0,160),
+    ahj: String(basis.ahj || '').trim().slice(0,160),
+    notes: String(basis.notes || '').trim().slice(0,400),
+    updatedAt: basis.updatedAt || null
+  };
+}
+
+function codeEditionLabel(edition) {
+  return CODE_EDITION_CHOICES.find(choice => choice.value === edition)?.label || 'Not confirmed';
+}
+
+function codeEditionOptions(selected) {
+  return CODE_EDITION_CHOICES.map(choice =>
+    `<option value="${choice.value}" ${selected === choice.value ? 'selected' : ''}>${escapeHtml(choice.label)}</option>`
+  ).join('');
+}
+
 const seedTasks = () => [
   { id: crypto.randomUUID(), text: 'Confirm project scope and applicable requirements', done: false },
   { id: crypto.randomUUID(), text: 'Record alarm panel and device locations', done: false },
@@ -29,6 +59,7 @@ function normalizeProject(project) {
     tests: Array.isArray(project.tests) ? project.tests : [],
     photos: Array.isArray(project.photos) ? project.photos : [],
     fieldNotes: project.fieldNotes || '',
+    codeBasis: normalizeCodeBasis(project.codeBasis),
     systemScope: Array.isArray(project.systemScope) ? project.systemScope.filter(id => systemIds.has(id)) : [],
     systemScopeOther: project.systemScopeOther || '',
     systemScopeUpdatedAt: project.systemScopeUpdatedAt || null
@@ -174,6 +205,29 @@ function renderProjects() {
       <div><span>Test records</span><strong>${p.tests.length}</strong></div>
       <div><span>Photos</span><strong>${p.photos.length}</strong></div>
     </div>
+    <div class="code-basis-summary">
+      <strong>NFPA 99 project basis: ${escapeHtml(codeEditionLabel(p.codeBasis.edition))}</strong>
+      <span>Jurisdiction: ${escapeHtml(p.codeBasis.jurisdiction || 'Not recorded')} · AHJ: ${escapeHtml(p.codeBasis.ahj || 'Not recorded')}</span>
+      <small>Record only — an edition selection does not verify adoption or establish compliance.</small>
+    </div>
+    <details class="code-basis-panel">
+      <summary>Review / edit project code basis</summary>
+      <form id="codeBasisEditor">
+        <label>NFPA 99 edition
+          <select name="edition">${codeEditionOptions(p.codeBasis.edition)}</select>
+        </label>
+        <label>Jurisdiction
+          <input name="jurisdiction" maxlength="160" value="${escapeHtml(p.codeBasis.jurisdiction)}" placeholder="State / locality / facility">
+        </label>
+        <label>Authority having jurisdiction
+          <input name="ahj" maxlength="160" value="${escapeHtml(p.codeBasis.ahj)}" placeholder="Agency or official, if known">
+        </label>
+        <label>Adoption / project notes
+          <textarea name="notes" rows="2" maxlength="400" placeholder="Other edition, amendments, plan-review basis...">${escapeHtml(p.codeBasis.notes)}</textarea>
+        </label>
+        <button class="primary" type="submit">Save code basis</button>
+      </form>
+    </details>
     <div class="system-scope-summary"><span>Systems in scope</span>${systemChipMarkup(p)}</div>
     <div class="detail-notes">${escapeHtml(p.notes || 'No project notes yet.')}</div>`;
 }
@@ -299,7 +353,7 @@ function renderReport() {
   const done = p.tasks.filter(t => t.done).length;
   report.innerHTML = `
     <div class="report-head"><div><p class="eyebrow">MGS</p><h1>Med Gas Project Report</h1></div><div class="report-date">Generated ${escapeHtml(new Date().toLocaleString())}</div></div>
-    <section class="report-summary"><h2>${escapeHtml(p.name)}</h2><p><strong>Facility:</strong> ${escapeHtml(p.facility || '—')}<br><strong>Location:</strong> ${escapeHtml(p.location || '—')}<br><strong>Created:</strong> ${escapeHtml(p.createdAt || '—')}</p><strong>Systems in scope:</strong>${reportSystemMarkup(p)}${p.notes ? `<p>${escapeHtml(p.notes)}</p>` : ''}</section>
+    <section class="report-summary"><h2>${escapeHtml(p.name)}</h2><p><strong>Facility:</strong> ${escapeHtml(p.facility || '—')}<br><strong>Location:</strong> ${escapeHtml(p.location || '—')}<br><strong>Created:</strong> ${escapeHtml(p.createdAt || '—')}<br><strong>NFPA 99 basis:</strong> ${escapeHtml(codeEditionLabel(p.codeBasis.edition))}<br><strong>Jurisdiction:</strong> ${escapeHtml(p.codeBasis.jurisdiction || 'Not recorded')}<br><strong>AHJ:</strong> ${escapeHtml(p.codeBasis.ahj || 'Not recorded')}${p.codeBasis.notes ? `<br><strong>Code basis notes:</strong> ${escapeHtml(p.codeBasis.notes)}` : ''}<br><em>Code basis is user-recorded, not verified adoption.</em></p><strong>Systems in scope:</strong>${reportSystemMarkup(p)}${p.notes ? `<p>${escapeHtml(p.notes)}</p>` : ''}</section>
     <section><h3>Checklist (${done}/${p.tasks.length} complete)</h3>${reportRows(p.tasks, t => [`${t.done ? '✓' : '○'} ${escapeHtml(t.text)}`])}</section>
     <section><h3>Alarm records</h3>${reportRows(p.alarms, a => [`<strong>${escapeHtml(a.type)}</strong><br>${escapeHtml(a.location)}<br><small>${escapeHtml(a.serves || '')}</small>`, `<strong>${escapeHtml(a.status)}</strong>${a.notes ? `<br>${escapeHtml(a.notes)}` : ''}`])}</section>
     <section><h3>Outlet / terminal records</h3>${reportRows(p.outlets, o => [`<strong>${escapeHtml(o.gas)}</strong><br>${escapeHtml(o.location)}<br><small>${escapeHtml(o.identifier || '')}</small>`, `<strong>${escapeHtml(o.status)}</strong>${o.notes ? `<br>${escapeHtml(o.notes)}` : ''}`])}</section>
@@ -341,11 +395,32 @@ $('#projectForm').addEventListener('submit', e => {
     id: crypto.randomUUID(), name: f.get('name').trim(), facility: f.get('facility').trim(),
     location: f.get('location').trim(), notes: f.get('notes').trim(), createdAt: new Date().toLocaleDateString(),
     systemScope: selectedSystems, systemScopeOther: otherSystem,
-    systemScopeUpdatedAt: selectedSystems.length || otherSystem ? new Date().toISOString() : null
+    systemScopeUpdatedAt: selectedSystems.length || otherSystem ? new Date().toISOString() : null,
+    codeBasis: { edition: String(f.get('codeEdition') || 'unconfirmed'),
+      jurisdiction: String(f.get('codeJurisdiction') || ''),
+      ahj: String(f.get('codeAhj') || ''), notes: String(f.get('codeNotes') || ''),
+      updatedAt: new Date().toISOString() }
   });
   if (!p.name) return;
   state.projects.unshift(p); state.selectedProjectId = p.id;
   e.currentTarget.reset(); projectDialog.close(); save();
+});
+
+
+projectDetail.addEventListener('submit', event => {
+  if (event.target.id !== 'codeBasisEditor') return;
+  event.preventDefault();
+  const project = selectedProject();
+  if (!project) return;
+  const fields = new FormData(event.target);
+  project.codeBasis = normalizeCodeBasis({
+    edition: String(fields.get('edition') || 'unconfirmed'),
+    jurisdiction: String(fields.get('jurisdiction') || ''),
+    ahj: String(fields.get('ahj') || ''),
+    notes: String(fields.get('notes') || ''),
+    updatedAt: new Date().toISOString()
+  });
+  save();
 });
 
 $('#saveSystemScopeBtn').addEventListener('click', () => {
