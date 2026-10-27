@@ -9,3 +9,14 @@
 .project-edition-notice .nav-button{white-space:nowrap}
 .reference-edition-warning{padding:11px 12px;border-left:3px solid #9b6a1b;background:#fff8e8;border-radius:6px;color:#4c3611!important}
 @media(max-width:760px){.project-edition-notice{display:block}.project-edition-notice .nav-button{margin-top:12px;white-space:normal}}
+
+/* Mobile reference navigation regression guard (2026-10-27).
+   Global mobile styles hide .top-actions .secondary on other screens; the
+   reference page uses those links to return to Projects and System Path. */
+@media(max-width:760px){
+  .topbar{flex-direction:column;align-items:stretch;gap:10px}
+  .topbar .top-actions{display:flex;flex-wrap:wrap;justify-content:flex-start;gap:8px}
+  .topbar .top-actions .nav-button{display:inline-flex;align-items:center;justify-content:center;min-height:44px;white-space:normal}
+  #referenceDetail{scroll-margin-top:155px}
+}
+.reference-row:focus-visible,.filter-chip:focus-visible,.reference-shell .nav-button:focus-visible,.topbar .nav-button:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
