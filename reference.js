@@ -11,6 +11,12 @@ let selectedId = library.components[0]?.id || null;
 const editionTools = window.MGSReferenceEditionContext;
 let editionStatus = editionTools.compare(editionTools.selectedProject(window.localStorage), library.edition);
 
+// Never suggest 2024 section numbers apply to a different or unknown project edition.
+// With no active project, keep the 2024 library available as a general reference.
+function show2024SectionIndex() {
+  return editionStatus.status === 'match' || editionStatus.status === 'none';
+}
+
 function showEditionStatus() {
   const { project, status } = editionStatus;
   const banner = document.querySelector('#projectEditionStatus');
@@ -42,7 +48,7 @@ function referenceCaution() {
   if (editionStatus.status === 'none') {
     return 'No active project: these 2024 section numbers are for general reference only.';
   }
-  return 'Caution: these 2024 section numbers are not confirmed for the selected project. Check the actual project edition.';
+  return 'Caution: these 2024 section numbers are not confirmed for the selected project and have been hidden. Check the actual project edition.';
 }
 
 function refreshEditionStatus() {
@@ -62,7 +68,7 @@ function componentHaystack(component) {
     component.name,
     component.group,
     ...component.systems,
-    ...component.nfpa,
+    ...(show2024SectionIndex() ? component.nfpa : []),
     component.summary,
     component.fieldFocus,
     ...component.roles,
@@ -107,7 +113,9 @@ function renderList() {
   listEl.innerHTML = visible.map(component => `
     <button type="button" class="reference-row ${component.id === selectedId ? 'active' : ''}" data-reference-id="${component.id}">
       <span class="reference-row-top"><strong>${escapeHtml(component.name)}</strong><small>${escapeHtml(component.group)}</small></span>
-      <span>${escapeHtml(component.nfpa.map(section => `NFPA 99-2024 §${section}`).join(' · '))}</span>
+      <span>${show2024SectionIndex()
+        ? escapeHtml(component.nfpa.map(section => `NFPA 99-2024 §${section}`).join(' · '))
+        : 'Section numbers unavailable for this project edition'}</span>
     </button>
   `).join('');
 
@@ -150,9 +158,11 @@ function renderDetail() {
     </section>
 
     <section class="reference-section">
-      <h3>NFPA 99-2024 section map (reference only)</h3>
+      <h3>NFPA 99 section references</h3>
       <p class="reference-edition-warning">${escapeHtml(referenceCaution())}</p>
-      <div class="code-links">${component.nfpa.map(section => `<div><strong>§ ${escapeHtml(section)}</strong><span>Reference location — use the adopted licensed code for the full requirement.</span></div>`).join('')}</div>
+      <div class="code-links">${show2024SectionIndex()
+        ? component.nfpa.map(section => `<div><strong>§ ${escapeHtml(section)}</strong><span>2024 reference location — use the adopted licensed code for the full requirement.</span></div>`).join('')
+        : '<div><strong>Section mapping unavailable</strong><span>2024 section numbers are withheld for this project. Use the applicable adopted edition and consult the AHJ.</span></div>'}</div>
     </section>
 
     <section class="reference-section">
