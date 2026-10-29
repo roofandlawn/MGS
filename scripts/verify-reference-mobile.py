@@ -61,6 +61,9 @@ def main():
                     check("No active project" in page.locator("#projectEditionHeading").inner_text(),
                           f"{width}: missing no-project warning")
                     checks += 1
+                    check('§' in page.locator('#referenceList').inner_text(),
+                          f'{width}: general 2024 index should be visible without an active project')
+                    checks += 1
 
                     for edition, state_class in (
                         ("2018", "is-mismatch"),
@@ -85,6 +88,18 @@ def main():
                             "(el, name) => el.classList.contains(name)", state_class
                         ), f"{width}: incorrect banner for {edition}")
                         checks += 1
+                        should_show = edition == '2024'
+                        check(('§' in page.locator('#referenceList').inner_text()) == should_show,
+                              f'{width}: section numbers shown incorrectly in list for {edition}')
+                        check(('§' in page.locator('.code-links').inner_text()) == should_show,
+                              f'{width}: section numbers shown incorrectly in detail for {edition}')
+                        checks += 2
+                        if not should_show:
+                            page.locator('#referenceSearch').fill('5.1.4.2')
+                            check('No reference records' in page.locator('#referenceList').inner_text(),
+                                  f'{width}: hidden section number is still searchable for {edition}')
+                            page.locator('#referenceSearch').fill('')
+                            checks += 1
 
                     for label in ("System Path", "Projects"):
                         link = page.get_by_role("link", name=label, exact=True).first
