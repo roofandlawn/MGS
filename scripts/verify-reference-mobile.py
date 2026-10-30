@@ -136,12 +136,19 @@ def main():
                               f"{width}: detail scrolled underneath sticky header")
                         checks += 1
 
-                    nav = page.get_by_role("link", name="Projects", exact=True).first
-                    nav.focus()
-                    check(nav.evaluate(
-                        "(el) => getComputedStyle(el).outlineStyle !== 'none'"
-                    ), f"{width}: keyboard focus outline missing")
-                    checks += 1
+                    # :focus-visible depends on keyboard-versus-pointer modality.
+                    # Use actual Tab navigation, not script focus after a click.
+                    page.reload(wait_until="load")
+                    for label in ("System Path", "Projects"):
+                        page.keyboard.press("Tab")
+                        nav = page.get_by_role("link", name=label, exact=True).first
+                        check(nav.evaluate(
+                            "(el) => el === document.activeElement"
+                            " && el.matches(':focus-visible')"
+                            " && getComputedStyle(el).outlineStyle !== 'none'"
+                            " && parseFloat(getComputedStyle(el).outlineWidth) >= 2"
+                        ), f"{width}: {label} lacks visible keyboard focus")
+                        checks += 1
                     check(not errors, f"{width}: browser JS errors: {errors}")
                     checks += 1
                     page.close()
