@@ -88,18 +88,46 @@ def main():
                             "(el, name) => el.classList.contains(name)", state_class
                         ), f"{width}: incorrect banner for {edition}")
                         checks += 1
-                        should_show = edition == '2024'
-                        check(('§' in page.locator('#referenceList').inner_text()) == should_show,
-                              f'{width}: section numbers shown incorrectly in list for {edition}')
-                        check(('§' in page.locator('.code-links').inner_text()) == should_show,
-                              f'{width}: section numbers shown incorrectly in detail for {edition}')
-                        checks += 2
-                        if not should_show:
+                        if edition == '2018':
+                            list_text = page.locator('#referenceList').inner_text()
+                            check('NFPA 99-2018 §5.1.4.6' in list_text,
+                                  f'{width}: 2018 zone valve locator missing')
+                            check('NFPA 99-2018 §5.1.9.4' in list_text,
+                                  f'{width}: 2018 area alarm locator missing')
+                            check('NFPA 99-2024' not in list_text,
+                                  f'{width}: 2024 section leaked into 2018 list')
+                            checks += 3
+                            page.locator('[data-reference-id="zone-valve"]').click()
+                            check('2018 heading locator' in page.locator('.verified-badge').inner_text(),
+                                  f'{width}: 2018 locator detail badge missing')
+                            check('§ 5.1.4.6' in page.locator('.code-links').inner_text(),
+                                  f'{width}: 2018 zone section detail missing')
+                            checks += 2
+                            page.locator('[data-reference-id="source-valve"]').click()
+                            check('§' not in page.locator('.code-links').inner_text(),
+                                  f'{width}: unmapped 2018 source valve showed a section')
+                            checks += 1
                             page.locator('#referenceSearch').fill('5.1.4.2')
                             check('No reference records' in page.locator('#referenceList').inner_text(),
-                                  f'{width}: hidden section number is still searchable for {edition}')
+                                  f'{width}: 2024-only source number is searchable in 2018')
+                            page.locator('#referenceSearch').fill('5.1.4.6')
+                            check('Zone Valve' in page.locator('#referenceList').inner_text(),
+                                  f'{width}: 2018 zone locator is not searchable')
                             page.locator('#referenceSearch').fill('')
-                            checks += 1
+                            checks += 2
+                        else:
+                            should_show = edition == '2024'
+                            check(('§' in page.locator('#referenceList').inner_text()) == should_show,
+                                  f'{width}: section numbers shown incorrectly in list for {edition}')
+                            check(('§' in page.locator('.code-links').inner_text()) == should_show,
+                                  f'{width}: section numbers shown incorrectly in detail for {edition}')
+                            checks += 2
+                            if not should_show:
+                                page.locator('#referenceSearch').fill('5.1.4.2')
+                                check('No reference records' in page.locator('#referenceList').inner_text(),
+                                      f'{width}: hidden section number is still searchable for {edition}')
+                                page.locator('#referenceSearch').fill('')
+                                checks += 1
 
                     for label in ("System Path", "Projects"):
                         link = page.get_by_role("link", name=label, exact=True).first

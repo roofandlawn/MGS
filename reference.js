@@ -11,10 +11,10 @@ let selectedId = library.components[0]?.id || null;
 const editionTools = window.MGSReferenceEditionContext;
 let editionStatus = editionTools.compare(editionTools.selectedProject(window.localStorage), library.edition);
 
-// Never suggest 2024 section numbers apply to a different or unknown project edition.
-// With no active project, keep the 2024 library available as a general reference.
-function show2024SectionIndex() {
-  return editionStatus.status === 'match' || editionStatus.status === 'none';
+// All section lookup goes through the edition-specific, fail-closed map.
+const editionMap = window.MGSReferenceEditionMap;
+function sectionIndex(component) {
+  return editionMap.indexFor(component, editionStatus, library.edition);
 }
 
 function showEditionStatus() {
@@ -30,8 +30,8 @@ function showEditionStatus() {
     heading.textContent = 'Recorded project edition matches 2024 reference';
     description.textContent = '“' + project.name + '” lists NFPA 99-2024. User selection does not confirm adoption or amendments; verify with the licensed code and AHJ.';
   } else if (status === 'mismatch') {
-    heading.textContent = 'Edition mismatch — do not apply these 2024 section numbers to this project';
-    description.textContent = '“' + project.name + '” lists NFPA 99-' + project.edition + '. This library indexes 2024 only. Use the project’s applicable edition.';
+    heading.textContent = 'Project edition differs — showing reviewed 2018 headings where available';
+    description.textContent = '“' + project.name + '” lists NFPA 99-' + project.edition + '. Only individually corroborated 2018 section headings appear; all other 2024 references remain hidden. Compare the actual code text and AHJ amendments.';
   } else if (status === 'other') {
     heading.textContent = 'Different project edition — 2024 references only';
     description.textContent = '“' + project.name + '” lists another edition. Confirm that edition and its amendments before relying on section numbers.';
@@ -41,14 +41,17 @@ function showEditionStatus() {
   }
 }
 
-function referenceCaution() {
+function referenceCaution(index) {
+  if (index.state === 'corroborated-heading') {
+    return '2018 heading locator only. A matching section number does NOT mean the 2018 and 2024 requirements are identical. Confirm the adopted licensed code and AHJ amendments.';
+  }
   if (editionStatus.status === 'match') {
     return 'The project records 2024, but adopted requirements and amendments have not been independently verified.';
   }
   if (editionStatus.status === 'none') {
     return 'No active project: these 2024 section numbers are for general reference only.';
   }
-  return 'Caution: these 2024 section numbers are not confirmed for the selected project and have been hidden. Check the actual project edition.';
+  return 'Section mapping for this component and project edition is still pending. Other-edition references are hidden.';
 }
 
 function refreshEditionStatus() {
@@ -68,7 +71,7 @@ function componentHaystack(component) {
     component.name,
     component.group,
     ...component.systems,
-    ...(show2024SectionIndex() ? component.nfpa : []),
+    ...sectionIndex(component).sections,
     component.summary,
     component.fieldFocus,
     ...component.roles,
@@ -110,14 +113,17 @@ function renderList() {
     return;
   }
 
-  listEl.innerHTML = visible.map(component => `
-    <button type="button" class="reference-row ${component.id === selectedId ? 'active' : ''}" data-reference-id="${component.id}">
-      <span class="reference-row-top"><strong>${escapeHtml(component.name)}</strong><small>${escapeHtml(component.group)}</small></span>
-      <span>${show2024SectionIndex()
-        ? escapeHtml(component.nfpa.map(section => `NFPA 99-2024 §${section}`).join(' · '))
-        : 'Section numbers unavailable for this project edition'}</span>
-    </button>
-  `).join('');
+  listEl.innerHTML = visible.map(component => {
+    const index = sectionIndex(component);
+    return `
+      <button type="button" class="reference-row ${component.id === selectedId ? 'active' : ''}" data-reference-id="${component.id}">
+        <span class="reference-row-top"><strong>${escapeHtml(component.name)}</strong><small>${escapeHtml(component.group)}</small></span>
+        <span>${index.sections.length
+          ? escapeHtml(index.sections.map(section => `NFPA 99-${index.edition} §${section}`).join(' · '))
+          : 'Section mapping pending for this project edition'}</span>
+      </button>
+    `;
+  }).join('');
 
   listEl.querySelectorAll('[data-reference-id]').forEach(button => {
     button.addEventListener('click', () => {
@@ -135,11 +141,12 @@ function renderDetail() {
     detailEl.innerHTML = '<div class="detail-empty">Select a component to open its field-reference page.</div>';
     return;
   }
+  const index = sectionIndex(component);
 
   detailEl.innerHTML = `
     <div class="reference-detail-head">
       <div><p class="eyebrow">${escapeHtml(component.group)}</p><h2>${escapeHtml(component.name)}</h2></div>
-      <span class="verified-badge">2024 section index only</span>
+      <span class="verified-badge">${escapeHtml(index.state === 'corroborated-heading' ? '2018 heading locator' : index.sections.length ? '2024 section index only' : 'Mapping pending')}</span>
     </div>
 
     <section class="reference-section">
@@ -159,10 +166,13 @@ function renderDetail() {
 
     <section class="reference-section">
       <h3>NFPA 99 section references</h3>
-      <p class="reference-edition-warning">${escapeHtml(referenceCaution())}</p>
-      <div class="code-links">${show2024SectionIndex()
-        ? component.nfpa.map(section => `<div><strong>§ ${escapeHtml(section)}</strong><span>2024 reference location — use the adopted licensed code for the full requirement.</span></div>`).join('')
-        : '<div><strong>Section mapping unavailable</strong><span>2024 section numbers are withheld for this project. Use the applicable adopted edition and consult the AHJ.</span></div>'}</div>
+      <p class="reference-edition-warning">${escapeHtml(referenceCaution(index))}</p>
+      <div class="code-links">${index.sections.length
+        ? index.sections.map(section => `<div><strong>§ ${escapeHtml(section)}</strong><span>${escapeHtml(index.edition)} section locator only — consult the adopted licensed edition for requirements.</span></div>`).join('')
+        : '<div><strong>Section mapping unavailable</strong><span>No reviewed locator exists for this component and project edition. Consult the adopted edition and AHJ.</span></div>'}</div>
+      ${index.state === 'corroborated-heading'
+        ? `<p class="reference-provenance">2018 section heading independently corroborated; full code text and technical equivalence have not been reviewed. <a href="${escapeHtml(index.sourceUrl)}" target="_blank" rel="noopener noreferrer">Review locator source</a>.</p>`
+        : ''}
     </section>
 
     <section class="reference-section">

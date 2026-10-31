@@ -9,6 +9,8 @@ on:
       - reference.js
       - reference-data.js
       - reference-edition-context.js
+      - reference-edition-map.js
+      - scripts/verify-reference-edition-map.mjs
       - reference.css
       - styles.css
       - scripts/verify-reference-mobile.py
@@ -36,6 +38,9 @@ jobs:
         run: |
           python -m pip install "playwright==1.56.0"
           python -m playwright install --with-deps chromium
+
+      - name: Verify section locator contract
+        run: node scripts/verify-reference-edition-map.mjs
 
       - name: Run edition and navigation browser checks
         run: python scripts/verify-reference-mobile.py
