@@ -1,0 +1,46 @@
+name: MGS reference mobile browser QA
+
+on:
+  push:
+    branches:
+      - feature/reference-library-v1
+    paths:
+      - reference.html
+      - reference.js
+      - reference-data.js
+      - reference-edition-context.js
+      - reference-edition-map.js
+      - scripts/verify-reference-edition-map.mjs
+      - reference.css
+      - styles.css
+      - scripts/verify-reference-mobile.py
+      - .github/workflows/reference-mobile-qa.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  reference-browser:
+    name: Reference library at phone and desktop widths
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Check out application
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install browser test dependencies
+        run: |
+          python -m pip install "playwright==1.56.0"
+          python -m playwright install --with-deps chromium
+
+      - name: Verify section locator contract
+        run: node scripts/verify-reference-edition-map.mjs
+
+      - name: Run edition and navigation browser checks
+        run: python scripts/verify-reference-mobile.py
