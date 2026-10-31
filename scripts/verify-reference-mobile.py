@@ -148,7 +148,7 @@ def main():
                     page.locator('[data-reference-id="zone-valve"]').click()
                     check("Zone Valve" in page.locator("#referenceDetail h2").inner_text(),
                           f"{width}: selected detail not rendered")
-                    check("not confirmed for the selected project" in
+                    check("Section mapping for this component and project edition is still pending" in
                           page.locator(".reference-edition-warning").inner_text(),
                           f"{width}: missing edition caution in detail")
                     checks += 2
