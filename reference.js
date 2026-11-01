@@ -142,7 +142,7 @@ function renderSensorPlacement(componentId) {
     return `
       <section class="reference-section sensor-guide">
         <h3>Area alarm sensor placement</h3>
-        <p class="reference-edition-warning">Teaching diagrams are hidden until the project records a supported NFPA 99 edition (2018 or 2024). Confirm the code basis and AHJ before using this topic.</p>
+        <p class="sensor-caution">Teaching diagrams are hidden until the project records a supported NFPA 99 edition (2018 or 2024). Confirm the code basis and AHJ before using this topic.</p>
       </section>`;
   }
   const routes = guide.spaces.map(space => `
