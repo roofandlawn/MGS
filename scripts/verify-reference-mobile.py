@@ -103,6 +103,14 @@ def main():
                             check('§ 5.1.4.6' in page.locator('.code-links').inner_text(),
                                   f'{width}: 2018 zone section detail missing')
                             checks += 2
+                            guide_text = page.locator('.sensor-guide').inner_text()
+                            check('2018 concept' in guide_text,
+                                  f'{width}: 2018 sensor guidance not shown')
+                            check('individual room zone-valve-box' in guide_text,
+                                  f'{width}: 2018 anesthetizing scenario missing')
+                            check('Group of zone valves' not in guide_text,
+                                  f'{width}: 2024 grouped sensor routing leaked into 2018')
+                            checks += 3
                             page.locator('[data-reference-id="source-valve"]').click()
                             check('§' not in page.locator('.code-links').inner_text(),
                                   f'{width}: unmapped 2018 source valve showed a section')

@@ -20,3 +20,19 @@
   #referenceDetail{scroll-margin-top:155px}
 }
 .reference-row:focus-visible,.filter-chip:focus-visible,.reference-shell .nav-button:focus-visible,.topbar .nav-button:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+
+/* Sensor location training panel: source-to-patient sequence, NOT a piping drawing. */
+.sensor-guide h4{font-size:.93rem;margin:0 0 10px}
+.sensor-guide .sensor-caution{padding:12px;background:#fff8e8;border-left:3px solid #9b6a1b;border-radius:8px;color:#4c3611}
+.sensor-guide .sensor-general{margin:8px 0;color:#6b4d1a}
+.sensor-space{margin-top:16px}
+.sensor-options{display:grid;gap:10px}
+.sensor-option{background:#f7fafc;border:1px solid var(--line);border-radius:12px;padding:13px}
+.sensor-option>strong{display:block;margin-bottom:9px;font-size:.88rem}
+.sensor-route{display:flex;align-items:stretch;gap:6px;flex-wrap:wrap;margin-bottom:9px}
+.sensor-step{display:inline-flex;align-items:center;min-height:38px;max-width:100%;padding:7px 9px;border:1px solid #ccd8e4;border-radius:9px;background:#fff;font-size:.78rem;line-height:1.25;font-weight:750}
+.sensor-step.is-sensor{background:#e5f2ff;border-color:#8bbce7;color:#174871}
+.sensor-arrow{display:inline-flex;align-items:center;color:#50677f;font-weight:800}
+.sensor-option p{font-size:.85rem}
+.sensor-guide .sensor-contrast{margin-top:14px;padding:10px 12px;background:#f2f7fc;border-radius:8px}
+.sensor-guide .sensor-provenance{margin-top:10px;font-size:.82rem}

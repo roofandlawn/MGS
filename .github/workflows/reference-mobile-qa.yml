@@ -10,6 +10,8 @@ on:
       - reference-data.js
       - reference-edition-context.js
       - reference-edition-map.js
+      - reference-sensor-placement.js
+      - scripts/verify-reference-sensor-placement.mjs
       - scripts/verify-reference-edition-map.mjs
       - reference.css
       - styles.css
@@ -41,6 +43,9 @@ jobs:
 
       - name: Verify section locator contract
         run: node scripts/verify-reference-edition-map.mjs
+
+      - name: Verify area alarm sensor-location safeguards
+        run: node scripts/verify-reference-sensor-placement.mjs
 
       - name: Run edition and navigation browser checks
         run: python scripts/verify-reference-mobile.py

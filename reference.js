@@ -135,6 +135,43 @@ function renderList() {
   });
 }
 
+function renderSensorPlacement(componentId) {
+  if (!['zone-valve', 'area-alarm'].includes(componentId)) return '';
+  const guide = window.MGSSensorPlacement.forProject(editionStatus);
+  if (guide.state === 'unavailable') {
+    return `
+      <section class="reference-section sensor-guide">
+        <h3>Area alarm sensor placement</h3>
+        <p class="reference-edition-warning">Teaching diagrams are hidden until the project records a supported NFPA 99 edition (2018 or 2024). Confirm the code basis and AHJ before using this topic.</p>
+      </section>`;
+  }
+  const routes = guide.spaces.map(space => `
+    <div class="sensor-space">
+      <h4>${escapeHtml(space.title)}</h4>
+      <div class="sensor-options">${space.options.map(option => `
+        <div class="sensor-option">
+          <strong>${escapeHtml(option.title)}</strong>
+          <div class="sensor-route" aria-label="${escapeHtml(option.steps.join(' then '))}">
+            ${option.steps.map((step, index) => `
+              ${index ? '<span class="sensor-arrow" aria-hidden="true">→</span>' : ''}
+              <span class="sensor-step ${step.includes('sensor') ? 'is-sensor' : ''}">${escapeHtml(step)}</span>
+            `).join('')}
+          </div>
+          <p>${escapeHtml(option.explanation)}</p>
+        </div>
+      `).join('')}</div>
+    </div>`).join('');
+  return `
+    <section class="reference-section sensor-guide">
+      <h3>Area alarm sensor placement — NFPA 99-${escapeHtml(guide.edition)} concept</h3>
+      <p class="sensor-caution">Educational source-to-patient sequence only, not a design drawing or acceptance checklist. Source-side sensing in anesthetizing locations is edition-specific. Follow approved plans, the adopted licensed edition and AHJ.</p>
+      ${guide.generalOnly ? '<p class="sensor-general">No active project — general 2024 learning only.</p>' : ''}
+      ${routes}
+      <p class="sensor-contrast"><strong>Edition difference:</strong> ${escapeHtml(guide.comparison)}</p>
+      <p class="sensor-provenance">Public supporting training/source material: <a href="${escapeHtml(guide.source)}" target="_blank" rel="noopener noreferrer">review source</a>. Licensed-edition cross-check remains pending.</p>
+    </section>`;
+}
+
 function renderDetail() {
   const component = library.components.find(item => item.id === selectedId);
   if (!component) {
@@ -158,6 +195,8 @@ function renderDetail() {
       <h3>Field focus</h3>
       <p>${escapeHtml(component.fieldFocus)}</p>
     </section>
+
+    ${renderSensorPlacement(component.id)}
 
     <section class="reference-section">
       <h3>Systems</h3>
