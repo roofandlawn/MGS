@@ -167,6 +167,7 @@ function renderSensorPlacement(componentId) {
       <p class="sensor-caution">Educational source-to-patient sequence only, not a design drawing or acceptance checklist. Source-side sensing in anesthetizing locations is edition-specific. Follow approved plans, the adopted licensed edition and AHJ.</p>
       ${guide.generalOnly ? '<p class="sensor-general">No active project — general 2024 learning only.</p>' : ''}
       ${routes}
+      <div class="topology-host" data-topology-host></div>
       <p class="sensor-contrast"><strong>Edition difference:</strong> ${escapeHtml(guide.comparison)}</p>
       <p class="sensor-provenance">Public supporting training/source material: <a href="${escapeHtml(guide.source)}" target="_blank" rel="noopener noreferrer">review source</a>. Licensed-edition cross-check remains pending.</p>
     </section>`;
@@ -219,6 +220,8 @@ function renderDetail() {
       <div class="tag-row">${component.roles.map(role => `<span class="role-tag">${escapeHtml(role === 'New' ? 'New to med gas' : `ASSE ${role}`)}</span>`).join('')}</div>
     </section>
   `;
+  const topologyHost = detailEl.querySelector("[data-topology-host]");
+  if (topologyHost) window.MGSTopologyDiagrams.mount(topologyHost, window.MGSSensorPlacement.forProject(editionStatus));
 }
 
 function render() {
