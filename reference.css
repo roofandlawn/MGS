@@ -36,3 +36,31 @@
 .sensor-option p{font-size:.85rem}
 .sensor-guide .sensor-contrast{margin-top:14px;padding:10px 12px;background:#f2f7fc;border-radius:8px}
 .sensor-guide .sensor-provenance{margin-top:10px;font-size:.82rem}
+
+
+/* Interactive educational relationship explorer. The SVG scrolls within its card. */
+.topology-panel{margin:18px 0;padding:14px;border:1px solid #b9d2e7;border-radius:13px;background:#f5f9fd}
+.topology-panel h4{margin:0 0 8px;font-size:.96rem}
+.topology-panel .topology-intro{color:#30495e;line-height:1.5;margin:0 0 11px}
+.topology-modes{display:flex;flex-wrap:wrap;gap:7px;margin:0 0 12px}
+.topology-mode{min-height:44px;padding:9px 12px;border-radius:10px;border:1px solid #7898b8;background:#fff;color:#153c5c;font-weight:750;cursor:pointer}
+.topology-mode[aria-pressed="true"]{background:#154e7c;border-color:#154e7c;color:#fff}
+.topology-mode:focus-visible,.topology-viewport:focus-visible{outline:3px solid #287cb2;outline-offset:3px}
+.topology-viewport{width:100%;max-width:100%;min-width:0;overflow-x:auto;background:#fff;border:1px solid #d0dce7;border-radius:10px}
+.topology-svg{display:block;width:800px;min-width:800px;height:405px;font-family:Arial,sans-serif}
+.topology-line{fill:none;stroke-linejoin:round;stroke-linecap:round;stroke-width:4}
+.topology-pipe{stroke:#2b6380}
+.topology-signal{stroke:#b76b29;stroke-width:3;stroke-dasharray:9 7}
+.topology-node{cursor:pointer}
+.topology-node rect{fill:#fff;stroke:#8da5b5;stroke-width:2}
+.topology-node text{fill:#16384c;font-size:15px;font-weight:700;pointer-events:none}
+.topology-node.topology-sensor rect{fill:#e5f3ff;stroke:#3785bd}
+.topology-node.topology-alarm rect{fill:#fff2df;stroke:#be7a38}
+.topology-node.is-selected rect,.topology-node:focus-visible rect{stroke:#0f5795;stroke-width:4}
+.topology-node:focus-visible{outline:none}
+.topology-panel .topology-summary{margin:12px 0 8px;color:#263f52}
+.topology-panel .topology-node-note{min-height:45px;padding:10px 12px;border-radius:8px;background:#e3f2ff;color:#1c435f}
+.topology-panel .topology-warning{margin:10px 0;padding:11px;border-left:3px solid #976019;background:#fff4df;border-radius:7px;color:#4e3414}
+.topology-panel .topology-sequence{margin:10px 0;font-size:.85rem;color:#334b5b}
+.topology-panel .topology-disclaimer{margin:10px 0 0;font-size:.82rem;color:#6b4b20}
+.reference-detail-panel{min-width:0}
