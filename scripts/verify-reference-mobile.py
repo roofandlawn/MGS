@@ -88,6 +88,36 @@ def main():
                             "(el, name) => el.classList.contains(name)", state_class
                         ), f"{width}: incorrect banner for {edition}")
                         checks += 1
+                        page.locator('[data-reference-id="zone-valve"]').click()
+                        drawing = page.locator('[data-topology-host] .topology-svg')
+                        if edition in ('2018', '2024'):
+                            check(drawing.count() == 1,
+                                  f'{width}: {edition} topology drawing did not mount')
+                            checks += 1
+                            page.get_by_role('button', name='Two rooms / one zone').click()
+                            check(page.locator('[data-topology-node="room-a"]').count() == 1 and
+                                  page.locator('[data-topology-node="room-b"]').count() == 1,
+                                  f'{width}: shared-zone two-room view missing')
+                            checks += 1
+                            page.get_by_role('button', name='Two separate zones').click()
+                            check(page.locator('.topology-node.topology-valve').count() == 2 and
+                                  page.locator('.topology-node.topology-sensor').count() == 2,
+                                  f'{width}: separate branch zones and sensors not shown')
+                            checks += 1
+                            page.locator('[data-topology-node="sensor-a"]').click()
+                            check('Sensor A' in page.locator('[data-topology-explain]').inner_text(),
+                                  f'{width}: selecting sensor failed to show explanation')
+                            checks += 1
+                            sizes = page.evaluate(
+                                "() => ({ page: document.documentElement.scrollWidth, width: innerWidth })"
+                            )
+                            check(sizes['page'] <= sizes['width'] + 1,
+                                  f'{width}: diagram caused horizontal page overflow ({sizes})')
+                            checks += 1
+                        else:
+                            check(page.locator('[data-topology-host]').count() == 0,
+                                  f'{width}: a diagram leaked into an unreviewed project edition')
+                            checks += 1
                         if edition == '2018':
                             list_text = page.locator('#referenceList').inner_text()
                             check('NFPA 99-2018 §5.1.4.6' in list_text,
