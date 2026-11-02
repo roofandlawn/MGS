@@ -11,7 +11,9 @@ on:
       - reference-edition-context.js
       - reference-edition-map.js
       - reference-sensor-placement.js
+      - reference-topology.js
       - scripts/verify-reference-sensor-placement.mjs
+      - scripts/verify-reference-topology.cjs
       - scripts/verify-reference-edition-map.mjs
       - reference.css
       - styles.css
@@ -46,6 +48,9 @@ jobs:
 
       - name: Verify area alarm sensor-location safeguards
         run: node scripts/verify-reference-sensor-placement.mjs
+
+      - name: Verify interactive medical gas topology models
+        run: node scripts/verify-reference-topology.cjs
 
       - name: Run edition and navigation browser checks
         run: python scripts/verify-reference-mobile.py
