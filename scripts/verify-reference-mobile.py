@@ -118,6 +118,32 @@ def main():
                             check(page.locator('[data-topology-host]').count() == 0,
                                   f'{width}: a diagram leaked into an unreviewed project edition')
                             checks += 1
+                        # Manufacturer wiring evidence is separate from NFPA placement guidance.
+                        page.locator('[data-reference-id="area-alarm"]').click()
+                        alarm_panel = page.locator('[data-alarm-interface-host] .alarm-interface')
+                        check(alarm_panel.count() == 1,
+                              f'{width}: area alarm manufacturer reference missing for {edition}')
+                        checks += 1
+                        check('No model identified' in page.locator('[data-alarm-selected]').inner_text(),
+                              f'{width}: manufacturer selector did not fail closed')
+                        checks += 1
+                        page.get_by_role('button', name='MEGA3', exact=True).click()
+                        check('MEGA3' in page.locator('[data-alarm-selected]').inner_text() and
+                              'mega3-alarm-documentation' in page.locator('[data-alarm-selected] a').get_attribute('href'),
+                              f'{width}: MEGA3 manufacturer documentation missing')
+                        checks += 1
+                        page.get_by_role('button', name='TotalAlert Infinity', exact=True).click()
+                        check('tai-notification-system-documentation' in
+                              page.locator('[data-alarm-selected] a').get_attribute('href'),
+                              f'{width}: TotalAlert Infinity manufacturer documentation missing')
+                        checks += 1
+                        check('No terminal numbers' in alarm_panel.inner_text(),
+                              f'{width}: wiring disclaimer missing')
+                        checks += 1
+                        page.locator('[data-reference-id="zone-valve"]').click()
+                        check(page.locator('[data-alarm-interface-host]').count() == 0,
+                              f'{width}: manufacturer panel appeared on wrong component')
+                        checks += 1
                         if edition == '2018':
                             list_text = page.locator('#referenceList').inner_text()
                             check('NFPA 99-2018 §5.1.4.6' in list_text,

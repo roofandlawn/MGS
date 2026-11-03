@@ -199,6 +199,8 @@ function renderDetail() {
 
     ${renderSensorPlacement(component.id)}
 
+    ${component.id === 'area-alarm' ? '<div data-alarm-interface-host></div>' : ''}
+
     <section class="reference-section">
       <h3>Systems</h3>
       <div class="tag-row">${component.systems.map(system => `<span class="tag">${escapeHtml(system)}</span>`).join('')}</div>
@@ -222,6 +224,8 @@ function renderDetail() {
   `;
   const topologyHost = detailEl.querySelector("[data-topology-host]");
   if (topologyHost) window.MGSTopologyDiagrams.mount(topologyHost, window.MGSSensorPlacement.forProject(editionStatus));
+  const alarmHost = detailEl.querySelector("[data-alarm-interface-host]");
+  if (alarmHost) window.MGSAlarmInterface.mount(alarmHost);
 }
 
 function render() {
