@@ -145,6 +145,37 @@
   <div class="dialog-actions"><button type="button" class="secondary" data-close>Cancel</button><button class="primary">Add item</button></div>
 </form></dialog>
 
+<dialog id="areaAlarmEquipmentDialog" aria-labelledby="areaAlarmEquipmentHeading">
+  <form id="areaAlarmEquipmentForm">
+    <div class="dialog-head"><h3 id="areaAlarmEquipmentHeading">Area alarm equipment record</h3><button type="button" class="icon-btn" data-close aria-label="Close">×</button></div>
+    <input type="hidden" name="alarmId" />
+    <p class="equipment-warning">Document one installed panel / sensor channel per alarm record. For multiple channels, create additional area alarm records with the same panel ID. No terminal assignments, code compliance or verification are implied.</p>
+    <fieldset class="equipment-fieldset"><legend>Panel identification</legend>
+      <label>Panel manufacturer<input name="panelManufacturer" maxlength="120" placeholder="Installed nameplate manufacturer" /></label>
+      <label>Product family<select name="panelFamily"><option value="">Not confirmed</option><option>BeaconMedaes TotalAlert Infinity</option><option>BeaconMedaes MEGA3</option><option>Other / not in catalog</option></select></label>
+      <label>Exact panel model / part number<input name="panelModel" maxlength="120" placeholder="Do not infer from family" /></label>
+      <label>Panel revision / serial information<input name="panelRevision" maxlength="80" /></label>
+      <label>Panel, zone and room ID<input name="panelZoneId" maxlength="120" placeholder="Match approved project schedule" /></label>
+    </fieldset>
+    <fieldset class="equipment-fieldset"><legend>Sensor channel identification</legend>
+      <label>Sensor manufacturer<input name="sensorManufacturer" maxlength="120" /></label>
+      <label>Exact sensor part number<input name="sensorPartNumber" maxlength="120" /></label>
+      <label>Gas service / channel<input name="sensorService" maxlength="100" placeholder="Oxygen, medical air, vacuum, etc." /></label>
+      <label>Sensor range and units<input name="sensorRange" maxlength="100" placeholder="As shown in manufacturer documentation" /></label>
+    </fieldset>
+    <fieldset class="equipment-fieldset"><legend>Document and photo evidence</legend>
+      <label>Factory wiring document title / ID<input name="factoryDoc" maxlength="180" placeholder="Document matching the installed hardware" /></label>
+      <label>Factory document revision / date<input name="factoryDocRevision" maxlength="80" /></label>
+      <label>Approved drawing / point schedule<input name="approvedDrawing" maxlength="180" placeholder="Sheet number and revision" /></label>
+      <label>Document review by<input name="reviewedBy" maxlength="120" placeholder="Name and role; documentation only" /></label>
+      <label>Link project installation photo<select name="photoId"><option value="">No photo linked</option></select></label>
+      <small class="helper">First add the installation photo under the Photos tab. Links stay within this project.</small>
+      <label>Equipment notes (no patient information)<textarea name="notes" maxlength="600" rows="3"></textarea></label>
+    </fieldset>
+    <div class="dialog-actions"><button type="button" class="secondary" data-close>Cancel</button><button class="primary" type="submit">Save equipment record</button></div>
+  </form>
+</dialog>
+
 <dialog id="alarmDialog"><form id="alarmForm" method="dialog">
   <div class="dialog-head"><h3>Add alarm record</h3><button type="button" class="icon-btn" data-close>×</button></div>
   <label>Type<select name="type"><option>Master alarm</option><option>Area alarm</option><option>Local alarm</option><option>Other</option></select></label>
@@ -189,6 +220,7 @@
 
 <footer class="no-print"><p>Field organization prototype only. Use applicable codes, adopted standards, manufacturer instructions, inspection requirements, qualified personnel, and required verification procedures for actual medical-gas work.</p></footer>
 <script src="project-schema.js"></script>
+<script src="area-alarm-equipment.js"></script>
 <script src="app.js"></script>
 <script src="project-schema-runtime.js"></script>
 <script src="scope-aware-records.js"></script>

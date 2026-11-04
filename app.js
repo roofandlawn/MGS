@@ -274,6 +274,7 @@ function renderAlarms() {
       <span class="status ${statusClass(a.status)}">${escapeHtml(a.status)}</span>
       <button class="delete-link" data-alarm-delete="${a.id}">Delete</button>
       ${a.notes ? `<p>${escapeHtml(a.notes)}</p>` : ''}
+      ${MGSAreaAlarmEquipment.cardMarkup(a, p.photos)}
     </article>`).join('');
 }
 
@@ -355,7 +356,7 @@ function renderReport() {
     <div class="report-head"><div><p class="eyebrow">MGS</p><h1>Med Gas Project Report</h1></div><div class="report-date">Generated ${escapeHtml(new Date().toLocaleString())}</div></div>
     <section class="report-summary"><h2>${escapeHtml(p.name)}</h2><p><strong>Facility:</strong> ${escapeHtml(p.facility || '—')}<br><strong>Location:</strong> ${escapeHtml(p.location || '—')}<br><strong>Created:</strong> ${escapeHtml(p.createdAt || '—')}<br><strong>NFPA 99 basis:</strong> ${escapeHtml(codeEditionLabel(p.codeBasis.edition))}<br><strong>Jurisdiction:</strong> ${escapeHtml(p.codeBasis.jurisdiction || 'Not recorded')}<br><strong>AHJ:</strong> ${escapeHtml(p.codeBasis.ahj || 'Not recorded')}${p.codeBasis.notes ? `<br><strong>Code basis notes:</strong> ${escapeHtml(p.codeBasis.notes)}` : ''}<br><em>Code basis is user-recorded, not verified adoption.</em></p><strong>Systems in scope:</strong>${reportSystemMarkup(p)}${p.notes ? `<p>${escapeHtml(p.notes)}</p>` : ''}</section>
     <section><h3>Checklist (${done}/${p.tasks.length} complete)</h3>${reportRows(p.tasks, t => [`${t.done ? '✓' : '○'} ${escapeHtml(t.text)}`])}</section>
-    <section><h3>Alarm records</h3>${reportRows(p.alarms, a => [`<strong>${escapeHtml(a.type)}</strong><br>${escapeHtml(a.location)}<br><small>${escapeHtml(a.serves || '')}</small>`, `<strong>${escapeHtml(a.status)}</strong>${a.notes ? `<br>${escapeHtml(a.notes)}` : ''}`])}</section>
+    <section><h3>Alarm records</h3>${reportRows(p.alarms, a => [`<strong>${escapeHtml(a.type)}</strong><br>${escapeHtml(a.location)}<br><small>${escapeHtml(a.serves || '')}</small>`, `<strong>${escapeHtml(a.status)}</strong>${a.notes ? `<br>${escapeHtml(a.notes)}` : ''}${MGSAreaAlarmEquipment.reportMarkup(a, p.photos)}`])}</section>
     <section><h3>Outlet / terminal records</h3>${reportRows(p.outlets, o => [`<strong>${escapeHtml(o.gas)}</strong><br>${escapeHtml(o.location)}<br><small>${escapeHtml(o.identifier || '')}</small>`, `<strong>${escapeHtml(o.status)}</strong>${o.notes ? `<br>${escapeHtml(o.notes)}` : ''}`])}</section>
     <section><h3>Inspection & test records</h3>${reportRows(p.tests, t => [`<strong>${escapeHtml(t.type)}</strong><br>${escapeHtml(t.system || '')}<br>${escapeHtml(t.location || '')}`, `<strong>${escapeHtml(t.status)}</strong><br>${escapeHtml(formatDate(t.date))}${t.person ? `<br>${escapeHtml(t.person)}` : ''}${t.reading ? `<br>${escapeHtml(t.reading)}` : ''}${t.notes ? `<br>${escapeHtml(t.notes)}` : ''}`])}</section>
     <section><h3>Field notes</h3><div class="report-notes">${escapeHtml(p.fieldNotes || 'No field notes.')}</div></section>
@@ -448,6 +449,27 @@ $('#alarmForm').addEventListener('submit', e => {
   e.currentTarget.reset(); alarmDialog.close(); save();
 });
 
+$('#areaAlarmEquipmentForm').addEventListener('submit', event => {
+  event.preventDefault();
+  const p = selectedProject();
+  if (!p) return;
+  const formData = new FormData(event.currentTarget);
+  const alarm = p.alarms.find(a => a.id === formData.get('alarmId') && a.type === 'Area alarm');
+  if (!alarm) return;
+  const photoId = String(formData.get('photoId') || '');
+  if (photoId && !p.photos.some(photo => photo.id === photoId)) {
+    alert('Selected installation photo is missing. Choose an existing project photo or no photo.');
+    return;
+  }
+  const equipment = {};
+  MGSAreaAlarmEquipment.fields.forEach(field => { equipment[field] = formData.get(field); });
+  equipment.updatedAt = new Date().toISOString();
+  alarm.equipment = MGSAreaAlarmEquipment.normalize(equipment);
+  event.currentTarget.reset();
+  $('#areaAlarmEquipmentDialog').close();
+  save();
+});
+
 $('#outletForm').addEventListener('submit', e => {
   e.preventDefault(); const p = selectedProject(); if (!p) return;
   const f = new FormData(e.currentTarget);
@@ -504,6 +526,29 @@ checklist.addEventListener('click', e => {
 });
 
 alarmList.addEventListener('click', e => {
+  const equipmentButton = e.target.closest('[data-alarm-equipment]');
+  if (equipmentButton) {
+    const p = selectedProject();
+    const alarm = p?.alarms.find(a => a.id === equipmentButton.dataset.alarmEquipment && a.type === 'Area alarm');
+    if (!alarm) return;
+    const form = $('#areaAlarmEquipmentForm');
+    form.reset();
+    form.elements.alarmId.value = alarm.id;
+    MGSAreaAlarmEquipment.fields.filter(field => field !== 'photoId').forEach(field => {
+      form.elements[field].value = alarm.equipment?.[field] || '';
+    });
+    const photos = Array.isArray(p.photos) ? p.photos : [];
+    const oldPhotoId = alarm.equipment?.photoId || '';
+    const missingPhoto = oldPhotoId && !photos.some(photo => photo.id === oldPhotoId)
+      ? '<option value="' + escapeHtml(oldPhotoId) + '">Previously linked photo missing (choose another)</option>'
+      : '';
+    form.elements.photoId.innerHTML = '<option value="">No photo linked</option>' + missingPhoto
+      + photos.map(photo => '<option value="' + escapeHtml(photo.id) + '">'
+        + escapeHtml(photo.caption || photo.location || 'Project photo') + '</option>').join('');
+    form.elements.photoId.value = oldPhotoId;
+    $('#areaAlarmEquipmentDialog').showModal();
+    return;
+  }
   const b = e.target.closest('[data-alarm-delete]'); if (!b) return;
   const p = selectedProject(); p.alarms = p.alarms.filter(a => a.id !== b.dataset.alarmDelete); save();
 });
