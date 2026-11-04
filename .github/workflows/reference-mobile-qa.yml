@@ -17,6 +17,7 @@ on:
       - app.js
       - index.html
       - scripts/verify-area-alarm-equipment.cjs
+      - scripts/verify-area-alarm-equipment-ui.py
       - scripts/verify-reference-alarm-interface.cjs
       - scripts/verify-reference-sensor-placement.mjs
       - scripts/verify-reference-topology.cjs
@@ -63,6 +64,9 @@ jobs:
 
       - name: Verify project area alarm equipment record guards
         run: node scripts/verify-area-alarm-equipment.cjs
+
+      - name: Smoke test project equipment form, persistence, photo and report
+        run: python scripts/verify-area-alarm-equipment-ui.py
 
       - name: Run edition and navigation browser checks
         run: python scripts/verify-reference-mobile.py
