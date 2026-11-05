@@ -149,7 +149,7 @@
   <form id="areaAlarmEquipmentForm">
     <div class="dialog-head"><h3 id="areaAlarmEquipmentHeading">Area alarm equipment record</h3><button type="button" class="icon-btn" data-close aria-label="Close">×</button></div>
     <input type="hidden" name="alarmId" />
-    <p class="equipment-warning">Document one installed panel / sensor channel per alarm record. For multiple channels, create additional area alarm records with the same panel ID. No terminal assignments, code compliance or verification are implied.</p>
+    <p class="equipment-warning">Document one installed panel with multiple sensor channels. Identify each channel and confirm the installed equipment against approved plans and the manufacturer manuals. This record does not establish wiring connections, code compliance or verification.</p>
     <fieldset class="equipment-fieldset"><legend>Panel identification</legend>
       <label>Panel manufacturer<input name="panelManufacturer" maxlength="120" placeholder="Installed nameplate manufacturer" /></label>
       <label>Product family<select name="panelFamily"><option value="">Not confirmed</option><option>BeaconMedaes TotalAlert Infinity</option><option>BeaconMedaes MEGA3</option><option>Other / not in catalog</option></select></label>
@@ -157,12 +157,18 @@
       <label>Panel revision / serial information<input name="panelRevision" maxlength="80" /></label>
       <label>Panel, zone and room ID<input name="panelZoneId" maxlength="120" placeholder="Match approved project schedule" /></label>
     </fieldset>
-    <fieldset class="equipment-fieldset"><legend>Sensor channel identification</legend>
+    <fieldset class="equipment-fieldset"><legend>Sensor channel 1</legend>
+      <small class="helper">Leave this channel blank to omit it. Add additional channels below as needed.</small>
+      <label>Channel / point label<input name="channelLabel" maxlength="120" placeholder="Point schedule identifier" /></label>
+      <label>Sensor location<input name="sensorLocation" maxlength="160" placeholder="Location on approved drawing" /></label>
       <label>Sensor manufacturer<input name="sensorManufacturer" maxlength="120" /></label>
       <label>Exact sensor part number<input name="sensorPartNumber" maxlength="120" /></label>
       <label>Gas service / channel<input name="sensorService" maxlength="100" placeholder="Oxygen, medical air, vacuum, etc." /></label>
       <label>Sensor range and units<input name="sensorRange" maxlength="100" placeholder="As shown in manufacturer documentation" /></label>
     </fieldset>
+    <div id="extraSensorChannels" aria-label="Additional sensor channels"></div>
+    <button type="button" class="secondary" id="addSensorChannelBtn">+ Add sensor channel</button>
+    <small class="helper">Maximum 16 sensor channels per panel. Each channel has separate gas service, sensor model, range and location fields.</small>
     <fieldset class="equipment-fieldset"><legend>Document and photo evidence</legend>
       <label>Factory wiring document title / ID<input name="factoryDoc" maxlength="180" placeholder="Document matching the installed hardware" /></label>
       <label>Factory document revision / date<input name="factoryDocRevision" maxlength="80" /></label>
