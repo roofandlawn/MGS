@@ -46,6 +46,16 @@ try:
         form.locator('[name="sensorPartNumber"]').fill("Exact sensor P/N")
         form.locator('[name="sensorService"]').fill("Oxygen")
         form.locator('[name="sensorRange"]').fill("Range as labeled")
+        form.locator('[name="channelLabel"]').fill("OR 1 oxygen")
+        form.locator('[name="sensorLocation"]').fill("Downstream of zone valve")
+        page.locator("#addSensorChannelBtn").click()
+        second = page.locator(".sensor-extra-channel").first
+        second.locator('[data-channel-field="channelLabel"]').fill("OR 1 medical air")
+        second.locator('[data-channel-field="sensorService"]').fill("Medical air")
+        second.locator('[data-channel-field="sensorManufacturer"]').fill("Second sensor manufacturer")
+        second.locator('[data-channel-field="sensorPartNumber"]').fill("Air sensor P/N")
+        second.locator('[data-channel-field="sensorRange"]').fill("Air sensor range")
+        second.locator('[data-channel-field="sensorLocation"]').fill("Pipe branch to OR 1")
         form.locator('[name="panelZoneId"]').fill("L3-AREA-01")
         form.locator('[name="factoryDoc"]').fill("Factory document ID")
         form.locator('[name="factoryDocRevision"]').fill("Document revision")
@@ -53,7 +63,12 @@ try:
         form.locator('[name="notes"]').fill("<script>alert(1)</script>")
         form.locator('button[type="submit"]').click()
         assert "Equipment documentation:" in page.locator("#alarmList").inner_text()
+        assert "2 sensor channel(s)" in page.locator("#alarmList").inner_text()
+        assert "Medical air" in page.locator("#alarmList").inner_text()
         assert "<script>" not in page.locator("#alarmList").inner_html(), "User notes should not become HTML"
+        snapshot = page.evaluate("JSON.parse(localStorage.getItem('mgs-prototype-v3'))")
+        channels = snapshot["projects"][0]["alarms"][0]["equipment"]["sensorChannels"]
+        assert len(channels) == 2 and channels[1]["sensorService"] == "Medical air", "Two channels should be saved under one panel"
 
         # Exercise existing project-photo workflow and new photo linkage.
         page.locator('.tab[data-tab="photos"]').click()
@@ -74,8 +89,17 @@ try:
         page.reload(wait_until="domcontentloaded")
         page.locator('.tab[data-tab="alarms"]').click()
         assert "Installed area alarm panel" in page.locator("#alarmList").inner_text(), "Equipment record must persist after reload"
+        assert "2 sensor channel(s)" in page.locator("#alarmList").inner_text(), "Both sensor channels must persist after reload"
         report = page.locator("#report").text_content()
         assert "MG-501 rev A" in report and "Factory document ID" in report, "Printable report must include equipment evidence"
+        assert "Oxygen" in report and "Medical air" in report and "Air sensor P/N" in report, "Each channel must print separately"
+        page.locator("#alarmList [data-alarm-equipment]").click()
+        assert page.locator(".sensor-extra-channel").count() == 1, "Second channel must reopen for editing"
+        page.locator(".sensor-extra-channel [data-remove-sensor-channel]").click()
+        page.locator('#areaAlarmEquipmentForm button[type="submit"]').click()
+        snapshot = page.evaluate("JSON.parse(localStorage.getItem('mgs-prototype-v3'))")
+        assert len(snapshot["projects"][0]["alarms"][0]["equipment"]["sensorChannels"]) == 1, "Removing a channel must persist"
+        assert "Medical air" not in page.locator("#report").inner_text(), "Removed channel must not appear in report"
 
         page.locator('.tab[data-tab="photos"]').click()
         page.locator("[data-photo-delete]").first.click()
