@@ -61,7 +61,7 @@ function status(raw,photos){
     missing.push(...pending.map(label=>'Channel '+(index+1)+': '+label));
     return {id:channel.id,missing:pending,recorded:Object.keys(channelEvidence).length-pending.length};
   });
-  if(!channels.length) missing.push('At least one sensor channel');
+  if(!channels.length) missing.push(...Object.values(channelEvidence).map(label=>'Channel 1: '+label));
   const total=Object.keys(panelEvidence).length+Math.max(1,channels.length)*Object.keys(channelEvidence).length;
   return {linkedPhoto,missing,total,recorded:total-missing.length,
     channels,photoMissing:Boolean(record.photoId&&!linkedPhoto)};
