@@ -45,3 +45,13 @@ footer{max-width:1180px;margin:0 auto;padding:0 18px 40px;color:var(--muted);fon
 .alarm-equipment-report{margin-top:8px;line-height:1.3}
 .alarm-equipment-report small{overflow-wrap:anywhere}
 @media(max-width:520px){.area-alarm-equipment dl{grid-template-columns:1fr}}
+
+
+/* Additional monitored sensor channels under a single area alarm panel. */
+#extraSensorChannels{display:grid;gap:8px}
+#addSensorChannelBtn{min-height:44px;margin-top:6px}
+.sensor-extra-channel{background:#f8fbff;min-width:0}
+.sensor-extra-channel [data-remove-sensor-channel]{min-height:44px;color:#8a3440;border-color:#e7c8cc}
+.sensor-extra-channel label{min-width:0}
+.alarm-channel-report{margin-top:9px;padding-top:7px;border-top:1px solid #ddd;display:grid;gap:10px}
+.alarm-channel-report>div{padding-bottom:7px;border-bottom:1px dashed #ddd}
