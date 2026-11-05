@@ -463,11 +463,31 @@ $('#areaAlarmEquipmentForm').addEventListener('submit', event => {
   }
   const equipment = {};
   MGSAreaAlarmEquipment.fields.forEach(field => { equipment[field] = formData.get(field); });
+  equipment.sensorChannels = MGSAreaAlarmEquipment.collectChannels(event.currentTarget);
   equipment.updatedAt = new Date().toISOString();
   alarm.equipment = MGSAreaAlarmEquipment.normalize(equipment);
   event.currentTarget.reset();
   $('#areaAlarmEquipmentDialog').close();
   save();
+});
+
+$('#addSensorChannelBtn').addEventListener('click', () => {
+  const host = $('#extraSensorChannels');
+  const count = 1 + host.querySelectorAll('.sensor-extra-channel').length;
+  if (count >= MGSAreaAlarmEquipment.maxChannels) return;
+  host.insertAdjacentHTML('beforeend',
+    MGSAreaAlarmEquipment.extraChannelMarkup({id: crypto.randomUUID()},count));
+  $('#addSensorChannelBtn').disabled = count + 1 >= MGSAreaAlarmEquipment.maxChannels;
+});
+
+$('#extraSensorChannels').addEventListener('click', event => {
+  const button = event.target.closest('[data-remove-sensor-channel]');
+  if (!button) return;
+  button.closest('.sensor-extra-channel').remove();
+  $('#extraSensorChannels').querySelectorAll('.sensor-extra-channel').forEach((group,index) => {
+    group.querySelector('legend').textContent = 'Channel ' + (index+2);
+  });
+  $('#addSensorChannelBtn').disabled = false;
 });
 
 $('#outletForm').addEventListener('submit', e => {
@@ -534,9 +554,16 @@ alarmList.addEventListener('click', e => {
     const form = $('#areaAlarmEquipmentForm');
     form.reset();
     form.elements.alarmId.value = alarm.id;
+    const equipment = MGSAreaAlarmEquipment.normalize(alarm.equipment || {});
     MGSAreaAlarmEquipment.fields.filter(field => field !== 'photoId').forEach(field => {
-      form.elements[field].value = alarm.equipment?.[field] || '';
+      form.elements[field].value = equipment[field] || '';
     });
+    form.elements.channelLabel.value = equipment.sensorChannels[0]?.channelLabel || '';
+    form.elements.sensorLocation.value = equipment.sensorChannels[0]?.sensorLocation || '';
+    form.dataset.firstChannelId = equipment.sensorChannels[0]?.id || 'channel-1';
+    $('#extraSensorChannels').innerHTML = equipment.sensorChannels.slice(1)
+      .map((channel,index) => MGSAreaAlarmEquipment.extraChannelMarkup(channel,index+1)).join('');
+    $('#addSensorChannelBtn').disabled = equipment.sensorChannels.length >= MGSAreaAlarmEquipment.maxChannels;
     const photos = Array.isArray(p.photos) ? p.photos : [];
     const oldPhotoId = alarm.equipment?.photoId || '';
     const missingPhoto = oldPhotoId && !photos.some(photo => photo.id === oldPhotoId)
