@@ -96,10 +96,11 @@ try:
         page.locator('#areaAlarmEquipmentForm button[type="submit"]').click()
         assert "Installed area alarm panel" in page.locator("#alarmList").inner_text()
         snapshot = page.evaluate("JSON.parse(localStorage.getItem('mgs-prototype-v3'))")
-        assert snapshot["projects"][0]["alarms"][0]["equipment"]["photoId"] == snapshot["projects"][0]["photos"][0]["id"], "Linked photo ID must match the selected project's photo ID"
+        ids_by_caption = {photo["caption"]: photo["id"] for photo in snapshot["projects"][0]["photos"]}
+        assert snapshot["projects"][0]["alarms"][0]["equipment"]["photoId"] == ids_by_caption["Installed area alarm panel"], "Panel photo must link by chosen identity, independent of photo ordering"
         saved = snapshot["projects"][0]["alarms"][0]["equipment"]["sensorChannels"]
-        assert saved[0]["photoId"] == snapshot["projects"][0]["photos"][0]["id"]
-        assert saved[1]["photoId"] == snapshot["projects"][0]["photos"][1]["id"], "Each channel photo should link independently"
+        assert saved[0]["photoId"] == ids_by_caption["Installed area alarm panel"]
+        assert saved[1]["photoId"] == ids_by_caption["Medical air sensor photo"], "Each channel photo should link independently"
         assert saved[0]["pointScheduleRef"] == "MG-301 / O2-1"
         assert saved[1]["pointScheduleRevision"] == "B"
 
