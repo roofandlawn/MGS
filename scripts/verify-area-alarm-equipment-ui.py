@@ -123,7 +123,7 @@ try:
         assert "Air sensor P/N" not in page.locator("#report").inner_text(), "Removed channel's hardware must not appear in report"
 
         page.locator('.tab[data-tab="photos"]').click()
-        page.locator("[data-photo-delete]").first.click()
+        page.locator(".photo-card").filter(has_text="Installed area alarm panel").locator("[data-photo-delete]").click()
         page.locator('.tab[data-tab="alarms"]').click()
         assert "Previously linked photo no longer exists" in page.locator("#alarmList").inner_text(), "Deleted evidence should be visibly flagged"
         assert "Previously linked channel photo missing" in page.locator("#alarmList").inner_text(), "Deleted sensor photo must be flagged without hiding the record"
