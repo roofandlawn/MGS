@@ -118,7 +118,8 @@ try:
         page.locator('#areaAlarmEquipmentForm button[type="submit"]').click()
         snapshot = page.evaluate("JSON.parse(localStorage.getItem('mgs-prototype-v3'))")
         assert len(snapshot["projects"][0]["alarms"][0]["equipment"]["sensorChannels"]) == 1, "Removing a channel must persist"
-        assert "Medical air" not in page.locator("#report").inner_text(), "Removed channel must not appear in report"
+        assert "MG-301 / AIR-1" not in page.locator("#report").inner_text(), "Removed channel's schedule must not appear in report"
+        assert "Air sensor P/N" not in page.locator("#report").inner_text(), "Removed channel's hardware must not appear in report"
 
         page.locator('.tab[data-tab="photos"]').click()
         page.locator("[data-photo-delete]").first.click()
