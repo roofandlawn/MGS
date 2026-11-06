@@ -54,4 +54,35 @@ assert.equal(E.normalize({sensorChannels:[],sensorService:'Oxygen'}).sensorChann
   'explicit empty channel list is not replaced by stale legacy field');
 assert.equal(E.status({panelManufacturer:'Maker'},[]).recorded,1,
   'empty panel must not count nonexistent sensor details');
-console.log('Area-alarm multi-channel model, legacy migration and HTML safeguards passed.');
+const photos=[{id:'o2-photo',caption:'Oxygen sensor at valve box'},
+  {id:'air-photo',caption:'Air sensor photo'}];
+const withEvidence=E.normalize({panelModel:'Multigas panel',sensorChannels:[
+  {id:'oxygen',channelLabel:'O2-1',sensorService:'Oxygen',pointScheduleRef:'MG-301 / O2-1',
+    pointScheduleRevision:'C',photoId:'o2-photo'},
+  {id:'air',channelLabel:'AIR-1',sensorService:'Medical air',pointScheduleRef:'MG-301 / AIR-1',
+    pointScheduleRevision:'B',photoId:'air-photo'}
+]});
+assert.equal(E.normalize(JSON.parse(JSON.stringify(withEvidence))).sensorChannels[1].photoId,'air-photo');
+assert.equal(withEvidence.sensorChannels[0].pointScheduleRef,'MG-301 / O2-1');
+const evidenceStatus=E.status(withEvidence,photos);
+assert.equal(evidenceStatus.channels[0].photoMissing,false);
+assert.equal(evidenceStatus.channels[1].photoMissing,false);
+assert.ok(!evidenceStatus.missing.includes('Channel 2: Channel installation photo'));
+const afterDelete=E.status(withEvidence,photos.slice(0,1));
+assert.equal(afterDelete.channels[0].photoMissing,false);
+assert.equal(afterDelete.channels[1].photoMissing,true);
+assert.ok(afterDelete.missing.includes('Channel 2: Channel installation photo'));
+const channelReport=E.reportMarkup({id:'e',type:'Area alarm',equipment:withEvidence},photos);
+assert.match(channelReport,/MG-301 \/ O2-1/);
+assert.match(channelReport,/MG-301 \/ AIR-1/);
+assert.match(channelReport,/Oxygen sensor at valve box/);
+assert.match(channelReport,/Air sensor photo/);
+assert.match(E.cardMarkup({type:'Area alarm',id:'e',equipment:withEvidence},photos.slice(0,1)),/Previously linked channel photo missing/);
+assert.match(E.photoOptionsMarkup(photos,'air-photo'),/Air sensor photo/);
+assert.match(E.photoOptionsMarkup(photos,'deleted-photo'),/Previously linked channel photo missing/);
+const safe=E.extraChannelMarkup({pointScheduleRef:'<svg onload=alert(1)>',
+  photoId:'unlisted" onfocus="hack'},1,photos);
+assert.ok(!safe.includes('<svg'));
+assert.ok(!safe.includes('value="unlisted" onfocus="hack"'));
+assert.match(safe,/&lt;svg/);
+console.log('Area-alarm multi-channel, channel evidence, legacy migration and HTML safeguards passed.');

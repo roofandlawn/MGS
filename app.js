@@ -461,9 +461,15 @@ $('#areaAlarmEquipmentForm').addEventListener('submit', event => {
     alert('Selected installation photo is missing. Choose an existing project photo or no photo.');
     return;
   }
+  const channels = MGSAreaAlarmEquipment.collectChannels(event.currentTarget);
+  if (channels.some(channel => channel.photoId &&
+      !p.photos.some(photo => photo.id === channel.photoId))) {
+    alert('One or more channel installation photos are missing. Select an existing project photo or clear the channel link.');
+    return;
+  }
   const equipment = {};
   MGSAreaAlarmEquipment.fields.forEach(field => { equipment[field] = formData.get(field); });
-  equipment.sensorChannels = MGSAreaAlarmEquipment.collectChannels(event.currentTarget);
+  equipment.sensorChannels = channels;
   equipment.updatedAt = new Date().toISOString();
   alarm.equipment = MGSAreaAlarmEquipment.normalize(equipment);
   event.currentTarget.reset();
@@ -476,7 +482,7 @@ $('#addSensorChannelBtn').addEventListener('click', () => {
   const count = 1 + host.querySelectorAll('.sensor-extra-channel').length;
   if (count >= MGSAreaAlarmEquipment.maxChannels) return;
   host.insertAdjacentHTML('beforeend',
-    MGSAreaAlarmEquipment.extraChannelMarkup({id: crypto.randomUUID()},count));
+    MGSAreaAlarmEquipment.extraChannelMarkup({id: crypto.randomUUID()},count,selectedProject()?.photos));
   $('#addSensorChannelBtn').disabled = count + 1 >= MGSAreaAlarmEquipment.maxChannels;
 });
 
@@ -558,13 +564,22 @@ alarmList.addEventListener('click', e => {
     MGSAreaAlarmEquipment.fields.filter(field => field !== 'photoId').forEach(field => {
       form.elements[field].value = equipment[field] || '';
     });
-    form.elements.channelLabel.value = equipment.sensorChannels[0]?.channelLabel || '';
-    form.elements.sensorLocation.value = equipment.sensorChannels[0]?.sensorLocation || '';
-    form.dataset.firstChannelId = equipment.sensorChannels[0]?.id || 'channel-1';
-    $('#extraSensorChannels').innerHTML = equipment.sensorChannels.slice(1)
-      .map((channel,index) => MGSAreaAlarmEquipment.extraChannelMarkup(channel,index+1)).join('');
-    $('#addSensorChannelBtn').disabled = equipment.sensorChannels.length >= MGSAreaAlarmEquipment.maxChannels;
     const photos = Array.isArray(p.photos) ? p.photos : [];
+    const first = equipment.sensorChannels[0] || {};
+    form.elements.channelLabel.value = first.channelLabel || '';
+    form.elements.sensorLocation.value = first.sensorLocation || '';
+    form.elements.pointScheduleRef.value = first.pointScheduleRef || '';
+    form.elements.pointScheduleRevision.value = first.pointScheduleRevision || '';
+    form.elements.channelPhotoId.innerHTML = MGSAreaAlarmEquipment.photoOptionsMarkup(photos,first.photoId);
+    form.elements.channelPhotoId.value = first.photoId || '';
+    form.dataset.firstChannelId = first.id || 'channel-1';
+    $('#extraSensorChannels').innerHTML = equipment.sensorChannels.slice(1)
+      .map((channel,index) => MGSAreaAlarmEquipment.extraChannelMarkup(channel,index+1,photos)).join('');
+    $('#extraSensorChannels').querySelectorAll('.sensor-extra-channel').forEach((group,index) => {
+      const linked=equipment.sensorChannels[index+1]?.photoId||'';
+      group.querySelector('[data-channel-field="photoId"]').value=linked;
+    });
+    $('#addSensorChannelBtn').disabled = equipment.sensorChannels.length >= MGSAreaAlarmEquipment.maxChannels;
     const oldPhotoId = alarm.equipment?.photoId || '';
     const missingPhoto = oldPhotoId && !photos.some(photo => photo.id === oldPhotoId)
       ? '<option value="' + escapeHtml(oldPhotoId) + '">Previously linked photo missing (choose another)</option>'

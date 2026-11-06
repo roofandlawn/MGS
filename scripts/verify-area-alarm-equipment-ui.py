@@ -48,6 +48,8 @@ try:
         form.locator('[name="sensorRange"]').fill("Range as labeled")
         form.locator('[name="channelLabel"]').fill("OR 1 oxygen")
         form.locator('[name="sensorLocation"]').fill("Downstream of zone valve")
+        form.locator('[name="pointScheduleRef"]').fill("MG-301 / O2-1")
+        form.locator('[name="pointScheduleRevision"]').fill("C")
         page.locator("#addSensorChannelBtn").click()
         second = page.locator(".sensor-extra-channel").first
         second.locator('[data-channel-field="channelLabel"]').fill("OR 1 medical air")
@@ -56,6 +58,8 @@ try:
         second.locator('[data-channel-field="sensorPartNumber"]').fill("Air sensor P/N")
         second.locator('[data-channel-field="sensorRange"]').fill("Air sensor range")
         second.locator('[data-channel-field="sensorLocation"]').fill("Pipe branch to OR 1")
+        second.locator('[data-channel-field="pointScheduleRef"]').fill("MG-301 / AIR-1")
+        second.locator('[data-channel-field="pointScheduleRevision"]').fill("B")
         form.locator('[name="panelZoneId"]').fill("L3-AREA-01")
         form.locator('[name="factoryDoc"]').fill("Factory document ID")
         form.locator('[name="factoryDocRevision"]').fill("Document revision")
@@ -78,13 +82,26 @@ try:
         page.locator("#photoDialog").wait_for(state="visible")
         page.locator('#photoForm [name="caption"]').fill("Installed area alarm panel")
         page.locator("#photoForm button.primary").click()
+        page.locator("#photoInput").set_input_files(
+            {"name": "air-sensor.png", "mimeType": "image/png", "buffer": PNG}
+        )
+        page.locator("#photoDialog").wait_for(state="visible")
+        page.locator('#photoForm [name="caption"]').fill("Medical air sensor photo")
+        page.locator("#photoForm button.primary").click()
         page.locator('.tab[data-tab="alarms"]').click()
         page.locator("#alarmList [data-alarm-equipment]").click()
         page.locator('#areaAlarmEquipmentForm [name="photoId"]').select_option(label="Installed area alarm panel")
+        page.locator('#areaAlarmEquipmentForm [name="channelPhotoId"]').select_option(label="Installed area alarm panel")
+        page.locator('.sensor-extra-channel [data-channel-field="photoId"]').select_option(label="Medical air sensor photo")
         page.locator('#areaAlarmEquipmentForm button[type="submit"]').click()
         assert "Installed area alarm panel" in page.locator("#alarmList").inner_text()
         snapshot = page.evaluate("JSON.parse(localStorage.getItem('mgs-prototype-v3'))")
         assert snapshot["projects"][0]["alarms"][0]["equipment"]["photoId"] == snapshot["projects"][0]["photos"][0]["id"], "Linked photo ID must match the selected project's photo ID"
+        saved = snapshot["projects"][0]["alarms"][0]["equipment"]["sensorChannels"]
+        assert saved[0]["photoId"] == snapshot["projects"][0]["photos"][0]["id"]
+        assert saved[1]["photoId"] == snapshot["projects"][0]["photos"][1]["id"], "Each channel photo should link independently"
+        assert saved[0]["pointScheduleRef"] == "MG-301 / O2-1"
+        assert saved[1]["pointScheduleRevision"] == "B"
 
         page.reload(wait_until="domcontentloaded")
         page.locator('.tab[data-tab="alarms"]').click()
@@ -93,6 +110,8 @@ try:
         report = page.locator("#report").text_content()
         assert "MG-501 rev A" in report and "Factory document ID" in report, "Printable report must include equipment evidence"
         assert "Oxygen" in report and "Medical air" in report and "Air sensor P/N" in report, "Each channel must print separately"
+        assert "MG-301 / O2-1" in report and "MG-301 / AIR-1" in report, "Individual point schedule references must print"
+        assert "Medical air sensor photo" in report, "Channel-specific photo labels must print"
         page.locator("#alarmList [data-alarm-equipment]").click()
         assert page.locator(".sensor-extra-channel").count() == 1, "Second channel must reopen for editing"
         page.locator(".sensor-extra-channel [data-remove-sensor-channel]").click()
@@ -105,6 +124,7 @@ try:
         page.locator("[data-photo-delete]").first.click()
         page.locator('.tab[data-tab="alarms"]').click()
         assert "Previously linked photo no longer exists" in page.locator("#alarmList").inner_text(), "Deleted evidence should be visibly flagged"
+        assert "Previously linked channel photo missing" in page.locator("#alarmList").inner_text(), "Deleted sensor photo must be flagged without hiding the record"
         assert not errors, "Browser JS errors: " + "; ".join(errors)
         browser.close()
     print("Area alarm equipment end-to-end mobile workflow passed at 390px.")
