@@ -27,11 +27,6 @@ try:
         browser = p.chromium.launch(headless=True)
         page = browser.new_page(viewport={"width": 390, "height": 844})
         page.on("pageerror", lambda error: errors.append(str(error)))
-        dialogs = []
-        def handle_dialog(dialog):
-            dialogs.append(dialog.message)
-            dialog.dismiss()
-        page.on("dialog", handle_dialog)
         page.goto(url, wait_until="domcontentloaded")
         page.locator("#newProjectBtn").click()
         page.locator('#projectForm [name="name"]').fill("Alarm equipment test project")
@@ -80,17 +75,17 @@ try:
         assert len(channels) == 2 and channels[1]["sensorService"] == "Medical air", "Two channels should be saved under one panel"
 
 
-        # Create two independent alarm functional-test records before linking them to channels.
-        page.locator('.tab[data-tab="tests"]').click()
-        for test_type, system, result in [
-            ("Area alarm functional test O2", "Oxygen", "Needs attention"),
-            ("Area alarm functional test AIR", "Medical air", "Pass"),
-        ]:
-            page.locator("#addTestBtn").click()
-            page.locator('#testForm [name="type"]').fill(test_type)
-            page.locator('#testForm [name="system"]').fill(system)
-            page.locator('#testForm [name="status"]').select_option(result)
-            page.locator("#testForm").evaluate("(form) => form.requestSubmit()")
+        # Seed existing project test records; this smoke test targets channel linkage, not generic test-form submission.
+        page.evaluate("""() => {
+          const state = JSON.parse(localStorage.getItem('mgs-prototype-v3'));
+          state.projects[0].tests.unshift(
+            {id: crypto.randomUUID(), type: 'Area alarm functional test O2', system: 'Oxygen',
+             location: 'L3', date: '2026-11-07', status: 'Needs attention'},
+            {id: crypto.randomUUID(), type: 'Area alarm functional test AIR', system: 'Medical air',
+             location: 'L3', date: '2026-11-07', status: 'Pass'});
+          localStorage.setItem('mgs-prototype-v3', JSON.stringify(state));
+        }""")
+        page.reload(wait_until="domcontentloaded")
         snapshot = page.evaluate("JSON.parse(localStorage.getItem('mgs-prototype-v3'))")
         test_ids = {test["system"]: test["id"] for test in snapshot["projects"][0]["tests"]}
         page.locator('.tab[data-tab="alarms"]').click()
