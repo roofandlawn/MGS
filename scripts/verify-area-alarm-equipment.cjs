@@ -91,16 +91,16 @@ const functionalTests=[
   {id:'pressure',type:'Standing pressure',system:'Oxygen',status:'Pass'}
 ];
 assert.equal(E.alarmTestCandidates(functionalTests).length,2,'Other system tests cannot be offered as alarm tests');
-const linked=E.normalize({sensorChannels:[
+const linkedChannels=E.normalize({sensorChannels:[
   {id:'o2',sensorService:'Oxygen',testIds:['o2-func','o2-func','air-func']},
   {id:'air',sensorService:'Medical air',testIds:['air-func']}
 ]});
-assert.deepEqual(linked.sensorChannels[0].testIds,['o2-func','air-func'],'Repeated test links deduplicate');
-assert.deepEqual(E.normalize(JSON.parse(JSON.stringify(linked))).sensorChannels[1].testIds,['air-func']);
+assert.deepEqual(linkedChannels.sensorChannels[0].testIds,['o2-func','air-func'],'Repeated test links deduplicate');
+assert.deepEqual(E.normalize(JSON.parse(JSON.stringify(linkedChannels))).sensorChannels[1].testIds,['air-func']);
 assert.equal(E.normalizeChannel({testIds:'o2-func'},0).testIds.length,0,'Malformed test links are ignored');
-assert.match(E.cardMarkup({id:'linked',type:'Area alarm',equipment:linked},[],functionalTests),/Needs attention/);
-assert.match(E.reportMarkup({id:'linked',type:'Area alarm',equipment:linked},[],functionalTests),/Alarm low\/high signal/);
-const deletedTestReport=E.reportMarkup({id:'linked',type:'Area alarm',equipment:linked},[],functionalTests.slice(1));
+assert.match(E.cardMarkup({id:'linked',type:'Area alarm',equipment:linkedChannels},[],functionalTests),/Needs attention/);
+assert.match(E.reportMarkup({id:'linked',type:'Area alarm',equipment:linkedChannels},[],functionalTests),/Alarm low\/high signal/);
+const deletedTestReport=E.reportMarkup({id:'linked',type:'Area alarm',equipment:linkedChannels},[],functionalTests.slice(1));
 assert.match(deletedTestReport,/Previously linked alarm test record missing/,'Deleted test must remain flagged');
 assert.ok(E.testChoicesMarkup(functionalTests,['o2-func']).includes('data-channel-test-id="o2-func" checked'));
 assert.ok(!E.testChoicesMarkup(functionalTests,[]).includes('Standing pressure'));
