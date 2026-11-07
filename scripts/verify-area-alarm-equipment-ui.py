@@ -141,7 +141,7 @@ try:
         page.locator('.tab[data-tab="alarms"]').click()
         assert "Area alarm functional test O2" in page.locator("#alarmList").inner_text(), "Linked tests must render on alarm cards"
         assert "Needs attention" in page.locator("#report").inner_text(), "Linked test status must print"
-                assert not errors, "Browser JS errors: " + "; ".join(errors)
+        assert not errors, "Browser JS errors: " + "; ".join(errors)
         browser.close()
     print("Area alarm equipment end-to-end mobile workflow passed at 390px.")
 finally:
