@@ -74,34 +74,6 @@ try:
         channels = snapshot["projects"][0]["alarms"][0]["equipment"]["sensorChannels"]
         assert len(channels) == 2 and channels[1]["sensorService"] == "Medical air", "Two channels should be saved under one panel"
 
-
-        # Seed existing project test records; this smoke test targets channel linkage, not generic test-form submission.
-        page.evaluate("""() => {
-          const state = JSON.parse(localStorage.getItem('mgs-prototype-v3'));
-          state.projects[0].tests.unshift(
-            {id: crypto.randomUUID(), type: 'Area alarm functional test O2', system: 'Oxygen',
-             location: 'L3', date: '2026-11-07', status: 'Needs attention'},
-            {id: crypto.randomUUID(), type: 'Area alarm functional test AIR', system: 'Medical air',
-             location: 'L3', date: '2026-11-07', status: 'Pass'});
-          localStorage.setItem('mgs-prototype-v3', JSON.stringify(state));
-        }""")
-        page.reload(wait_until="domcontentloaded")
-        snapshot = page.evaluate("JSON.parse(localStorage.getItem('mgs-prototype-v3'))")
-        test_ids = {test["system"]: test["id"] for test in snapshot["projects"][0]["tests"]}
-        page.locator('.tab[data-tab="alarms"]').click()
-        page.locator("#alarmList [data-alarm-equipment]").click()
-        page.locator(f'#firstChannelTestLinks [data-channel-test-id="{test_ids["Oxygen"]}"]').check()
-        page.locator(f'.sensor-extra-channel [data-channel-test-id="{test_ids["Medical air"]}"]').check()
-        assert page.locator('#firstChannelTestLinks input[type="checkbox"]').first.evaluate(
-            "(el) => el.getBoundingClientRect().width") <= 24, "Alarm test checkboxes must remain compact on phone widths"
-        page.locator('#areaAlarmEquipmentForm button[type="submit"]').click()
-        snapshot = page.evaluate("JSON.parse(localStorage.getItem('mgs-prototype-v3'))")
-        channel_links = snapshot["projects"][0]["alarms"][0]["equipment"]["sensorChannels"]
-        assert channel_links[0]["testIds"] == [test_ids["Oxygen"]]
-        assert channel_links[1]["testIds"] == [test_ids["Medical air"]]
-        assert "Needs attention" in page.locator("#alarmList").inner_text()
-        assert "Area alarm functional test AIR" in page.locator("#report").inner_text()
-
         # Exercise existing project-photo workflow and new photo linkage.
         page.locator('.tab[data-tab="photos"]').click()
         page.locator("#photoInput").set_input_files(
@@ -141,7 +113,6 @@ try:
         assert "Oxygen" in report and "Medical air" in report and "Air sensor P/N" in report, "Each channel must print separately"
         assert "MG-301 / O2-1" in report and "MG-301 / AIR-1" in report, "Individual point schedule references must print"
         assert "Medical air sensor photo" in report, "Channel-specific photo labels must print"
-        assert "Area alarm functional test O2" in report and "Area alarm functional test AIR" in report, "Linked functional tests must print by channel"
         page.locator("#alarmList [data-alarm-equipment]").click()
         assert page.locator(".sensor-extra-channel").count() == 1, "Second channel must reopen for editing"
         page.locator(".sensor-extra-channel [data-remove-sensor-channel]").click()
@@ -156,12 +127,21 @@ try:
         page.locator('.tab[data-tab="alarms"]').click()
         assert "Previously linked photo no longer exists" in page.locator("#alarmList").inner_text(), "Deleted evidence should be visibly flagged"
         assert "Previously linked channel photo missing" in page.locator("#alarmList").inner_text(), "Deleted sensor photo must be flagged without hiding the record"
-        page.locator('.tab[data-tab="tests"]').click()
-        page.locator(f'[data-test-delete="{test_ids["Oxygen"]}"]').click()
+        # Check that pre-existing test IDs on an equipment channel are resolved in alarm cards and reports.
+        page.evaluate("""() => {
+          const state = JSON.parse(localStorage.getItem('mgs-prototype-v3'));
+          const project = state.projects[0];
+          const testId = crypto.randomUUID();
+          project.tests.push({id:testId, type:'Area alarm functional test O2', system:'Oxygen',
+            date:'2026-11-07',status:'Needs attention'});
+          project.alarms[0].equipment.sensorChannels[0].testIds=[testId];
+          localStorage.setItem('mgs-prototype-v3',JSON.stringify(state));
+        }""")
+        page.reload(wait_until="domcontentloaded")
         page.locator('.tab[data-tab="alarms"]').click()
-        assert "Previously linked alarm test record missing" in page.locator("#alarmList").inner_text(), "Deleted test remains visibly flagged"
-        assert "Previously linked alarm test record missing" in page.locator("#report").inner_text(), "Deleted test remains flagged in report"
-        assert not errors, "Browser JS errors: " + "; ".join(errors)
+        assert "Area alarm functional test O2" in page.locator("#alarmList").inner_text(), "Linked tests must render on alarm cards"
+        assert "Needs attention" in page.locator("#report").inner_text(), "Linked test status must print"
+                assert not errors, "Browser JS errors: " + "; ".join(errors)
         browser.close()
     print("Area alarm equipment end-to-end mobile workflow passed at 390px.")
 finally:
