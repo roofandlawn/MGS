@@ -74,6 +74,32 @@ try:
         channels = snapshot["projects"][0]["alarms"][0]["equipment"]["sensorChannels"]
         assert len(channels) == 2 and channels[1]["sensorService"] == "Medical air", "Two channels should be saved under one panel"
 
+
+        # Create two independent alarm functional-test records before linking them to channels.
+        page.locator('.tab[data-tab="tests"]').click()
+        for test_type, system, result in [
+            ("Area alarm functional test O2", "Oxygen", "Needs attention"),
+            ("Area alarm functional test AIR", "Medical air", "Pass"),
+        ]:
+            page.locator("#addTestBtn").click()
+            page.locator('#testForm [name="type"]').fill(test_type)
+            page.locator('#testForm [name="system"]').fill(system)
+            page.locator('#testForm [name="status"]').select_option(result)
+            page.locator("#testForm button.primary").click()
+        snapshot = page.evaluate("JSON.parse(localStorage.getItem('mgs-prototype-v3'))")
+        test_ids = {test["system"]: test["id"] for test in snapshot["projects"][0]["tests"]}
+        page.locator('.tab[data-tab="alarms"]').click()
+        page.locator("#alarmList [data-alarm-equipment]").click()
+        page.locator(f'#firstChannelTestLinks [data-channel-test-id="{test_ids["Oxygen"]}"]').check()
+        page.locator(f'.sensor-extra-channel [data-channel-test-id="{test_ids["Medical air"]}"]').check()
+        page.locator('#areaAlarmEquipmentForm button[type="submit"]').click()
+        snapshot = page.evaluate("JSON.parse(localStorage.getItem('mgs-prototype-v3'))")
+        channel_links = snapshot["projects"][0]["alarms"][0]["equipment"]["sensorChannels"]
+        assert channel_links[0]["testIds"] == [test_ids["Oxygen"]]
+        assert channel_links[1]["testIds"] == [test_ids["Medical air"]]
+        assert "Needs attention" in page.locator("#alarmList").inner_text()
+        assert "Area alarm functional test AIR" in page.locator("#report").inner_text()
+
         # Exercise existing project-photo workflow and new photo linkage.
         page.locator('.tab[data-tab="photos"]').click()
         page.locator("#photoInput").set_input_files(
@@ -113,6 +139,7 @@ try:
         assert "Oxygen" in report and "Medical air" in report and "Air sensor P/N" in report, "Each channel must print separately"
         assert "MG-301 / O2-1" in report and "MG-301 / AIR-1" in report, "Individual point schedule references must print"
         assert "Medical air sensor photo" in report, "Channel-specific photo labels must print"
+        assert "Area alarm functional test O2" in report and "Area alarm functional test AIR" in report, "Linked functional tests must print by channel"
         page.locator("#alarmList [data-alarm-equipment]").click()
         assert page.locator(".sensor-extra-channel").count() == 1, "Second channel must reopen for editing"
         page.locator(".sensor-extra-channel [data-remove-sensor-channel]").click()
@@ -127,6 +154,11 @@ try:
         page.locator('.tab[data-tab="alarms"]').click()
         assert "Previously linked photo no longer exists" in page.locator("#alarmList").inner_text(), "Deleted evidence should be visibly flagged"
         assert "Previously linked channel photo missing" in page.locator("#alarmList").inner_text(), "Deleted sensor photo must be flagged without hiding the record"
+        page.locator('.tab[data-tab="tests"]').click()
+        page.locator(f'[data-test-delete="{test_ids["Oxygen"]}"]').click()
+        page.locator('.tab[data-tab="alarms"]').click()
+        assert "Previously linked alarm test record missing" in page.locator("#alarmList").inner_text(), "Deleted test remains visibly flagged"
+        assert "Previously linked alarm test record missing" in page.locator("#report").inner_text(), "Deleted test remains flagged in report"
         assert not errors, "Browser JS errors: " + "; ".join(errors)
         browser.close()
     print("Area alarm equipment end-to-end mobile workflow passed at 390px.")

@@ -274,7 +274,7 @@ function renderAlarms() {
       <span class="status ${statusClass(a.status)}">${escapeHtml(a.status)}</span>
       <button class="delete-link" data-alarm-delete="${a.id}">Delete</button>
       ${a.notes ? `<p>${escapeHtml(a.notes)}</p>` : ''}
-      ${MGSAreaAlarmEquipment.cardMarkup(a, p.photos)}
+      ${MGSAreaAlarmEquipment.cardMarkup(a, p.photos, p.tests)}
     </article>`).join('');
 }
 
@@ -356,7 +356,7 @@ function renderReport() {
     <div class="report-head"><div><p class="eyebrow">MGS</p><h1>Med Gas Project Report</h1></div><div class="report-date">Generated ${escapeHtml(new Date().toLocaleString())}</div></div>
     <section class="report-summary"><h2>${escapeHtml(p.name)}</h2><p><strong>Facility:</strong> ${escapeHtml(p.facility || '—')}<br><strong>Location:</strong> ${escapeHtml(p.location || '—')}<br><strong>Created:</strong> ${escapeHtml(p.createdAt || '—')}<br><strong>NFPA 99 basis:</strong> ${escapeHtml(codeEditionLabel(p.codeBasis.edition))}<br><strong>Jurisdiction:</strong> ${escapeHtml(p.codeBasis.jurisdiction || 'Not recorded')}<br><strong>AHJ:</strong> ${escapeHtml(p.codeBasis.ahj || 'Not recorded')}${p.codeBasis.notes ? `<br><strong>Code basis notes:</strong> ${escapeHtml(p.codeBasis.notes)}` : ''}<br><em>Code basis is user-recorded, not verified adoption.</em></p><strong>Systems in scope:</strong>${reportSystemMarkup(p)}${p.notes ? `<p>${escapeHtml(p.notes)}</p>` : ''}</section>
     <section><h3>Checklist (${done}/${p.tasks.length} complete)</h3>${reportRows(p.tasks, t => [`${t.done ? '✓' : '○'} ${escapeHtml(t.text)}`])}</section>
-    <section><h3>Alarm records</h3>${reportRows(p.alarms, a => [`<strong>${escapeHtml(a.type)}</strong><br>${escapeHtml(a.location)}<br><small>${escapeHtml(a.serves || '')}</small>`, `<strong>${escapeHtml(a.status)}</strong>${a.notes ? `<br>${escapeHtml(a.notes)}` : ''}${MGSAreaAlarmEquipment.reportMarkup(a, p.photos)}`])}</section>
+    <section><h3>Alarm records</h3>${reportRows(p.alarms, a => [`<strong>${escapeHtml(a.type)}</strong><br>${escapeHtml(a.location)}<br><small>${escapeHtml(a.serves || '')}</small>`, `<strong>${escapeHtml(a.status)}</strong>${a.notes ? `<br>${escapeHtml(a.notes)}` : ''}${MGSAreaAlarmEquipment.reportMarkup(a, p.photos, p.tests)}`])}</section>
     <section><h3>Outlet / terminal records</h3>${reportRows(p.outlets, o => [`<strong>${escapeHtml(o.gas)}</strong><br>${escapeHtml(o.location)}<br><small>${escapeHtml(o.identifier || '')}</small>`, `<strong>${escapeHtml(o.status)}</strong>${o.notes ? `<br>${escapeHtml(o.notes)}` : ''}`])}</section>
     <section><h3>Inspection & test records</h3>${reportRows(p.tests, t => [`<strong>${escapeHtml(t.type)}</strong><br>${escapeHtml(t.system || '')}<br>${escapeHtml(t.location || '')}`, `<strong>${escapeHtml(t.status)}</strong><br>${escapeHtml(formatDate(t.date))}${t.person ? `<br>${escapeHtml(t.person)}` : ''}${t.reading ? `<br>${escapeHtml(t.reading)}` : ''}${t.notes ? `<br>${escapeHtml(t.notes)}` : ''}`])}</section>
     <section><h3>Field notes</h3><div class="report-notes">${escapeHtml(p.fieldNotes || 'No field notes.')}</div></section>
@@ -482,7 +482,7 @@ $('#addSensorChannelBtn').addEventListener('click', () => {
   const count = 1 + host.querySelectorAll('.sensor-extra-channel').length;
   if (count >= MGSAreaAlarmEquipment.maxChannels) return;
   host.insertAdjacentHTML('beforeend',
-    MGSAreaAlarmEquipment.extraChannelMarkup({id: crypto.randomUUID()},count,selectedProject()?.photos));
+    MGSAreaAlarmEquipment.extraChannelMarkup({id: crypto.randomUUID()},count,selectedProject()?.photos,selectedProject()?.tests));
   $('#addSensorChannelBtn').disabled = count + 1 >= MGSAreaAlarmEquipment.maxChannels;
 });
 
@@ -572,9 +572,10 @@ alarmList.addEventListener('click', e => {
     form.elements.pointScheduleRevision.value = first.pointScheduleRevision || '';
     form.elements.channelPhotoId.innerHTML = MGSAreaAlarmEquipment.photoOptionsMarkup(photos,first.photoId);
     form.elements.channelPhotoId.value = first.photoId || '';
+    $('#firstChannelTestLinks').innerHTML = MGSAreaAlarmEquipment.testChoicesMarkup(p.tests,first.testIds);
     form.dataset.firstChannelId = first.id || 'channel-1';
     $('#extraSensorChannels').innerHTML = equipment.sensorChannels.slice(1)
-      .map((channel,index) => MGSAreaAlarmEquipment.extraChannelMarkup(channel,index+1,photos)).join('');
+      .map((channel,index) => MGSAreaAlarmEquipment.extraChannelMarkup(channel,index+1,photos,p.tests)).join('');
     $('#extraSensorChannels').querySelectorAll('.sensor-extra-channel').forEach((group,index) => {
       const linked=equipment.sensorChannels[index+1]?.photoId||'';
       group.querySelector('[data-channel-field="photoId"]').value=linked;

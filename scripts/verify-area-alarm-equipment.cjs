@@ -85,4 +85,30 @@ const safe=E.extraChannelMarkup({pointScheduleRef:'<svg onload=alert(1)>',
 assert.ok(!safe.includes('<svg'));
 assert.ok(!safe.includes('value="unlisted" onfocus="hack"'));
 assert.match(safe,/&lt;svg/);
-console.log('Area-alarm multi-channel, channel evidence, legacy migration and HTML safeguards passed.');
+const functionalTests=[
+  {id:'o2-func',type:'Area alarm functional test',system:'Oxygen',date:'2026-11-07',status:'Needs attention'},
+  {id:'air-func',type:'Alarm low/high signal',system:'Medical air',date:'2026-11-07',status:'Pass'},
+  {id:'pressure',type:'Standing pressure',system:'Oxygen',status:'Pass'}
+];
+assert.equal(E.alarmTestCandidates(functionalTests).length,2,'Other system tests cannot be offered as alarm tests');
+const linked=E.normalize({sensorChannels:[
+  {id:'o2',sensorService:'Oxygen',testIds:['o2-func','o2-func','air-func']},
+  {id:'air',sensorService:'Medical air',testIds:['air-func']}
+]});
+assert.deepEqual(linked.sensorChannels[0].testIds,['o2-func','air-func'],'Repeated test links deduplicate');
+assert.deepEqual(E.normalize(JSON.parse(JSON.stringify(linked))).sensorChannels[1].testIds,['air-func']);
+assert.equal(E.normalizeChannel({testIds:'o2-func'},0).testIds.length,0,'Malformed test links are ignored');
+assert.match(E.cardMarkup({id:'linked',type:'Area alarm',equipment:linked},[],functionalTests),/Needs attention/);
+assert.match(E.reportMarkup({id:'linked',type:'Area alarm',equipment:linked},[],functionalTests),/Alarm low\/high signal/);
+const deletedTestReport=E.reportMarkup({id:'linked',type:'Area alarm',equipment:linked},[],functionalTests.slice(1));
+assert.match(deletedTestReport,/Previously linked alarm test record missing/,'Deleted test must remain flagged');
+assert.ok(E.testChoicesMarkup(functionalTests,['o2-func']).includes('data-channel-test-id="o2-func" checked'));
+assert.ok(!E.testChoicesMarkup(functionalTests,[]).includes('Standing pressure'));
+const untrusted=E.testChoicesMarkup([{id:'bad" onload="x',type:'Alarm <script>alert(1)</script>'}],[]);
+assert.ok(!untrusted.includes('<script>'));
+assert.ok(!untrusted.includes('data-channel-test-id="bad" onload="x"'));
+assert.match(untrusted,/&lt;script&gt;/);
+const linkOnly=E.normalize({sensorChannels:[{testIds:['o2-func']}]});
+assert.equal(linkOnly.sensorChannels.length,1,'Links alone must not silently discard a channel');
+assert.equal(E.normalize({sensorChannels:[{sensorService:'Oxygen'}]}).sensorChannels[0].testIds.length,0);
+console.log('Area-alarm channel test links, missing-record guards, and prior equipment checks passed.');

@@ -28,13 +28,54 @@ function h(value){
   return String(value??'').replace(/&/g,'&amp;').replace(/</g,'&lt;')
     .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
+const maxTestLinks=24;
+function alarmTestCandidates(tests) {
+  return (Array.isArray(tests)?tests:[]).filter(test =>
+    test && String(test.id||'') && /alarm/i.test(String(test.type||'')));
+}
+function normalizedTestIds(values) {
+  if (!Array.isArray(values)) return [];
+  return [...new Set(values.map(id=>String(id||'').trim().slice(0,100)).filter(Boolean))].slice(0,maxTestLinks);
+}
+function testLabel(test) {
+  return [test.type,test.system,test.date,test.status].map(value=>String(value||'').trim())
+    .filter(Boolean).join(' / ');
+}
+function testChoicesMarkup(tests,selectedIds) {
+  const selected=normalizedTestIds(selectedIds);
+  const available=alarmTestCandidates(tests);
+  const known=new Set(available.map(test=>String(test.id)));
+  const choices=available.map(test=>({id:String(test.id),label:testLabel(test)}));
+  selected.filter(id=>!known.has(id)).forEach(id=>choices.push({
+    id,label:'Previously linked alarm test record missing — uncheck to clear'}));
+  return '<div class="channel-test-options" aria-label="Channel alarm functional-test links">'
+    +'<small class="helper">Link existing alarm functional-test records from this project. A recorded result does not establish independent verification.</small>'
+    +(choices.length?choices.map(test=>'<label><input type="checkbox" data-channel-test-id="'+h(test.id)+'"'
+      +(selected.includes(test.id)?' checked':'')+'> '+h(test.label)+'</label>').join('')
+      :'<small class="helper">No alarm test records yet. Add one under the Tests tab, then return here.</small>')
+    +'</div>';
+}
+function testSummary(channel,tests) {
+  if(!channel.testIds.length)return 'No alarm functional-test records linked';
+  const list=Array.isArray(tests)?tests:[];
+  return channel.testIds.map(id=>{
+    const test=list.find(item=>String(item.id)===id && /alarm/i.test(String(item.type||'')));
+    return test?testLabel(test):'Previously linked alarm test record missing';
+  }).join(' | ');
+}
+function checkedTestIds(host) {
+  if(!host)return [];
+  return normalizedTestIds(Array.from(host.querySelectorAll('[data-channel-test-id]:checked'))
+    .map(input=>input.dataset.channelTestId));
+}
 function normalizeChannel(raw,index){
   const input=raw&&typeof raw==='object'?raw:{};
   const out={id:String(input.id||'').trim().slice(0,100)||'channel-'+String(index+1)};
   channelFields.forEach(key=>{out[key]=String(input[key]??'').trim().slice(0,channelLimits[key]);});
+  out.testIds=normalizedTestIds(input.testIds);
   return out;
 }
-function hasChannelData(channel){return channelFields.some(key=>Boolean(channel[key]));}
+function hasChannelData(channel){return channelFields.some(key=>Boolean(channel[key])) || channel.testIds.length>0;}
 function normalize(raw){
   const input=raw&&typeof raw==='object'?raw:{},out={};
   fields.forEach(key=>{out[key]=String(input[key]??'').trim().slice(0,limits[key]);});
@@ -75,7 +116,7 @@ function status(raw,photos){
 function row(label,value){
   return '<div><dt>'+h(label)+'</dt><dd>'+h(value||'Not recorded')+'</dd></div>';
 }
-function channelSummary(channel,index,photos){
+function channelSummary(channel,index,photos,tests=[]){
   const linked=photos.find(photo=>photo.id===channel.photoId);
   const photoStatus=linked?(linked.caption||linked.location||'Linked photo'):
     (channel.photoId?'Previously linked channel photo missing':'Channel photo not linked');
@@ -83,9 +124,9 @@ function channelSummary(channel,index,photos){
     [channel.sensorService,channel.sensorLocation,channel.sensorManufacturer,channel.sensorPartNumber,
       channel.sensorRange,channel.pointScheduleRef,
       channel.pointScheduleRevision?'Rev '+channel.pointScheduleRevision:'',
-      photoStatus].filter(Boolean).join(' / '));
+      photoStatus,testSummary(channel,tests)].filter(Boolean).join(' / '));
 }
-function cardMarkup(alarm,photos){
+function cardMarkup(alarm,photos,tests=[]){
   if(!alarm||alarm.type!=='Area alarm')return '';
   const record=alarm.equipment?normalize(alarm.equipment):null;
   const s=record?status(record,photos):null;
@@ -94,7 +135,7 @@ function cardMarkup(alarm,photos){
       +'<small>'+record.sensorChannels.length+' sensor channel(s) on this panel</small>'
       +'<dl>'+row('Panel',[record.panelManufacturer,record.panelFamily,record.panelModel,record.panelRevision].filter(Boolean).join(' / '))
       +row('Panel / zone ID',record.panelZoneId)
-      +record.sensorChannels.map((channel,index)=>channelSummary(channel,index,Array.isArray(photos)?photos:[])).join('')
+      +record.sensorChannels.map((channel,index)=>channelSummary(channel,index,Array.isArray(photos)?photos:[],tests)).join('')
       +row('Manufacturer document',[record.factoryDoc,record.factoryDocRevision].filter(Boolean).join(' / '))
       +row('Approved drawing',record.approvedDrawing)
       +row('Project photo',s.linkedPhoto?(s.linkedPhoto.caption||s.linkedPhoto.location||'Linked photo')
@@ -107,7 +148,7 @@ function cardMarkup(alarm,photos){
     +(record?'Edit equipment details':'+ Record equipment details')+'</button>'
     +'<small>Documentation only. Do not infer wiring terminals or approval.</small></div>';
 }
-function reportMarkup(alarm,photos){
+function reportMarkup(alarm,photos,tests=[]){
   if(!alarm||alarm.type!=='Area alarm'||!alarm.equipment)return '';
   const e=normalize(alarm.equipment),s=status(e,photos);
   const details=[
@@ -126,6 +167,7 @@ function reportMarkup(alarm,photos){
         ['Sensor part number',channel.sensorPartNumber],['Sensor range',channel.sensorRange],
         ['Approved point schedule / drawing',channel.pointScheduleRef],
         ['Point schedule revision',channel.pointScheduleRevision],
+        ['Linked alarm functional-test records',testSummary(channel,tests)],
         ['Channel installation photo',photo?(photo.caption||photo.location||photo.id):
           (channel.photoId?'Previously linked channel photo missing':'Not linked')]];
       return '<div><strong>Channel '+(index+1)+'</strong><br>'
@@ -136,7 +178,8 @@ function reportMarkup(alarm,photos){
     +details.map(([label,value])=>'<small><strong>'+h(label)+':</strong> '+h(value||'Not recorded')+'</small>').join('<br>')
     +'<div class="alarm-channel-report">'+channels+'</div>'
     +'<br><small>Evidence fields recorded: '+s.recorded+'/'+s.total+'; pending: '
-    +h(s.missing.join(', ')||'None; independent verification still required')+'</small></div>';
+    +h(s.missing.join(', ')||'None; independent verification still required')+'</small>'
+    +'<br><small>Test links reflect existing field records, not ASSE 6030 verification.</small></div>';
 }
 function photoOptionsMarkup(photos,selectedId){
   const list=Array.isArray(photos)?photos:[];
@@ -146,7 +189,7 @@ function photoOptionsMarkup(photos,selectedId){
   list.forEach(photo=>options.push('<option value="'+h(photo.id)+'">'+h(photo.caption||photo.location||'Project photo')+'</option>'));
   return options.join('');
 }
-function extraChannelMarkup(raw,index,photos=[]){
+function extraChannelMarkup(raw,index,photos=[],tests=[]){
   const c=normalizeChannel(raw,index);
   return '<fieldset class="equipment-fieldset sensor-extra-channel" data-channel-id="'+h(c.id)+'">'
     +'<legend>Channel '+(index+1)+'</legend>'
@@ -160,6 +203,8 @@ function extraChannelMarkup(raw,index,photos=[]){
     +'<label>Approved point schedule / drawing<input data-channel-field="pointScheduleRef" maxlength="180" value="'+h(c.pointScheduleRef)+'" placeholder="Sheet / point ID — approved documents only"></label>'
     +'<label>Point schedule revision<input data-channel-field="pointScheduleRevision" maxlength="80" value="'+h(c.pointScheduleRevision)+'"></label>'
     +'<label>Channel installation photo<select data-channel-field="photoId">'+photoOptionsMarkup(photos,c.photoId)+'</select></label>'
+    +'<div class="channel-test-field"><strong>Linked alarm functional-test records</strong>'
+    +testChoicesMarkup(tests,c.testIds)+'</div>'
     +'</fieldset>';
 }
 function collectChannels(form){
@@ -169,14 +214,15 @@ function collectChannels(form){
     sensorLocation:form.elements.sensorLocation.value,
     pointScheduleRef:form.elements.pointScheduleRef.value,
     pointScheduleRevision:form.elements.pointScheduleRevision.value,
-    photoId:form.elements.channelPhotoId.value
+    photoId:form.elements.channelPhotoId.value,
+    testIds:checkedTestIds(form.querySelector('#firstChannelTestLinks'))
   };
   ['sensorManufacturer','sensorPartNumber','sensorService','sensorRange'].forEach(key=>{
     first[key]=form.elements[key].value;
   });
   const entries=[first];
   form.querySelectorAll('.sensor-extra-channel').forEach(group=>{
-    const channel={id:group.dataset.channelId};
+    const channel={id:group.dataset.channelId,testIds:checkedTestIds(group)};
     group.querySelectorAll('[data-channel-field]').forEach(input=>{
       if(channelFields.includes(input.dataset.channelField))
         channel[input.dataset.channelField]=input.value;
@@ -185,8 +231,9 @@ function collectChannels(form){
   });
   return entries.slice(0,maxChannels).map(normalizeChannel).filter(hasChannelData);
 }
-const api=Object.freeze({fields,channelFields,maxChannels,normalizeChannel,normalize,
-  status,cardMarkup,reportMarkup,extraChannelMarkup,photoOptionsMarkup,collectChannels});
+const api=Object.freeze({fields,channelFields,maxChannels,maxTestLinks,normalizeChannel,normalize,
+  status,cardMarkup,reportMarkup,extraChannelMarkup,photoOptionsMarkup,
+  alarmTestCandidates,testChoicesMarkup,testSummary,collectChannels});
 root.MGSAreaAlarmEquipment=api;
 if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);
