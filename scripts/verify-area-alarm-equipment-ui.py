@@ -92,6 +92,8 @@ try:
         page.locator("#alarmList [data-alarm-equipment]").click()
         page.locator(f'#firstChannelTestLinks [data-channel-test-id="{test_ids["Oxygen"]}"]').check()
         page.locator(f'.sensor-extra-channel [data-channel-test-id="{test_ids["Medical air"]}"]').check()
+        assert page.locator('#firstChannelTestLinks input[type="checkbox"]').first.evaluate(
+            "(el) => el.getBoundingClientRect().width") <= 24, "Alarm test checkboxes must remain compact on phone widths"
         page.locator('#areaAlarmEquipmentForm button[type="submit"]').click()
         snapshot = page.evaluate("JSON.parse(localStorage.getItem('mgs-prototype-v3'))")
         channel_links = snapshot["projects"][0]["alarms"][0]["equipment"]["sensorChannels"]
