@@ -27,6 +27,11 @@ try:
         browser = p.chromium.launch(headless=True)
         page = browser.new_page(viewport={"width": 390, "height": 844})
         page.on("pageerror", lambda error: errors.append(str(error)))
+        dialogs = []
+        def handle_dialog(dialog):
+            dialogs.append(dialog.message)
+            dialog.dismiss()
+        page.on("dialog", handle_dialog)
         page.goto(url, wait_until="domcontentloaded")
         page.locator("#newProjectBtn").click()
         page.locator('#projectForm [name="name"]').fill("Alarm equipment test project")
