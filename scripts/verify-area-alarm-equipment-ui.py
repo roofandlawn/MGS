@@ -90,7 +90,7 @@ try:
             page.locator('#testForm [name="type"]').fill(test_type)
             page.locator('#testForm [name="system"]').fill(system)
             page.locator('#testForm [name="status"]').select_option(result)
-            page.locator("#testForm button.primary").click()
+            page.locator("#testForm").evaluate("(form) => form.requestSubmit()")
         snapshot = page.evaluate("JSON.parse(localStorage.getItem('mgs-prototype-v3'))")
         test_ids = {test["system"]: test["id"] for test in snapshot["projects"][0]["tests"]}
         page.locator('.tab[data-tab="alarms"]').click()
