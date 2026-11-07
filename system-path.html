@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0b2545" />
+  <title>MGS System Path</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="reference.css" />
+  <link rel="stylesheet" href="system-path.css" />
+</head>
+<body>
+<header class="topbar">
+  <div><p class="eyebrow">MGS · NFPA 99-2024</p><h1>System Path</h1></div>
+  <div class="top-actions">
+    <a class="secondary nav-button" href="testing.html">Testing</a>
+    <a class="secondary nav-button" href="reference.html">Reference</a>
+    <a class="secondary nav-button" href="index.html">Projects</a>
+  </div>
+</header>
+
+<main class="shell path-shell">
+  <section class="reference-hero">
+    <div>
+      <p class="eyebrow">Learn the system relationship</p>
+      <h2>Follow a medical-gas system from the source to the patient-use point.</h2>
+      <p>This is a simplified learning path for people new to medical gas and ASSE 6010 installers. It shows how major components relate to one another without acting as a design or installation schematic.</p>
+    </div>
+    <div class="edition-card"><span>Reference edition</span><strong>NFPA 99-2024</strong><small>Use the adopted code, project documents, manufacturer instructions, and AHJ requirements for actual work.</small></div>
+  </section>
+
+  <section class="panel path-controls" aria-label="System selector">
+    <div><p class="eyebrow">Choose a system</p><h3>Trace the path</h3></div>
+    <div id="systemButtons" class="filter-row"></div>
+  </section>
+
+  <section class="path-layout">
+    <article class="panel path-panel">
+      <div class="panel-head">
+        <div><p class="eyebrow">Distribution path</p><h3 id="pathTitle">Oxygen</h3></div>
+        <span class="path-note">Tap any component</span>
+      </div>
+      <div id="pathDiagram" class="path-diagram" aria-live="polite"></div>
+      <div class="alarm-branch">
+        <span class="alarm-line" aria-hidden="true"></span>
+        <button type="button" class="path-node alarm-node" data-component-id="area-alarm">
+          <small>Monitoring branch</small>
+          <strong>Area Alarm</strong>
+          <span>Patient-area pressure / vacuum monitoring</span>
+        </button>
+      </div>
+      <p class="diagram-disclaimer">Simplified relationship view only. Exact source configuration, valve arrangement, sensing location, and distribution design depend on the system and project.</p>
+    </article>
+
+    <aside class="panel path-detail" id="pathDetail">
+      <div class="detail-empty">Tap a component in the path to see what it does and where its NFPA 99-2024 reference is mapped.</div>
+    </aside>
+  </section>
+</main>
+
+<footer><p>MGS is a field organization and learning tool. It does not replace the adopted code, manufacturer instructions, licensing requirements, inspections, certification, verification, AHJ requirements, or qualified professional judgment.</p></footer>
+
+<script src="reference-data.js"></script>
+<script src="system-path.js"></script>
+</body>
+</html>
