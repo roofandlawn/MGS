@@ -21,4 +21,4 @@ Only records with "alarm" in their test type are offered for linkage. Other insp
 
 ## Regression checks
 
-`node scripts/verify-area-alarm-equipment.cjs` exercises normalization, multiple links, deleted-test warnings, injection escaping and legacy data. `python scripts/verify-area-alarm-equipment-ui.py` exercises a 390px phone workflow for two different channel links, reload, report output and deleted-test warnings. Both run in the existing GitHub Actions mobile QA workflow.
+`node scripts/verify-area-alarm-equipment.cjs` exercises normalization, multiple links, deleted-test warnings, safe HTML rendering and legacy data. The established `python scripts/verify-area-alarm-equipment-ui.py` continues to test equipment editing, channel/photo persistence and reporting at 390px; the new checkbox linkage workflow still needs a separate mobile browser end-to-end test. Both checks run in the existing GitHub Actions workflow.
