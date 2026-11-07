@@ -129,16 +129,13 @@ try:
         assert "Previously linked channel photo missing" in page.locator("#alarmList").inner_text(), "Deleted sensor photo must be flagged without hiding the record"
         # Check that pre-existing test IDs on an equipment channel are resolved in alarm cards and reports.
         page.evaluate("""() => {
-          const state = JSON.parse(localStorage.getItem('mgs-prototype-v3'));
-          const project = state.projects[0];
+          const project = selectedProject();
           const testId = crypto.randomUUID();
           project.tests.push({id:testId, type:'Area alarm functional test O2', system:'Oxygen',
             date:'2026-11-07',status:'Needs attention'});
           project.alarms[0].equipment.sensorChannels[0].testIds=[testId];
-          localStorage.setItem('mgs-prototype-v3',JSON.stringify(state));
+          save();
         }""")
-        page.reload(wait_until="domcontentloaded")
-        page.locator('.tab[data-tab="alarms"]').click()
         assert "Area alarm functional test O2" in page.locator("#alarmList").inner_text(), "Linked tests must render on alarm cards"
         assert "Needs attention" in page.locator("#report").inner_text(), "Linked test status must print"
         assert not errors, "Browser JS errors: " + "; ".join(errors)
