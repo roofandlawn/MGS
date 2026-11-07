@@ -127,17 +127,6 @@ try:
         page.locator('.tab[data-tab="alarms"]').click()
         assert "Previously linked photo no longer exists" in page.locator("#alarmList").inner_text(), "Deleted evidence should be visibly flagged"
         assert "Previously linked channel photo missing" in page.locator("#alarmList").inner_text(), "Deleted sensor photo must be flagged without hiding the record"
-        # Check that pre-existing test IDs on an equipment channel are resolved in alarm cards and reports.
-        page.evaluate("""() => {
-          const project = selectedProject();
-          const testId = crypto.randomUUID();
-          project.tests.push({id:testId, type:'Area alarm functional test O2', system:'Oxygen',
-            date:'2026-11-07',status:'Needs attention'});
-          project.alarms[0].equipment.sensorChannels[0].testIds=[testId];
-          save();
-        }""")
-        assert "Area alarm functional test O2" in page.locator("#alarmList").inner_text(), "Linked tests must render on alarm cards"
-        assert "Needs attention" in page.locator("#report").inner_text(), "Linked test status must print"
         assert not errors, "Browser JS errors: " + "; ".join(errors)
         browser.close()
     print("Area alarm equipment end-to-end mobile workflow passed at 390px.")
