@@ -89,6 +89,10 @@ def run_width(browser, url, width):
         page.goto(url, wait_until="domcontentloaded")
         page.locator("#newProjectBtn").click()
         page.locator('#projectForm [name="name"]').fill("Synthetic alarm test-link QA")
+        # Match the two service records to declared project scope. Otherwise
+        # the app correctly asks for confirmation before an out-of-scope test.
+        page.locator('#newProjectSystemScope [name="systems"][value="oxygen"]').check()
+        page.locator('#newProjectSystemScope [name="systems"][value="medicalAir"]').check()
         page.locator("#projectForm button.primary").click()
 
         page.locator('.tab[data-tab="tests"]').click()
