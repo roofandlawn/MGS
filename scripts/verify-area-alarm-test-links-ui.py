@@ -157,12 +157,12 @@ def run_width(browser, url, width):
         # Reopen immediately, then reload, and reopen again to check persistence.
         page.locator("#alarmList [data-alarm-equipment]").click()
         assert_channel_links(page, oxygen_id, air_id)
-        page.locator("#areaAlarmEquipmentDialog [data-close]").click()
+        page.locator("#areaAlarmEquipmentDialog .dialog-head [data-close]").click()
         page.reload(wait_until="domcontentloaded")
         page.locator('.tab[data-tab="alarms"]').click()
         page.locator("#alarmList [data-alarm-equipment]").click()
         assert_channel_links(page, oxygen_id, air_id)
-        page.locator("#areaAlarmEquipmentDialog [data-close]").click()
+        page.locator("#areaAlarmEquipmentDialog .dialog-head [data-close]").click()
         assert_print_channels(page)
 
         # Assert the actual Print / Save PDF control refreshes the same report.
