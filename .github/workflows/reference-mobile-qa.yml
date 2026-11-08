@@ -14,6 +14,7 @@ on:
       - reference-topology.js
       - reference-alarm-interface.js
       - area-alarm-equipment.js
+      - canonical-system-records.js
       - app.js
       - index.html
       - scripts/verify-area-alarm-equipment.cjs
