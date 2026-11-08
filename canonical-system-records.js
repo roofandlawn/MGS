@@ -290,9 +290,16 @@
       const record = collection.find(item => item.id === recordId);
       const main = card.querySelector('.record-main');
       if (!record || !main) return;
-      main.querySelector(`[data-canonical-system-tools="${kind}"]`)?.remove();
+      // The list is observed for child mutations. Replacing these tools on
+      // every observer callback used to trigger a self-sustaining mutation
+      // loop as soon as a test/outlet record existed.
+      const signature = JSON.stringify([cleanIds(record.systemIds), String(record.systemOther || '')]);
+      const existing = main.querySelector(`[data-canonical-system-tools="${kind}"]`);
+      if (existing?.dataset.tagSignature === signature) return;
+      existing?.remove();
       const tools = document.createElement('div');
       tools.dataset.canonicalSystemTools = kind;
+      tools.dataset.tagSignature = signature;
       tools.className = 'record-system-tools';
       tools.innerHTML = `<div class="record-system-tags">${tagMarkup(record)}</div><button type="button" class="tag-edit-link" data-edit-canonical-system-tags="${kind}" data-record-id="${record.id}">Edit system tags</button>`;
       main.append(tools);
