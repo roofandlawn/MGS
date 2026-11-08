@@ -18,6 +18,7 @@ on:
       - index.html
       - scripts/verify-area-alarm-equipment.cjs
       - scripts/verify-area-alarm-equipment-ui.py
+      - scripts/verify-area-alarm-test-links-ui.py
       - scripts/verify-reference-alarm-interface.cjs
       - scripts/verify-reference-sensor-placement.mjs
       - scripts/verify-reference-topology.cjs
@@ -67,6 +68,9 @@ jobs:
 
       - name: Smoke test project equipment form, persistence, photo and report
         run: python scripts/verify-area-alarm-equipment-ui.py
+
+      - name: Smoke test channel-specific alarm functional-test links and printed report
+        run: python scripts/verify-area-alarm-test-links-ui.py
 
       - name: Run edition and navigation browser checks
         run: python scripts/verify-reference-mobile.py
