@@ -84,7 +84,14 @@ def assert_print_channels(page, oxygen_present=True):
 def run_width(browser, url, width):
     page = browser.new_page(viewport={"width": width, "height": 844})
     errors = []
+    dialogs = []
     page.on("pageerror", lambda error: errors.append(str(error)))
+    # An explicit handler prevents Playwright from hanging on a browser confirm.
+    # Fail the test if an unexpected out-of-scope or storage warning appears.
+    def on_dialog(dialog):
+        dialogs.append(f"{dialog.type}: {dialog.message}")
+        dialog.dismiss()
+    page.on("dialog", on_dialog)
     try:
         page.goto(url, wait_until="domcontentloaded")
         page.locator("#newProjectBtn").click()
@@ -181,6 +188,7 @@ def run_width(browser, url, width):
         assert "Previously linked alarm test record missing" in page.locator(
             "#alarmList"
         ).inner_text()
+        assert not dialogs, f"Unexpected browser dialogs at {width}px: {dialogs}"
         assert not errors, f"Browser JS errors at {width}px: {errors}"
     finally:
         page.close()
