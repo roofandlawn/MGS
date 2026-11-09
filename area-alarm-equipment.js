@@ -41,26 +41,77 @@ function testLabel(test) {
   return [test.type,test.system,test.date,test.status].map(value=>String(value||'').trim())
     .filter(Boolean).join(' / ');
 }
-function testChoicesMarkup(tests,selectedIds) {
+// Only explicitly identified services are compared. Vague entries such as
+// "air", "source" or an empty service are unknown, not a confirmed mismatch.
+const servicePatterns=Object.freeze([
+  ['oxygen',/\b(?:oxygen|o2)\b/i],
+  ['medical air',/\b(?:medical[\s-]+air|med[\s-]*air)\b/i],
+  ['medical vacuum',/\b(?:medical[\s-]+vacuum|med[\s-]*vac(?:uum)?|vacuum)\b/i],
+  ['nitrous oxide',/\b(?:nitrous[\s-]+oxide|n2o)\b/i],
+  ['nitrogen',/\b(?:nitrogen|n2)\b/i],
+  ['instrument air',/\b(?:instrument[\s-]+air)\b/i]
+]);
+function recognizedServices(value) {
+  const source=String(value||'').normalize('NFKC');
+  return servicePatterns.filter(([,pattern])=>pattern.test(source)).map(([service])=>service);
+}
+function gasServiceMismatch(channelService,testService) {
+  const channel=recognizedServices(channelService),test=recognizedServices(testService);
+  // A combined functional test is compatible when the channel service is
+  // explicitly included. Unknown service values must not be treated as a mismatch.
+  return channel.length>0 && test.length>0 && !channel.some(service=>test.includes(service));
+}
+function mismatchWarning(channelService,testService) {
+  return gasServiceMismatch(channelService,testService)
+    ? 'Gas-service mismatch: '+String(channelService).trim()+' channel linked to '
+      +String(testService).trim()+' test. Review this association against approved records.'
+    : '';
+}
+function testChoicesMarkup(tests,selectedIds,channelService='') {
   const selected=normalizedTestIds(selectedIds);
   const available=alarmTestCandidates(tests);
   const known=new Set(available.map(test=>String(test.id)));
-  const choices=available.map(test=>({id:String(test.id),label:testLabel(test)}));
+  const choices=available.map(test=>({id:String(test.id),label:testLabel(test),service:test.system||''}));
   selected.filter(id=>!known.has(id)).forEach(id=>choices.push({
-    id,label:'Previously linked alarm test record missing — uncheck to clear'}));
+    id,label:'Previously linked alarm test record missing — uncheck to clear',service:''}));
   return '<div class="channel-test-options" aria-label="Channel alarm functional-test links">'
     +'<small class="helper">Link existing alarm functional-test records from this project. A recorded result does not establish independent verification.</small>'
-    +(choices.length?choices.map(test=>'<label><input type="checkbox" data-channel-test-id="'+h(test.id)+'"'
-      +(selected.includes(test.id)?' checked':'')+'> '+h(test.label)+'</label>').join('')
+    +(choices.length?choices.map(test=>{
+      const warning=selected.includes(test.id)?mismatchWarning(channelService,test.service):'';
+      return '<label><input type="checkbox" data-channel-test-id="'+h(test.id)+'"'
+        +(selected.includes(test.id)?' checked':'')+'><span class="channel-test-description">'
+        +h(test.label)+'<small class="gas-service-mismatch" role="alert"'
+        +(warning?'':' hidden')+'>'+h(warning)+'</small></span></label>';
+    }).join('')
       :'<small class="helper">No alarm test records yet. Add one under the Tests tab, then return here.</small>')
     +'</div>';
+}
+function refreshServiceWarnings(form,tests) {
+  const list=alarmTestCandidates(tests);
+  const update=(host,service)=>{
+    if(!host)return;
+    host.querySelectorAll('[data-channel-test-id]').forEach(input=>{
+      const test=list.find(t=>String(t.id)===input.dataset.channelTestId);
+      const note=input.closest('label')?.querySelector('.gas-service-mismatch');
+      if(!note)return;
+      const message=input.checked&&test?mismatchWarning(service,test.system):'';
+      note.textContent=message;
+      note.hidden=!message;
+    });
+  };
+  update(form.querySelector('#firstChannelTestLinks'),form.elements.sensorService?.value||'');
+  form.querySelectorAll('.sensor-extra-channel').forEach(group=>{
+    update(group,group.querySelector('[data-channel-field="sensorService"]')?.value||'');
+  });
 }
 function testSummary(channel,tests) {
   if(!channel.testIds.length)return 'No alarm functional-test records linked';
   const list=Array.isArray(tests)?tests:[];
   return channel.testIds.map(id=>{
     const test=list.find(item=>String(item.id)===id && /alarm/i.test(String(item.type||'')));
-    return test?testLabel(test):'Previously linked alarm test record missing';
+    if(!test)return 'Previously linked alarm test record missing';
+    const warning=mismatchWarning(channel.sensorService,test.system);
+    return testLabel(test)+(warning?' [WARNING: '+warning+']':'');
   }).join(' | ');
 }
 function checkedTestIds(host) {
@@ -204,7 +255,7 @@ function extraChannelMarkup(raw,index,photos=[],tests=[]){
     +'<label>Point schedule revision<input data-channel-field="pointScheduleRevision" maxlength="80" value="'+h(c.pointScheduleRevision)+'"></label>'
     +'<label>Channel installation photo<select data-channel-field="photoId">'+photoOptionsMarkup(photos,c.photoId)+'</select></label>'
     +'<div class="channel-test-field"><strong>Linked alarm functional-test records</strong>'
-    +testChoicesMarkup(tests,c.testIds)+'</div>'
+    +testChoicesMarkup(tests,c.testIds,c.sensorService)+'</div>'
     +'</fieldset>';
 }
 function collectChannels(form){
@@ -233,7 +284,8 @@ function collectChannels(form){
 }
 const api=Object.freeze({fields,channelFields,maxChannels,maxTestLinks,normalizeChannel,normalize,
   status,cardMarkup,reportMarkup,extraChannelMarkup,photoOptionsMarkup,
-  alarmTestCandidates,testChoicesMarkup,testSummary,collectChannels});
+  alarmTestCandidates,recognizedServices,gasServiceMismatch,mismatchWarning,
+  testChoicesMarkup,refreshServiceWarnings,testSummary,collectChannels});
 root.MGSAreaAlarmEquipment=api;
 if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);
