@@ -449,7 +449,17 @@ $('#alarmForm').addEventListener('submit', e => {
   e.currentTarget.reset(); alarmDialog.close(); save();
 });
 
-$('#areaAlarmEquipmentForm').addEventListener('submit', event => {
+// Show service mismatches as soon as a channel service or linked test changes.
+// Warnings do not alter field-test results or assert independent verification.
+const areaEquipmentForm=$('#areaAlarmEquipmentForm');
+function refreshAlarmGasServiceWarnings() {
+  MGSAreaAlarmEquipment.refreshServiceWarnings(areaEquipmentForm,selectedProject()?.tests||[]);
+}
+['input','change'].forEach(type=>areaEquipmentForm.addEventListener(type,event=>{
+  if(event.target.matches('[name="sensorService"], [data-channel-field="sensorService"], [data-channel-test-id]'))
+    refreshAlarmGasServiceWarnings();
+}));
+areaEquipmentForm.addEventListener('submit', event => {
   event.preventDefault();
   const p = selectedProject();
   if (!p) return;
@@ -572,7 +582,7 @@ alarmList.addEventListener('click', e => {
     form.elements.pointScheduleRevision.value = first.pointScheduleRevision || '';
     form.elements.channelPhotoId.innerHTML = MGSAreaAlarmEquipment.photoOptionsMarkup(photos,first.photoId);
     form.elements.channelPhotoId.value = first.photoId || '';
-    $('#firstChannelTestLinks').innerHTML = MGSAreaAlarmEquipment.testChoicesMarkup(p.tests,first.testIds);
+    $('#firstChannelTestLinks').innerHTML = MGSAreaAlarmEquipment.testChoicesMarkup(p.tests,first.testIds,first.sensorService);
     form.dataset.firstChannelId = first.id || 'channel-1';
     $('#extraSensorChannels').innerHTML = equipment.sensorChannels.slice(1)
       .map((channel,index) => MGSAreaAlarmEquipment.extraChannelMarkup(channel,index+1,photos,p.tests)).join('');
@@ -589,6 +599,7 @@ alarmList.addEventListener('click', e => {
       + photos.map(photo => '<option value="' + escapeHtml(photo.id) + '">'
         + escapeHtml(photo.caption || photo.location || 'Project photo') + '</option>').join('');
     form.elements.photoId.value = oldPhotoId;
+    refreshAlarmGasServiceWarnings();
     $('#areaAlarmEquipmentDialog').showModal();
     return;
   }
