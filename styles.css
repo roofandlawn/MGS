@@ -62,6 +62,9 @@ footer{max-width:1180px;margin:0 auto;padding:0 18px 40px;color:var(--muted);fon
 .channel-test-options{display:grid;gap:8px;margin-top:8px;min-width:0}
 .channel-test-options label{display:flex;align-items:flex-start;gap:10px;margin:0;padding:10px;border:1px solid var(--line);border-radius:9px;font-weight:500;line-height:1.35;overflow-wrap:anywhere}
 .channel-test-options input[type="checkbox"]{width:18px;height:18px;flex:0 0 18px;min-width:18px;padding:0;margin:1px 0 0}
+.channel-test-description{min-width:0;flex:1}
+.channel-test-options .gas-service-mismatch{display:block;color:#704b0c;background:#fff8ec;border:1px solid #e6d5ad;border-radius:7px;padding:8px;margin-top:7px;font-size:.82rem;font-weight:750;line-height:1.4}
+.channel-test-options .gas-service-mismatch[hidden]{display:none}
 
 /* Keep field-report printing available on phones instead of hiding it. */
 @media(max-width:760px){
