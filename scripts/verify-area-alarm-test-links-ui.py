@@ -135,6 +135,30 @@ def run_width(browser, url, width):
         second.locator('[data-channel-field="sensorService"]').fill("Medical air")
         second.locator('[data-channel-field="sensorPartNumber"]').fill("Synthetic air sensor")
 
+        # Classify only explicit services; a shared O2 + air functional test
+        # is valid for either matching channel, while unknown services stay unclassified.
+        assert page.evaluate("""() => {
+            const api = MGSAreaAlarmEquipment;
+            return api.gasServiceMismatch('Oxygen', 'Medical air')
+                && api.gasServiceMismatch('Medical air', 'Oxygen')
+                && !api.gasServiceMismatch('Oxygen', 'Oxygen / Medical air')
+                && !api.gasServiceMismatch('Medical air', 'Oxygen / Medical air')
+                && !api.gasServiceMismatch('Oxygen', 'unidentified service');
+        }"""), "Service classification must handle combined and unknown records"
+
+        # A mistaken link immediately warns, and clears when unchecked.
+        first_options = page.locator("#firstChannelTestLinks")
+        first_options.locator(f'[data-channel-test-id="{air_id}"]').check()
+        assert first_options.locator(".gas-service-mismatch:visible").count() == 1
+        assert "Gas-service mismatch" in first_options.inner_text()
+        first_options.locator(f'[data-channel-test-id="{air_id}"]').uncheck()
+        assert first_options.locator(".gas-service-mismatch:visible").count() == 0
+
+        second.locator(f'[data-channel-test-id="{oxygen_id}"]').check()
+        assert second.locator(".gas-service-mismatch:visible").count() == 1
+        second.locator(f'[data-channel-test-id="{oxygen_id}"]').uncheck()
+        assert second.locator(".gas-service-mismatch:visible").count() == 0
+
         # Each channel must receive only its own test ID.
         first_options = page.locator("#firstChannelTestLinks")
         assert first_options.locator("[data-channel-test-id]").count() == 2
@@ -164,6 +188,7 @@ def run_width(browser, url, width):
         assert_channel_links(page, oxygen_id, air_id)
         page.locator("#areaAlarmEquipmentDialog .dialog-head [data-close]").click()
         assert_print_channels(page)
+        assert "Gas-service mismatch" not in page.locator("#report").inner_text()
 
         # Assert the actual Print / Save PDF control refreshes the same report.
         page.evaluate(
@@ -172,6 +197,28 @@ def run_width(browser, url, width):
         )
         page.locator("#printReportBtn").click()
         assert page.evaluate("window.__qaPrintInvoked") is True
+        assert_print_channels(page)
+
+        # Warnings must survive save, reload and report generation for an
+        # intentionally cross-linked test, without automatically changing status.
+        page.locator("#alarmList [data-alarm-equipment]").click()
+        first_options = page.locator("#firstChannelTestLinks")
+        first_options.locator(f'[data-channel-test-id="{oxygen_id}"]').uncheck()
+        first_options.locator(f'[data-channel-test-id="{air_id}"]').check()
+        assert first_options.locator(".gas-service-mismatch:visible").count() == 1
+        page.locator('#areaAlarmEquipmentForm button[type="submit"]').click()
+        assert "Gas-service mismatch" in page.locator("#report").inner_text()
+        assert "Gas-service mismatch" in page.locator("#alarmList").inner_text()
+        assert project_data(page)["alarms"][0]["status"] == "Not checked"
+        page.reload(wait_until="domcontentloaded")
+        page.locator('.tab[data-tab="alarms"]').click()
+        page.locator("#alarmList [data-alarm-equipment]").click()
+        first_options = page.locator("#firstChannelTestLinks")
+        assert first_options.locator(".gas-service-mismatch:visible").count() == 1
+        first_options.locator(f'[data-channel-test-id="{air_id}"]').uncheck()
+        first_options.locator(f'[data-channel-test-id="{oxygen_id}"]').check()
+        page.locator('#areaAlarmEquipmentForm button[type="submit"]').click()
+        assert "Gas-service mismatch" not in page.locator("#report").inner_text()
         assert_print_channels(page)
 
         # Deleting a test must not silently reassign its channel to another test.
