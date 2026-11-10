@@ -67,6 +67,18 @@ function mismatchWarning(channelService,testService) {
       +String(testService).trim()+' test. Review this association against approved records.'
     : '';
 }
+// Unknown labels are neither a proven match nor a proven mismatch.
+function serviceLinkAssessment(channelService,testService) {
+  const channel=recognizedServices(channelService),test=recognizedServices(testService);
+  if (!channel.length || !test.length) return {
+    state:'unconfirmed',
+    message:'Gas service unconfirmed: the sensor channel or linked alarm test does not identify a recognized service. Confirm both against approved project records.'
+  };
+  if (!channel.some(service=>test.includes(service))) return {
+    state:'mismatch',message:mismatchWarning(channelService,testService)
+  };
+  return {state:'match',message:''};
+}
 function testChoicesMarkup(tests,selectedIds,channelService='') {
   const selected=normalizedTestIds(selectedIds);
   const available=alarmTestCandidates(tests);
@@ -77,11 +89,14 @@ function testChoicesMarkup(tests,selectedIds,channelService='') {
   return '<div class="channel-test-options" aria-label="Channel alarm functional-test links">'
     +'<small class="helper">Link existing alarm functional-test records from this project. A recorded result does not establish independent verification.</small>'
     +(choices.length?choices.map(test=>{
-      const warning=selected.includes(test.id)?mismatchWarning(channelService,test.service):'';
+      const assessment=selected.includes(test.id)
+        ?serviceLinkAssessment(channelService,test.service):{state:'match',message:''};
+      const statusClass=assessment.state==='mismatch'?' gas-service-mismatch'
+        :(assessment.state==='unconfirmed'?' gas-service-unconfirmed':'');
       return '<label><input type="checkbox" data-channel-test-id="'+h(test.id)+'"'
         +(selected.includes(test.id)?' checked':'')+'><span class="channel-test-description">'
-        +h(test.label)+'<small class="gas-service-mismatch" role="alert"'
-        +(warning?'':' hidden')+'>'+h(warning)+'</small></span></label>';
+        +h(test.label)+'<small class="gas-service-warning'+statusClass+'" role="alert"'
+        +(assessment.message?'':' hidden')+'>'+h(assessment.message)+'</small></span></label>';
     }).join('')
       :'<small class="helper">No alarm test records yet. Add one under the Tests tab, then return here.</small>')
     +'</div>';
@@ -92,11 +107,14 @@ function refreshServiceWarnings(form,tests) {
     if(!host)return;
     host.querySelectorAll('[data-channel-test-id]').forEach(input=>{
       const test=list.find(t=>String(t.id)===input.dataset.channelTestId);
-      const note=input.closest('label')?.querySelector('.gas-service-mismatch');
+      const note=input.closest('label')?.querySelector('.gas-service-warning');
       if(!note)return;
-      const message=input.checked&&test?mismatchWarning(service,test.system):'';
-      note.textContent=message;
-      note.hidden=!message;
+      const assessment=input.checked&&test
+        ?serviceLinkAssessment(service,test.system):{state:'match',message:''};
+      note.textContent=assessment.message;
+      note.classList.toggle('gas-service-mismatch',assessment.state==='mismatch');
+      note.classList.toggle('gas-service-unconfirmed',assessment.state==='unconfirmed');
+      note.hidden=!assessment.message;
     });
   };
   update(form.querySelector('#firstChannelTestLinks'),form.elements.sensorService?.value||'');
@@ -110,8 +128,9 @@ function testSummary(channel,tests) {
   return channel.testIds.map(id=>{
     const test=list.find(item=>String(item.id)===id && /alarm/i.test(String(item.type||'')));
     if(!test)return 'Previously linked alarm test record missing';
-    const warning=mismatchWarning(channel.sensorService,test.system);
-    return testLabel(test)+(warning?' [WARNING: '+warning+']':'');
+    const assessment=serviceLinkAssessment(channel.sensorService,test.system);
+    return testLabel(test)+(assessment.message
+      ?' ['+(assessment.state==='mismatch'?'WARNING: ':'UNCONFIRMED: ')+assessment.message+']':'');
   }).join(' | ');
 }
 function checkedTestIds(host) {
@@ -284,7 +303,7 @@ function collectChannels(form){
 }
 const api=Object.freeze({fields,channelFields,maxChannels,maxTestLinks,normalizeChannel,normalize,
   status,cardMarkup,reportMarkup,extraChannelMarkup,photoOptionsMarkup,
-  alarmTestCandidates,recognizedServices,gasServiceMismatch,mismatchWarning,
+  alarmTestCandidates,recognizedServices,gasServiceMismatch,mismatchWarning,serviceLinkAssessment,
   testChoicesMarkup,refreshServiceWarnings,testSummary,collectChannels});
 root.MGSAreaAlarmEquipment=api;
 if(typeof module!=='undefined'&&module.exports)module.exports=api;

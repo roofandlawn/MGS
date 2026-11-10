@@ -22,3 +22,11 @@ Only records with "alarm" in their test type are offered for linkage. Other insp
 ## Regression checks
 
 `node scripts/verify-area-alarm-equipment.cjs` exercises normalization, multiple links, deleted-test warnings, safe HTML rendering and legacy data. The established `python scripts/verify-area-alarm-equipment-ui.py` covers equipment editing, channel/photo persistence and reporting at 390px. **New:** `python scripts/verify-area-alarm-test-links-ui.py` exercises the real mobile UI at 320px and 390px: create separate oxygen and medical air alarm tests plus a non-alarm pressure test, link each alarm test to the intended sensor channel, save and reopen the equipment form, reload from browser storage, check each channel's printable report section, trigger Print / Save PDF, and verify that deleting a linked test leaves a visible orphan warning without affecting the other channel. All browser checks run in the GitHub Actions workflow; an individual run must pass before changes are treated as validated.
+
+## November 10, 2026: unconfirmed gas-service labels
+
+Linking a sensor channel to a functional-test record now distinguishes **matching**, **mismatching**, and **unconfirmed** gas services. When either selected record uses a vague or empty service label (such as `air` instead of `Medical air`), the technician sees **Gas service unconfirmed** in the form and printable report. This is not labeled a proven mismatch. The notice clears after the labels are corrected; alarm and test results never automatically change.
+
+An explicitly documented combined oxygen / medical air alarm test remains compatible with either matching channel. Service matching is a documentary safeguard, not an NFPA 99 compliance or ASSE 6030 verification determination.
+
+The updated unit test covers all three states, while the mobile regression at 320px and 390px checks saving, reloading, printing and clearing an unconfirmed channel link.

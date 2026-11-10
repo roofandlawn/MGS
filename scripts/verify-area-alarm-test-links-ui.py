@@ -221,6 +221,26 @@ def run_width(browser, url, width):
         assert "Gas-service mismatch" not in page.locator("#report").inner_text()
         assert_print_channels(page)
 
+        # An unidentified channel label must not silently appear compatible.
+        page.locator("#alarmList [data-alarm-equipment]").click()
+        service_input = page.locator('#areaAlarmEquipmentForm [name="sensorService"]')
+        service_input.fill("Unidentified")
+        first_options = page.locator("#firstChannelTestLinks")
+        assert first_options.locator(".gas-service-unconfirmed:visible").count() == 1
+        assert first_options.locator(".gas-service-mismatch:visible").count() == 0
+        page.locator('#areaAlarmEquipmentForm button[type="submit"]').click()
+        assert "Gas service unconfirmed" in page.locator("#report").inner_text()
+        assert project_data(page)["alarms"][0]["status"] == "Not checked"
+        page.reload(wait_until="domcontentloaded")
+        page.locator('.tab[data-tab="alarms"]').click()
+        page.locator("#alarmList [data-alarm-equipment]").click()
+        first_options = page.locator("#firstChannelTestLinks")
+        assert first_options.locator(".gas-service-unconfirmed:visible").count() == 1
+        page.locator('#areaAlarmEquipmentForm [name="sensorService"]').fill("Oxygen")
+        assert first_options.locator(".gas-service-unconfirmed:visible").count() == 0
+        page.locator('#areaAlarmEquipmentForm button[type="submit"]').click()
+        assert "Gas service unconfirmed" not in page.locator("#report").inner_text()
+
         # Deleting a test must not silently reassign its channel to another test.
         page.locator('.tab[data-tab="tests"]').click()
         page.locator("#testList .record-card").filter(
