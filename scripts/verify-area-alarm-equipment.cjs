@@ -117,6 +117,9 @@ assert.equal(E.serviceLinkAssessment('Oxygen','Oxygen / Medical air').state,'mat
 assert.equal(E.serviceLinkAssessment('Medical air','air').state,'unconfirmed');
 assert.equal(E.serviceLinkAssessment('','Oxygen').state,'unconfirmed');
 assert.equal(E.gasServiceMismatch('Medical air','air'),false);
+const orphanChoices=E.testChoicesMarkup([],['deleted-test'],'Oxygen');
+assert.match(orphanChoices,/Previously linked alarm test record missing/);
+assert.doesNotMatch(orphanChoices,/gas-service-unconfirmed/);
 const pendingTest=[{id:'unspecified',type:'Area alarm signal check',system:'air',status:'Not checked'}];
 const pendingMarkup=E.testChoicesMarkup(pendingTest,['unspecified'],'Medical air');
 assert.match(pendingMarkup,/gas-service-unconfirmed/);

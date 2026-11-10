@@ -85,11 +85,11 @@ function testChoicesMarkup(tests,selectedIds,channelService='') {
   const known=new Set(available.map(test=>String(test.id)));
   const choices=available.map(test=>({id:String(test.id),label:testLabel(test),service:test.system||''}));
   selected.filter(id=>!known.has(id)).forEach(id=>choices.push({
-    id,label:'Previously linked alarm test record missing — uncheck to clear',service:''}));
+    id,label:'Previously linked alarm test record missing — uncheck to clear',service:'',missing:true}));
   return '<div class="channel-test-options" aria-label="Channel alarm functional-test links">'
     +'<small class="helper">Link existing alarm functional-test records from this project. A recorded result does not establish independent verification.</small>'
     +(choices.length?choices.map(test=>{
-      const assessment=selected.includes(test.id)
+      const assessment=selected.includes(test.id)&&!test.missing
         ?serviceLinkAssessment(channelService,test.service):{state:'match',message:''};
       const statusClass=assessment.state==='mismatch'?' gas-service-mismatch'
         :(assessment.state==='unconfirmed'?' gas-service-unconfirmed':'');
