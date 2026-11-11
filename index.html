@@ -163,7 +163,7 @@
       <label>Sensor location<input name="sensorLocation" maxlength="160" placeholder="Location on approved drawing" /></label>
       <label>Sensor manufacturer<input name="sensorManufacturer" maxlength="120" /></label>
       <label>Exact sensor part number<input name="sensorPartNumber" maxlength="120" /></label>
-      <label>Gas service / channel<input name="sensorService" maxlength="100" placeholder="Oxygen, medical air, vacuum, etc." /></label>
+      <div id="firstChannelServicePicker"></div>
       <label>Sensor range and units<input name="sensorRange" maxlength="100" placeholder="As shown in manufacturer documentation" /></label>
       <label>Approved channel point schedule / drawing<input name="pointScheduleRef" maxlength="180" placeholder="Approved sheet and point ID" /></label>
       <label>Point schedule revision<input name="pointScheduleRevision" maxlength="80" placeholder="Revision matching this sensor channel" /></label>
@@ -210,7 +210,7 @@
 <dialog id="testDialog"><form id="testForm" method="dialog">
   <div class="dialog-head"><h3>Add inspection / test record</h3><button type="button" class="icon-btn" data-close>×</button></div>
   <label>Test / inspection<input name="type" required placeholder="Example: Pressure test, alarm functional test" /></label>
-  <label>System / gas<input name="system" placeholder="Oxygen, vacuum, zone valve box..." /></label>
+  <div id="testServicePicker"></div>
   <label>Location<input name="location" placeholder="Level 2 / Room 204" /></label>
   <label>Date<input name="date" type="date" /></label>
   <label>Result<select name="status"><option>Not checked</option><option>Pass</option><option>Needs attention</option></select></label>

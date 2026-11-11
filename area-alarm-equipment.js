@@ -28,6 +28,56 @@ function h(value){
   return String(value??'').replace(/&/g,'&amp;').replace(/</g,'&lt;')
     .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
+// Preserve existing field strings in saved projects; never reclassify unknown labels.
+const standardServices=Object.freeze([
+  'Oxygen','Medical air','Medical vacuum','Nitrous oxide','Nitrogen','Instrument air'
+]);
+const otherServiceChoice='__other__';
+function serviceChoice(value) {
+  const raw=String(value||'').trim().toLowerCase();
+  if (!raw) return '';
+  return standardServices.find(item=>item.toLowerCase()===raw)||otherServiceChoice;
+}
+function servicePickerMarkup(value,mode='extra') {
+  const raw=String(value||'').trim().slice(0,100);
+  const chosen=serviceChoice(raw);
+  const title=mode==='test'?'System / gas':'Gas service / channel';
+  const field=mode==='test'?'name="system"'
+    :mode==='first'?'name="sensorService"':'data-channel-field="sensorService"';
+  const options=['<option value=""'+(!chosen?' selected':'')+'>Not identified</option>']
+    .concat(standardServices.map(service=>'<option value="'+h(service)+'"'
+      +(chosen===service?' selected':'')+'>'+h(service)+'</option>'))
+    .concat('<option value="'+otherServiceChoice+'"'
+      +(chosen===otherServiceChoice?' selected':'')+'>Other / combined (specify)</option>');
+  return '<label>'+h(title)+'<select data-gas-service-choice aria-label="'+h(title)+'">'
+    +options.join('')+'</select><input data-gas-service-value '+field
+    +' maxlength="100" value="'+h(raw)+'"'
+    +(chosen===otherServiceChoice?'':' hidden')
+    +' aria-label="Other or combined service details"'
+    +' placeholder="Identify exact service(s) or component"></label>';
+}
+function configureServicePicker(input,value) {
+  if (!input) return;
+  const picker=input.closest('label')?.querySelector('[data-gas-service-choice]');
+  if (!picker) return;
+  input.value=String(value||'').trim().slice(0,100);
+  picker.value=serviceChoice(input.value);
+  input.hidden=picker.value!==otherServiceChoice;
+}
+function updateServicePicker(picker) {
+  const input=picker?.closest('label')?.querySelector('[data-gas-service-value]');
+  if (!input) return;
+  if (picker.value===otherServiceChoice) {
+    if (standardServices.some(service=>service.toLowerCase()===input.value.trim().toLowerCase()))
+      input.value='';
+    input.hidden=false;
+    input.focus();
+  } else {
+    input.value=picker.value;
+    input.hidden=true;
+  }
+  input.dispatchEvent(new Event('input',{bubbles:true}));
+}
 const maxTestLinks=24;
 function alarmTestCandidates(tests) {
   return (Array.isArray(tests)?tests:[]).filter(test =>
@@ -268,7 +318,7 @@ function extraChannelMarkup(raw,index,photos=[],tests=[]){
     +'<label>Sensor location<input data-channel-field="sensorLocation" maxlength="160" value="'+h(c.sensorLocation)+'" placeholder="Location as shown on approved drawings"></label>'
     +'<label>Sensor manufacturer<input data-channel-field="sensorManufacturer" maxlength="120" value="'+h(c.sensorManufacturer)+'"></label>'
     +'<label>Exact sensor part number<input data-channel-field="sensorPartNumber" maxlength="120" value="'+h(c.sensorPartNumber)+'"></label>'
-    +'<label>Gas service / channel<input data-channel-field="sensorService" maxlength="100" value="'+h(c.sensorService)+'"></label>'
+    +servicePickerMarkup(c.sensorService,'extra')
     +'<label>Sensor range and units<input data-channel-field="sensorRange" maxlength="100" value="'+h(c.sensorRange)+'"></label>'
     +'<label>Approved point schedule / drawing<input data-channel-field="pointScheduleRef" maxlength="180" value="'+h(c.pointScheduleRef)+'" placeholder="Sheet / point ID — approved documents only"></label>'
     +'<label>Point schedule revision<input data-channel-field="pointScheduleRevision" maxlength="80" value="'+h(c.pointScheduleRevision)+'"></label>'
@@ -304,6 +354,7 @@ function collectChannels(form){
 const api=Object.freeze({fields,channelFields,maxChannels,maxTestLinks,normalizeChannel,normalize,
   status,cardMarkup,reportMarkup,extraChannelMarkup,photoOptionsMarkup,
   alarmTestCandidates,recognizedServices,gasServiceMismatch,mismatchWarning,serviceLinkAssessment,
+  standardServices,serviceChoice,servicePickerMarkup,configureServicePicker,updateServicePicker,
   testChoicesMarkup,refreshServiceWarnings,testSummary,collectChannels});
 root.MGSAreaAlarmEquipment=api;
 if(typeof module!=='undefined'&&module.exports)module.exports=api;

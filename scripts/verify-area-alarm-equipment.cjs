@@ -128,4 +128,22 @@ assert.doesNotMatch(pendingMarkup,/gas-service-mismatch/);
 const pendingSummary=E.testSummary({sensorService:'Medical air',testIds:['unspecified']},pendingTest);
 assert.match(pendingSummary,/UNCONFIRMED: Gas service unconfirmed/);
 assert.doesNotMatch(E.testChoicesMarkup(pendingTest,[],'Medical air'),/gas-service-unconfirmed/);
-console.log('Area-alarm service mismatch and unknown-service warnings passed, with legacy checks.');
+// Legacy labels and combined test services must survive unchanged.
+assert.deepEqual(E.standardServices,[
+  'Oxygen','Medical air','Medical vacuum','Nitrous oxide','Nitrogen','Instrument air'
+]);
+assert.equal(E.serviceChoice('Medical air'),'Medical air');
+assert.equal(E.serviceChoice('Vacuum'),'__other__');
+assert.equal(E.serviceChoice('Oxygen / Medical air'),'__other__');
+assert.equal(E.serviceChoice(''),'');
+assert.match(E.servicePickerMarkup('Oxygen','first'),/name="sensorService"/);
+assert.match(E.servicePickerMarkup('Oxygen','first'),/<option value="Oxygen" selected>/);
+assert.match(E.servicePickerMarkup('Oxygen','first'),/data-gas-service-value[^>]* hidden/);
+assert.match(E.servicePickerMarkup('Oxygen \/ Medical air','test'),/name="system"/);
+assert.match(E.servicePickerMarkup('Oxygen \/ Medical air','test'),/<option value="__other__" selected>/);
+assert.match(E.servicePickerMarkup('Oxygen \/ Medical air','test'),/value="Oxygen \/ Medical air"/);
+const legacyServicePicker=E.servicePickerMarkup('<unusual>& "service"','extra');
+assert.match(legacyServicePicker,/&lt;unusual&gt;&amp; &quot;service&quot;/);
+assert.ok(!legacyServicePicker.includes('<unusual>'));
+assert.match(legacyServicePicker,/data-channel-field="sensorService"/);
+console.log('Area alarm service picker, mismatch and legacy records passed.');

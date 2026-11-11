@@ -452,6 +452,12 @@ $('#alarmForm').addEventListener('submit', e => {
 // Show service mismatches as soon as a channel service or linked test changes.
 // Warnings do not alter field-test results or assert independent verification.
 const areaEquipmentForm=$('#areaAlarmEquipmentForm');
+$('#firstChannelServicePicker').innerHTML=MGSAreaAlarmEquipment.servicePickerMarkup('','first');
+$('#testServicePicker').innerHTML=MGSAreaAlarmEquipment.servicePickerMarkup('','test');
+document.addEventListener('change',event=>{
+  if (event.target.matches('[data-gas-service-choice]'))
+    MGSAreaAlarmEquipment.updateServicePicker(event.target);
+});
 function refreshAlarmGasServiceWarnings() {
   MGSAreaAlarmEquipment.refreshServiceWarnings(areaEquipmentForm,selectedProject()?.tests||[]);
 }
@@ -520,7 +526,9 @@ $('#testForm').addEventListener('submit', e => {
     id: crypto.randomUUID(), type:f.get('type').trim(), system:f.get('system').trim(), location:f.get('location').trim(),
     date:f.get('date'), status:f.get('status'), person:f.get('person').trim(), reading:f.get('reading').trim(), notes:f.get('notes').trim()
   });
-  e.currentTarget.reset(); testDialog.close(); save();
+  e.currentTarget.reset();
+  MGSAreaAlarmEquipment.configureServicePicker(e.currentTarget.elements.system,'');
+  testDialog.close(); save();
 });
 
 $('#photoInput').addEventListener('change', e => {
@@ -576,6 +584,7 @@ alarmList.addEventListener('click', e => {
     });
     const photos = Array.isArray(p.photos) ? p.photos : [];
     const first = equipment.sensorChannels[0] || {};
+    MGSAreaAlarmEquipment.configureServicePicker(form.elements.sensorService,first.sensorService||'');
     form.elements.channelLabel.value = first.channelLabel || '';
     form.elements.sensorLocation.value = first.sensorLocation || '';
     form.elements.pointScheduleRef.value = first.pointScheduleRef || '';

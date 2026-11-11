@@ -36,7 +36,12 @@ def add_test(page, *, name, service, result, reading):
     page.locator("#addTestBtn").click()
     form = page.locator("#testForm")
     form.locator('[name="type"]').fill(name)
-    form.locator('[name="system"]').fill(service)
+    service_choice = form.locator('[data-gas-service-choice]')
+    if service in ("Oxygen", "Medical air", "Medical vacuum", "Nitrous oxide", "Nitrogen", "Instrument air"):
+        service_choice.select_option(service)
+    else:
+        service_choice.select_option("__other__")
+        form.locator('[name="system"]').fill(service)
     form.locator('[name="location"]').fill("Level 3 / nurse station")
     form.locator('[name="date"]').fill("2026-11-08")
     form.locator('[name="status"]').select_option(label=result)
@@ -127,12 +132,12 @@ def run_width(browser, url, width):
         form.locator('[name="panelManufacturer"]').fill("Synthetic QA manufacturer")
         form.locator('[name="panelModel"]').fill("Test fixture — not real hardware")
         form.locator('[name="channelLabel"]').fill("L3-O2-1")
-        form.locator('[name="sensorService"]').fill("Oxygen")
+        form.locator('#firstChannelServicePicker [data-gas-service-choice]').select_option("Oxygen")
         form.locator('[name="sensorPartNumber"]').fill("Synthetic O2 sensor")
         page.locator("#addSensorChannelBtn").click()
         second = page.locator(".sensor-extra-channel").first
         second.locator('[data-channel-field="channelLabel"]').fill("L3-AIR-1")
-        second.locator('[data-channel-field="sensorService"]').fill("Medical air")
+        second.locator('[data-gas-service-choice]').select_option("Medical air")
         second.locator('[data-channel-field="sensorPartNumber"]').fill("Synthetic air sensor")
 
         # Classify only explicit services; a shared O2 + air functional test
@@ -224,6 +229,7 @@ def run_width(browser, url, width):
         # An unidentified channel label must not silently appear compatible.
         page.locator("#alarmList [data-alarm-equipment]").click()
         service_input = page.locator('#areaAlarmEquipmentForm [name="sensorService"]')
+        page.locator('#firstChannelServicePicker [data-gas-service-choice]').select_option("__other__")
         service_input.fill("Unidentified")
         first_options = page.locator("#firstChannelTestLinks")
         assert first_options.locator(".gas-service-unconfirmed:visible").count() == 1
@@ -236,7 +242,7 @@ def run_width(browser, url, width):
         page.locator("#alarmList [data-alarm-equipment]").click()
         first_options = page.locator("#firstChannelTestLinks")
         assert first_options.locator(".gas-service-unconfirmed:visible").count() == 1
-        page.locator('#areaAlarmEquipmentForm [name="sensorService"]').fill("Oxygen")
+        page.locator('#firstChannelServicePicker [data-gas-service-choice]').select_option("Oxygen")
         assert first_options.locator(".gas-service-unconfirmed:visible").count() == 0
         page.locator('#areaAlarmEquipmentForm button[type="submit"]').click()
         assert "Gas service unconfirmed" not in page.locator("#report").inner_text()

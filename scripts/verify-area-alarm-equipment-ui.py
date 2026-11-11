@@ -44,7 +44,7 @@ try:
         form.locator('[name="panelModel"]').fill("Catalog model from nameplate")
         form.locator('[name="sensorManufacturer"]').fill("Sensor manufacturer from label")
         form.locator('[name="sensorPartNumber"]').fill("Exact sensor P/N")
-        form.locator('[name="sensorService"]').fill("Oxygen")
+        form.locator('#firstChannelServicePicker [data-gas-service-choice]').select_option("Oxygen")
         form.locator('[name="sensorRange"]').fill("Range as labeled")
         form.locator('[name="channelLabel"]').fill("OR 1 oxygen")
         form.locator('[name="sensorLocation"]').fill("Downstream of zone valve")
@@ -53,7 +53,7 @@ try:
         page.locator("#addSensorChannelBtn").click()
         second = page.locator(".sensor-extra-channel").first
         second.locator('[data-channel-field="channelLabel"]').fill("OR 1 medical air")
-        second.locator('[data-channel-field="sensorService"]').fill("Medical air")
+        second.locator('[data-gas-service-choice]').select_option("Medical air")
         second.locator('[data-channel-field="sensorManufacturer"]').fill("Second sensor manufacturer")
         second.locator('[data-channel-field="sensorPartNumber"]').fill("Air sensor P/N")
         second.locator('[data-channel-field="sensorRange"]').fill("Air sensor range")
