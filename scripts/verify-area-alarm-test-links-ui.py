@@ -267,6 +267,172 @@ def run_width(browser, url, width):
         page.close()
 
 
+
+def run_combined_legacy_width(browser, url, width):
+    """Verify combined alarm tests and older 'Vacuum' labels through v2 import.
+
+    Build realistic synthetic records through the mobile UI, migrate a copy
+    through the legacy browser-storage key, then edit and print without
+    converting or losing any original service labels or channel links.
+    """
+    page = browser.new_page(viewport={"width": width, "height": 844})
+    errors, dialogs = [], []
+    page.on("pageerror", lambda error: errors.append(str(error)))
+
+    def on_dialog(dialog):
+        dialogs.append(f"{dialog.type}: {dialog.message}")
+        dialog.dismiss()
+
+    page.on("dialog", on_dialog)
+    try:
+        page.goto(url, wait_until="domcontentloaded")
+        page.locator("#newProjectBtn").click()
+        page.locator('#projectForm [name="name"]').fill("Synthetic legacy service import QA")
+        for service in ("oxygen", "medicalAir", "medicalVacuum"):
+            page.locator(
+                f'#newProjectSystemScope [name="systems"][value="{service}"]'
+            ).check()
+        page.locator("#projectForm button.primary").click()
+
+        page.locator('.tab[data-tab="tests"]').click()
+        combined_id = add_test(
+            page, name="Combined area alarm functional test",
+            service="Oxygen / Medical air", result="Needs attention",
+            reading="Synthetic combined observation"
+        )
+        vacuum_id = add_test(
+            page, name="Vacuum area alarm functional test",
+            service="Medical vacuum", result="Pass",
+            reading="Synthetic vacuum observation"
+        )
+
+        page.locator('.tab[data-tab="alarms"]').click()
+        page.locator("#addAlarmBtn").click()
+        page.locator('#alarmForm [name="type"]').select_option("Area alarm")
+        page.locator('#alarmForm [name="location"]').fill("Synthetic Level 3")
+        page.locator("#alarmForm button.primary").click()
+        page.locator("#alarmList [data-alarm-equipment]").click()
+
+        form = page.locator("#areaAlarmEquipmentForm")
+        form.locator('[name="panelManufacturer"]').fill("Synthetic manufacturer")
+        form.locator('[name="channelLabel"]').fill("QA-O2")
+        form.locator('#firstChannelServicePicker [data-gas-service-choice]').select_option("Oxygen")
+        page.locator("#addSensorChannelBtn").click()
+        air = page.locator(".sensor-extra-channel").nth(0)
+        air.locator('[data-channel-field="channelLabel"]').fill("QA-AIR")
+        air.locator('[data-gas-service-choice]').select_option("Medical air")
+        page.locator("#addSensorChannelBtn").click()
+        vacuum = page.locator(".sensor-extra-channel").nth(1)
+        vacuum.locator('[data-channel-field="channelLabel"]').fill("QA-VAC")
+        vacuum.locator('[data-gas-service-choice]').select_option("Medical vacuum")
+
+        page.locator("#firstChannelTestLinks").locator(
+            f'[data-channel-test-id="{combined_id}"]'
+        ).check()
+        air.locator(f'[data-channel-test-id="{combined_id}"]').check()
+        vacuum.locator(f'[data-channel-test-id="{vacuum_id}"]').check()
+
+        assert form.locator(".gas-service-mismatch:visible").count() == 0
+        assert form.locator(".gas-service-unconfirmed:visible").count() == 0
+        form.locator('button[type="submit"]').click()
+        original = project_data(page)
+        original_channels = original["alarms"][0]["equipment"]["sensorChannels"]
+        assert [ch["testIds"] for ch in original_channels] == [
+            [combined_id], [combined_id], [vacuum_id]
+        ]
+        assert original["alarms"][0]["status"] == "Not checked", (
+            "Field tests must never certify the area alarm automatically"
+        )
+
+        # Recreate an imported pre-v3 browser data store, using valid records
+        # built above instead of fragile hand-authored project fixtures.
+        page.evaluate("""(vacuumTestId) => {
+            const currentKey = 'mgs-prototype-v3';
+            const state = JSON.parse(localStorage.getItem(currentKey));
+            const project = state.projects[0];
+            project.alarms[0].equipment.sensorChannels[2].sensorService = 'Vacuum';
+            project.alarms[0].equipment.sensorService =
+                project.alarms[0].equipment.sensorChannels[0].sensorService;
+            project.tests.find(t => t.id === vacuumTestId).system = 'Vacuum';
+            delete state.migrationSource;
+            localStorage.setItem('mgs-prototype-v2', JSON.stringify(state));
+            localStorage.removeItem(currentKey);
+        }""", vacuum_id)
+        page.reload(wait_until="domcontentloaded")
+
+        migrated_state = page.evaluate(
+            "() => JSON.parse(localStorage.getItem('mgs-prototype-v3'))"
+        )
+        assert migrated_state["migrationSource"]["storageKey"] == "mgs-prototype-v2"
+        persisted = project_data(page)
+        channels = persisted["alarms"][0]["equipment"]["sensorChannels"]
+        assert [ch["sensorService"] for ch in channels] == [
+            "Oxygen", "Medical air", "Vacuum"
+        ], "Legacy migration must preserve the exact service labels"
+        assert next(t for t in persisted["tests"] if t["id"] == vacuum_id)["system"] == "Vacuum"
+
+        page.locator('.tab[data-tab="alarms"]').click()
+        page.locator("#alarmList [data-alarm-equipment]").click()
+        form = page.locator("#areaAlarmEquipmentForm")
+        vacuum = page.locator(".sensor-extra-channel").nth(1)
+        assert vacuum.locator('[data-gas-service-choice]').input_value() == "__other__"
+        assert vacuum.locator('[data-channel-field="sensorService"]').input_value() == "Vacuum"
+        assert vacuum.locator('[data-channel-field="sensorService"]').is_visible()
+        assert vacuum.locator(f'[data-channel-test-id="{vacuum_id}"]').is_checked()
+        assert page.locator("#firstChannelTestLinks").locator(
+            f'[data-channel-test-id="{combined_id}"]'
+        ).is_checked()
+        assert page.locator(".sensor-extra-channel").first.locator(
+            f'[data-channel-test-id="{combined_id}"]'
+        ).is_checked()
+        assert form.locator(".gas-service-mismatch:visible").count() == 0
+        assert form.locator(".gas-service-unconfirmed:visible").count() == 0
+
+        # Editing an unrelated panel detail must not normalize legacy labels
+        # or break links to a combined-service test.
+        form.locator('[name="panelRevision"]').fill("QA revised panel note")
+        form.locator('button[type="submit"]').click()
+        updated = project_data(page)
+        channels = updated["alarms"][0]["equipment"]["sensorChannels"]
+        assert [ch["sensorService"] for ch in channels] == [
+            "Oxygen", "Medical air", "Vacuum"
+        ]
+        assert [ch["testIds"] for ch in channels] == [
+            [combined_id], [combined_id], [vacuum_id]
+        ]
+        assert updated["alarms"][0]["status"] == "Not checked"
+        assert next(t for t in updated["tests"] if t["id"] == vacuum_id)["system"] == "Vacuum"
+
+        report_channels = page.locator("#report .alarm-channel-report > div")
+        assert report_channels.count() == 3
+        assert "Combined area alarm functional test" in report_channels.nth(0).inner_text()
+        assert "Combined area alarm functional test" in report_channels.nth(1).inner_text()
+        assert "Vacuum area alarm functional test" in report_channels.nth(2).inner_text()
+        assert "Gas service: Vacuum" in report_channels.nth(2).inner_text()
+        assert "Gas-service mismatch" not in page.locator("#report").inner_text()
+        assert "Gas service unconfirmed" not in page.locator("#report").inner_text()
+
+        page.evaluate(
+            "() => { window.__qaPrintInvoked = false;"
+            "window.print = () => { window.__qaPrintInvoked = true; }; }"
+        )
+        page.locator("#printReportBtn").click()
+        assert page.evaluate("window.__qaPrintInvoked") is True
+        assert report_channels.count() == 3
+
+        page.reload(wait_until="domcontentloaded")
+        again = project_data(page)
+        assert [ch["sensorService"] for ch in
+                again["alarms"][0]["equipment"]["sensorChannels"]] == [
+                    "Oxygen", "Medical air", "Vacuum"
+                ], "Second reload must preserve imported labels after save"
+        assert again["alarms"][0]["equipment"]["sensorChannels"][2]["testIds"] == [vacuum_id]
+        assert not dialogs, f"Unexpected browser dialogs at {width}px: {dialogs}"
+        assert not errors, f"Browser JS errors at {width}px: {errors}"
+    finally:
+        page.close()
+
+
 def main():
     server = ThreadingHTTPServer(
         ("127.0.0.1", 0), functools.partial(QuietHandler, directory=str(ROOT))
@@ -284,6 +450,7 @@ def main():
             try:
                 for width in WIDTHS:
                     run_width(browser, url, width)
+                    run_combined_legacy_width(browser, url, width)
             finally:
                 browser.close()
     finally:
@@ -292,7 +459,7 @@ def main():
         thread.join(timeout=2)
     print(
         "Area alarm functional-test links: end-to-end UI, reload, print, "
-        "and orphan safeguards passed at 320px and 390px."
+        "orphan safeguards, combined-service and v2 legacy import passed at 320px and 390px."
     )
 
 
