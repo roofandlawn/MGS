@@ -30,3 +30,9 @@ Linking a sensor channel to a functional-test record now distinguishes **matchin
 An explicitly documented combined oxygen / medical air alarm test remains compatible with either matching channel. Service matching is a documentary safeguard, not an NFPA 99 compliance or ASSE 6030 verification determination.
 
 The updated unit test covers all three states, while the mobile regression at 320px and 390px checks saving, reloading, printing and clearing an unconfirmed channel link.
+
+## November 13, 2026: ambiguous multi-service sensor channels
+
+A single sensor channel is expected to identify one monitored gas. If its service label explicitly names more than one recognized gas (for example `Oxygen / Medical air`), a linked alarm test now displays **Gas service unconfirmed**, even when one listed service overlaps. This prevents a misleading confirmed match for a channel that needs correction against approved project records. Combined-service **test records** remain compatible with correctly identified single-gas sensor channels. The original strings are preserved; no automatic reclassification, pass result, verification determination or schema migration occurs.
+
+The unit and 320px/390px mobile browser regression suites now cover the warning, saved report, reload and correction workflow.

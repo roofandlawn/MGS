@@ -124,6 +124,13 @@ function serviceLinkAssessment(channelService,testService) {
     state:'unconfirmed',
     message:'Gas service unconfirmed: the sensor channel or linked alarm test does not identify a recognized service. Confirm both against approved project records.'
   };
+  // One sensor channel represents one monitored service. A multi-service
+  // channel label must not receive a false confirmed match, even when the
+  // linked test legitimately covers several services.
+  if (channel.length>1) return {
+    state:'unconfirmed',
+    message:'Gas service unconfirmed: this sensor channel lists multiple recognized services. Identify the single monitored service using approved project records.'
+  };
   if (!channel.some(service=>test.includes(service))) return {
     state:'mismatch',message:mismatchWarning(channelService,testService)
   };

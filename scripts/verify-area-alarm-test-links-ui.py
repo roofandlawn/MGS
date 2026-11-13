@@ -247,6 +247,26 @@ def run_width(browser, url, width):
         page.locator('#areaAlarmEquipmentForm button[type="submit"]').click()
         assert "Gas service unconfirmed" not in page.locator("#report").inner_text()
 
+        # A combined test covers multiple services, but one SENSOR channel
+        # must identify a single gas; don't call a multigas channel a match.
+        page.locator("#alarmList [data-alarm-equipment]").click()
+        page.locator('#firstChannelServicePicker [data-gas-service-choice]').select_option("__other__")
+        page.locator('#areaAlarmEquipmentForm [name="sensorService"]').fill("Oxygen / Medical air")
+        first_options = page.locator("#firstChannelTestLinks")
+        assert first_options.locator(".gas-service-unconfirmed:visible").count() == 1
+        assert first_options.locator(".gas-service-mismatch:visible").count() == 0
+        page.locator('#areaAlarmEquipmentForm button[type="submit"]').click()
+        assert "multiple recognized services" in page.locator("#report").inner_text()
+        page.reload(wait_until="domcontentloaded")
+        page.locator('.tab[data-tab="alarms"]').click()
+        page.locator("#alarmList [data-alarm-equipment]").click()
+        first_options = page.locator("#firstChannelTestLinks")
+        assert first_options.locator(".gas-service-unconfirmed:visible").count() == 1
+        page.locator('#firstChannelServicePicker [data-gas-service-choice]').select_option("Oxygen")
+        assert first_options.locator(".gas-service-unconfirmed:visible").count() == 0
+        page.locator('#areaAlarmEquipmentForm button[type="submit"]').click()
+        assert "multiple recognized services" not in page.locator("#report").inner_text()
+
         # Deleting a test must not silently reassign its channel to another test.
         page.locator('.tab[data-tab="tests"]').click()
         page.locator("#testList .record-card").filter(

@@ -117,6 +117,19 @@ assert.equal(E.serviceLinkAssessment('Oxygen','Oxygen / Medical air').state,'mat
 assert.equal(E.serviceLinkAssessment('Medical air','air').state,'unconfirmed');
 assert.equal(E.serviceLinkAssessment('','Oxygen').state,'unconfirmed');
 assert.equal(E.gasServiceMismatch('Medical air','air'),false);
+// A sensor channel with two named gases is ambiguous, even when the linked
+// test covers both; combined functional TESTS remain valid for a single channel.
+assert.equal(E.serviceLinkAssessment('Oxygen / Medical air','Oxygen').state,'unconfirmed');
+assert.equal(E.serviceLinkAssessment('Oxygen / Medical air','Oxygen / Medical air').state,'unconfirmed');
+assert.match(E.serviceLinkAssessment('Oxygen / Medical air','Oxygen').message,/multiple recognized services/);
+assert.equal(E.serviceLinkAssessment('Oxygen','Oxygen / Medical air').state,'match');
+const ambiguousLinks=E.testChoicesMarkup(functionalTests,['o2-func'],'Oxygen / Medical air');
+assert.match(ambiguousLinks,/gas-service-unconfirmed/);
+assert.doesNotMatch(ambiguousLinks,/gas-service-mismatch/);
+const ambiguousReport=E.reportMarkup({id:'ambiguous',type:'Area alarm',equipment:{
+  sensorChannels:[{sensorService:'Oxygen / Medical air',testIds:['o2-func']}]
+}},[],functionalTests);
+assert.match(ambiguousReport,/UNCONFIRMED: Gas service unconfirmed/);
 const orphanChoices=E.testChoicesMarkup([],['deleted-test'],'Oxygen');
 assert.match(orphanChoices,/Previously linked alarm test record missing/);
 assert.doesNotMatch(orphanChoices,/gas-service-unconfirmed/);
