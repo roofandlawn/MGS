@@ -78,3 +78,17 @@ footer{max-width:1180px;margin:0 auto;padding:0 18px 40px;color:var(--muted);fon
   .top-actions{width:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
   .top-actions button{min-width:0;padding:10px 6px;font-size:.82rem}
 }
+
+
+/* Field-documentation review summary for area alarm panels. */
+.alarm-review-summary{border:1px solid #d7dee6;border-left:4px solid #b78223;background:#fcfaf6;border-radius:11px;padding:14px 16px;margin-bottom:15px}
+.alarm-review-summary>strong{font-size:.95rem;color:var(--ink)}
+.alarm-review-summary p{font-size:.83rem;color:var(--muted);line-height:1.5;margin:8px 0}
+.alarm-review-list{list-style:none;margin:11px 0 0;padding:0;display:grid;gap:9px}
+.alarm-review-panel{background:#fff;border:1px solid var(--line);border-radius:9px;padding:10px}
+.alarm-review-panel>span{display:block;color:#755010;font-size:.76rem;font-weight:700;margin:4px 0}
+.alarm-review-panel>ul{padding-left:20px;font-size:.81rem;line-height:1.5;color:#4e5560;overflow-wrap:anywhere}
+.alarm-review-jump{display:inline-block;min-height:44px;text-align:left;padding:9px 10px;border:1px solid #ccd8e4;border-radius:7px;background:#f9fcff;color:#125b98;font-weight:750;text-decoration:underline;overflow-wrap:anywhere}
+.alarm-review-jump:focus-visible,.record-card:focus-visible{outline:3px solid #3384d8;outline-offset:2px}
+.alarm-review-badge{display:inline-block;font-size:.75rem;font-weight:750;color:#755010;background:#fff2d8;border-radius:6px;padding:4px 7px;margin-top:7px}
+@media(max-width:480px){.alarm-review-summary{padding:12px}.alarm-review-jump{width:100%}}
