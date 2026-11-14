@@ -126,6 +126,9 @@ def run_width(browser, url, width):
         page.locator('#alarmForm [name="type"]').select_option("Area alarm")
         page.locator('#alarmForm [name="location"]').fill("L3 nurse station")
         page.locator("#alarmForm button.primary").click()
+        assert "Needs Review: 1 of 1" in page.locator("#alarmReviewSummary").inner_text()
+        assert "not been documented" in page.locator("#alarmReviewSummary").inner_text()
+        page.locator("#alarmReviewSummary [data-review-target]").click()
         page.locator("#alarmList [data-alarm-equipment]").click()
 
         form = page.locator("#areaAlarmEquipmentForm")
@@ -180,6 +183,7 @@ def run_width(browser, url, width):
         channels = saved["alarms"][0]["equipment"]["sensorChannels"]
         assert [ch["sensorService"] for ch in channels] == ["Oxygen", "Medical air"]
         assert [ch["testIds"] for ch in channels] == [[oxygen_id], [air_id]]
+        assert "Needs Review: 0 of 1" in page.locator("#alarmReviewSummary").inner_text()
         assert "Needs attention" in page.locator("#alarmList").inner_text()
         assert "Medical air alarm functional test" in page.locator("#alarmList").inner_text()
 
@@ -214,6 +218,7 @@ def run_width(browser, url, width):
         page.locator('#areaAlarmEquipmentForm button[type="submit"]').click()
         assert "Gas-service mismatch" in page.locator("#report").inner_text()
         assert "Gas-service mismatch" in page.locator("#alarmList").inner_text()
+        assert "Needs Review: 1 of 1" in page.locator("#alarmReviewSummary").inner_text()
         assert project_data(page)["alarms"][0]["status"] == "Not checked"
         page.reload(wait_until="domcontentloaded")
         page.locator('.tab[data-tab="alarms"]').click()
@@ -281,6 +286,8 @@ def run_width(browser, url, width):
         assert "Previously linked alarm test record missing" in page.locator(
             "#alarmList"
         ).inner_text()
+        assert "Needs Review: 1 of 1" in page.locator("#alarmReviewSummary").inner_text()
+        assert "previously linked alarm test record is missing" in page.locator("#alarmReviewSummary").inner_text()
         assert not dialogs, f"Unexpected browser dialogs at {width}px: {dialogs}"
         assert not errors, f"Browser JS errors at {width}px: {errors}"
     finally:
