@@ -266,11 +266,14 @@ function renderSystemScope() {
 
 function renderAlarms() {
   const p = selectedProject();
+  $('#alarmReviewSummary').innerHTML = p
+    ? MGSAreaAlarmReview.summaryMarkup(p.alarms, p.tests)
+    : '<div class="empty">Select a project to review area alarms.</div>';
   if (!p) return alarmList.innerHTML = '<div class="empty">Select a project first.</div>';
   if (!p.alarms.length) return alarmList.innerHTML = '<div class="empty">No alarm records yet.</div>';
   alarmList.innerHTML = p.alarms.map(a => `
-    <article class="record-card">
-      <div class="record-main"><strong>${escapeHtml(a.type)}</strong><span>${escapeHtml(a.location)}</span><small>${escapeHtml(a.serves || 'No service description')}</small></div>
+    <article class="record-card" data-alarm-id="${escapeHtml(String(a.id || ''))}" tabindex="-1">
+      <div class="record-main"><strong>${escapeHtml(a.type)}</strong><span>${escapeHtml(a.location)}</span><small>${escapeHtml(a.serves || 'No service description')}</small>${MGSAreaAlarmReview.badgeMarkup(a, p.tests)}</div>
       <span class="status ${statusClass(a.status)}">${escapeHtml(a.status)}</span>
       <button class="delete-link" data-alarm-delete="${a.id}">Delete</button>
       ${a.notes ? `<p>${escapeHtml(a.notes)}</p>` : ''}
@@ -567,6 +570,16 @@ checklist.addEventListener('change', e => {
 checklist.addEventListener('click', e => {
   const b = e.target.closest('[data-task-delete]'); if (!b) return;
   const p = selectedProject(); p.tasks = p.tasks.filter(t => t.id !== b.dataset.taskDelete); save();
+});
+
+$('#alarmReviewSummary').addEventListener('click', e => {
+  const button = e.target.closest('[data-review-target]');
+  if (!button) return;
+  const card = Array.from(alarmList.querySelectorAll('[data-alarm-id]'))
+    .find(item => item.dataset.alarmId === button.dataset.reviewTarget);
+  if (!card) return;
+  card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  card.focus({ preventScroll: true });
 });
 
 alarmList.addEventListener('click', e => {
