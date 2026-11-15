@@ -1,10 +1,26 @@
-# Area alarm Needs Review dashboard — November 14, 2026
+# Area alarm Needs Review dashboard — updated November 15, 2026
 
 ## Field workflow
 
 In a selected project's Alarms tab, the review summary evaluates each Area alarm record and lists panels with documentation issues. The count is affected panels / recorded area alarm panels; a panel may have several review flags. The first 12 flagged panels display their issue descriptions with a button that jumps to the matching alarm card.
 
 The summary is computed from existing records each time the workspace re-renders. It does not store new approval, inspection, verification or compliance state, and does not modify alarm or test results.
+
+## Filter controls (November 15)
+
+The foreman can choose **All review issues**, **Gas-service mismatches**, **Missing or unlinked tests**, **Unidentified sensor channels**, **Unconfirmed test service**, or **Missing panel equipment**. The total "Needs Review" panel count stays global so a filter never makes the job appear clear; the filtered count and listed issue details only show the selected category.
+
+When a filter has no matches, the dashboard says **No panels match this review category** and cautions that other issues may remain. Each category still links to its affected panel. The first twelve matching panels are displayed, with an explicit count if more match.
+
+The filter is a session-only view preference; it changes neither saved project records nor panel badges, test results, or independent verification status. It is reset to All review issues on a new page load. No migration or Supabase changes required.
+
+| Filter | Included internal flags |
+| --- | --- |
+| Gas-service mismatches | `gas-mismatch` |
+| Missing or unlinked tests | `no-test-link`, `missing-test` |
+| Unidentified sensor channels | `unidentified-service` |
+| Unconfirmed test service | `test-service-unconfirmed` |
+| Missing panel equipment | `no-equipment` |
 
 ## Review conditions
 
@@ -39,4 +55,4 @@ GitHub Actions workflow: .github/workflows/reference-mobile-qa.yml
 
 ## Follow-up candidate
 
-Allow the foreman to filter flagged panels by category and show the same review breakdown in the printable project turnover report, clearly labeled documentation review only.
+Add a documentation-only review breakdown to the printable project turnover report, while keeping the field test and independent verifier records separate.
