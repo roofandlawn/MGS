@@ -92,3 +92,10 @@ footer{max-width:1180px;margin:0 auto;padding:0 18px 40px;color:var(--muted);fon
 .alarm-review-jump:focus-visible,.record-card:focus-visible{outline:3px solid #3384d8;outline-offset:2px}
 .alarm-review-badge{display:inline-block;font-size:.75rem;font-weight:750;color:#755010;background:#fff2d8;border-radius:6px;padding:4px 7px;margin-top:7px}
 @media(max-width:480px){.alarm-review-summary{padding:12px}.alarm-review-jump{width:100%}}
+
+/* One-tap filtering of foreman review issues; select remains accessible at narrow widths. */
+.alarm-review-filter{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:12px 0 8px}
+.alarm-review-filter label{font-size:.82rem;font-weight:700;color:var(--ink)}
+.alarm-review-filter select{max-width:100%;min-height:44px;flex:1 1 210px;border:1px solid #8799aa;border-radius:8px;background:#fff;color:var(--ink);padding:8px 10px;font:inherit}
+.alarm-review-filter select:focus-visible{outline:3px solid #3384d8;outline-offset:2px}
+@media(max-width:480px){.alarm-review-filter{align-items:stretch;flex-direction:column;gap:5px}.alarm-review-filter select{width:100%;flex:auto}}
