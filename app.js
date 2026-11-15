@@ -84,6 +84,8 @@ function loadState() {
 
 let state = loadState();
 let pendingPhotoData = null;
+// Session-only display preference; never persisted as a clinical or approval status.
+let areaAlarmReviewFilter = 'all';
 const $ = selector => document.querySelector(selector);
 const projectList = $('#projectList');
 const selectedTitle = $('#selectedTitle');
@@ -267,7 +269,7 @@ function renderSystemScope() {
 function renderAlarms() {
   const p = selectedProject();
   $('#alarmReviewSummary').innerHTML = p
-    ? MGSAreaAlarmReview.summaryMarkup(p.alarms, p.tests)
+    ? MGSAreaAlarmReview.summaryMarkup(p.alarms, p.tests, areaAlarmReviewFilter)
     : '<div class="empty">Select a project to review area alarms.</div>';
   if (!p) return alarmList.innerHTML = '<div class="empty">Select a project first.</div>';
   if (!p.alarms.length) return alarmList.innerHTML = '<div class="empty">No alarm records yet.</div>';
@@ -570,6 +572,14 @@ checklist.addEventListener('change', e => {
 checklist.addEventListener('click', e => {
   const b = e.target.closest('[data-task-delete]'); if (!b) return;
   const p = selectedProject(); p.tasks = p.tasks.filter(t => t.id !== b.dataset.taskDelete); save();
+});
+
+$('#alarmReviewSummary').addEventListener('change', e => {
+  if (!e.target.matches('#alarmReviewFilter')) return;
+  areaAlarmReviewFilter = MGSAreaAlarmReview.normalizeFilter(e.target.value);
+  renderAlarms();
+  // A re-render replaces the select: restore keyboard focus for mobile use.
+  $('#alarmReviewFilter')?.focus({ preventScroll: true });
 });
 
 $('#alarmReviewSummary').addEventListener('click', e => {
