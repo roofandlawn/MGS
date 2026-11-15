@@ -128,6 +128,12 @@ def run_width(browser, url, width):
         page.locator("#alarmForm button.primary").click()
         assert "Needs Review: 1 of 1" in page.locator("#alarmReviewSummary").inner_text()
         assert "not been documented" in page.locator("#alarmReviewSummary").inner_text()
+        # Category filter shows only matching flags without editing equipment records.
+        page.locator("#alarmReviewFilter").select_option("missing-equipment")
+        assert "Showing 1 of 1 flagged panels" in page.locator("#alarmReviewSummary").inner_text()
+        page.locator("#alarmReviewFilter").select_option("gas-mismatch")
+        assert "No panels match this review category" in page.locator("#alarmReviewSummary").inner_text()
+        page.locator("#alarmReviewFilter").select_option("all")
         page.locator("#alarmReviewSummary [data-review-target]").click()
         page.locator("#alarmList [data-alarm-equipment]").click()
 
@@ -219,6 +225,12 @@ def run_width(browser, url, width):
         assert "Gas-service mismatch" in page.locator("#report").inner_text()
         assert "Gas-service mismatch" in page.locator("#alarmList").inner_text()
         assert "Needs Review: 1 of 1" in page.locator("#alarmReviewSummary").inner_text()
+        page.locator("#alarmReviewFilter").select_option("gas-mismatch")
+        assert "Showing 1 of 1 flagged panels" in page.locator("#alarmReviewSummary").inner_text()
+        assert "Gas-service mismatch" in page.locator("#alarmReviewSummary").inner_text()
+        page.locator("#alarmReviewFilter").select_option("missing-tests")
+        assert "No panels match this review category" in page.locator("#alarmReviewSummary").inner_text()
+        page.locator("#alarmReviewFilter").select_option("all")
         assert project_data(page)["alarms"][0]["status"] == "Not checked"
         page.reload(wait_until="domcontentloaded")
         page.locator('.tab[data-tab="alarms"]').click()
@@ -288,6 +300,11 @@ def run_width(browser, url, width):
         ).inner_text()
         assert "Needs Review: 1 of 1" in page.locator("#alarmReviewSummary").inner_text()
         assert "previously linked alarm test record is missing" in page.locator("#alarmReviewSummary").inner_text()
+        page.locator("#alarmReviewFilter").select_option("missing-tests")
+        assert "Showing 1 of 1 flagged panels" in page.locator("#alarmReviewSummary").inner_text()
+        assert "previously linked alarm test record is missing" in page.locator("#alarmReviewSummary").inner_text()
+        page.locator("#alarmReviewFilter").select_option("gas-mismatch")
+        assert "No panels match this review category" in page.locator("#alarmReviewSummary").inner_text()
         assert not dialogs, f"Unexpected browser dialogs at {width}px: {dialogs}"
         assert not errors, f"Browser JS errors at {width}px: {errors}"
     finally:
