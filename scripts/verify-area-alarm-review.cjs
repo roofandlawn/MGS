@@ -49,6 +49,40 @@ const rollup = Review.summarize([clean, mismatch, missing, { id: 'm', type: 'Mas
 assert.equal(rollup.areaPanels, 3);
 assert.equal(rollup.reviewPanels, 2);
 assert.equal(rollup.reviewFlags, 2);
+// Category filtering is a read-only view of the same underlying review flags.
+const originalRollup = JSON.stringify(rollup);
+assert.equal(Review.normalizeFilter('gas-mismatch'), 'gas-mismatch');
+assert.equal(Review.normalizeFilter('<script>'), 'all');
+assert.equal(Review.matchingReview(rollup, 'gas-mismatch').reviewPanels, 1);
+assert.equal(Review.matchingReview(rollup, 'gas-mismatch').reviewFlags, 1);
+assert.equal(Review.matchingReview(rollup, 'missing-tests').reviewPanels, 1);
+assert.equal(Review.matchingReview(rollup, 'missing-tests').reviewFlags, 1);
+assert.equal(Review.matchingReview(rollup, 'unidentified-channels').reviewPanels, 0);
+assert.equal(Review.matchingReview(rollup, 'all').reviewPanels, 2);
+assert.deepEqual(Review.matchingReview(
+  Review.summarize([unidentified, noLink, testUnknown,
+    { id: 'not-equipped', type: 'Area alarm' }], testRecords), 'unidentified-channels'
+).panels[0].flags.map(f => f.kind), ['unidentified-service']);
+assert.equal(Review.matchingReview(
+  Review.summarize([unidentified, noLink, testUnknown,
+    { id: 'not-equipped', type: 'Area alarm' }], testRecords), 'unconfirmed-test-service'
+).reviewPanels, 1);
+assert.equal(Review.matchingReview(
+  Review.summarize([unidentified, noLink, testUnknown,
+    { id: 'not-equipped', type: 'Area alarm' }], testRecords), 'missing-equipment'
+).reviewPanels, 1);
+assert.equal(JSON.stringify(rollup), originalRollup, 'Filtering must not mutate review records');
+const filteredMarkup = Review.summaryMarkup([mismatch, missing], testRecords, 'missing-tests');
+assert.match(filteredMarkup, /id="alarmReviewFilter"/);
+assert.match(filteredMarkup, /value="missing-tests" selected/);
+assert.match(filteredMarkup, /Showing 1 of 2 flagged panels/);
+assert.match(filteredMarkup, /previously linked alarm test record is missing/);
+assert.doesNotMatch(filteredMarkup, /Gas-service mismatch:/);
+const noMatchesMarkup = Review.summaryMarkup([mismatch], testRecords, 'missing-tests');
+assert.match(noMatchesMarkup, /No panels match this review category/);
+assert.match(noMatchesMarkup, /Needs Review: 1 of 1/);
+assert.match(Review.summaryMarkup([mismatch], testRecords, 'invalid'), /value="all" selected/);
+assert.equal(Review.FILTERS.length, 6);
 const dangerous = alarm([{ sensorService: 'Oxygen', channelLabel: '<img src=x>',
   testIds: ['air-test'] }], '"><svg onload=evil()>');
 dangerous.location = '<script>alert("x")</script>';
