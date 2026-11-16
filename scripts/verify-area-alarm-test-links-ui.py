@@ -223,6 +223,11 @@ def run_width(browser, url, width):
         assert first_options.locator(".gas-service-mismatch:visible").count() == 1
         page.locator('#areaAlarmEquipmentForm button[type="submit"]').click()
         assert "Gas-service mismatch" in page.locator("#report").inner_text()
+        turnover = page.locator("#report .report-alarm-review")
+        assert "1 of 1 area alarm panels need review" in turnover.inner_text()
+        assert turnover.locator(".report-alarm-review-categories tbody tr").count() == 5
+        assert "Gas-service mismatches" in turnover.inner_text()
+        assert "Open items by panel" in turnover.inner_text()
         assert "Gas-service mismatch" in page.locator("#alarmList").inner_text()
         assert "Needs Review: 1 of 1" in page.locator("#alarmReviewSummary").inner_text()
         page.locator("#alarmReviewFilter").select_option("gas-mismatch")
@@ -298,6 +303,7 @@ def run_width(browser, url, width):
         assert "Previously linked alarm test record missing" in page.locator(
             "#alarmList"
         ).inner_text()
+        assert "previously linked alarm test record is missing" in page.locator("#report .report-alarm-review").inner_text()
         assert "Needs Review: 1 of 1" in page.locator("#alarmReviewSummary").inner_text()
         assert "previously linked alarm test record is missing" in page.locator("#alarmReviewSummary").inner_text()
         page.locator("#alarmReviewFilter").select_option("missing-tests")
