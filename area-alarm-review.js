@@ -161,7 +161,56 @@
         : '<p>' + none + '</p>') + '</div></div>';
   }
 
-  const api = Object.freeze({ reviewPanel, summarize, matchingReview, normalizeFilter, summaryMarkup, badgeMarkup, FILTERS });
+
+  // Read-only turnover summary. Always uses all issues, never the dashboard filter.
+  // Show every flagged panel: a printed closeout report must not silently truncate.
+  function reportMarkup(alarms, tests = []) {
+    const summary = summarize(alarms, tests);
+    const heading = '<section class="report-alarm-review">' +
+      '<h3>Area alarm documentation — Needs Review</h3>';
+    const caution = '<p class="report-alarm-review-note">Documentation prompts only. ' +
+      'A missing flag does not establish NFPA 99 compliance, test acceptance, or ' +
+      'independent ASSE 6030 verification.</p>';
+
+    if (!summary.areaPanels) {
+      return heading + '<p>No area alarm panels recorded for this project.</p>' +
+        caution + '</section>';
+    }
+
+    const total = '<p><strong>' + summary.reviewPanels + ' of ' +
+      summary.areaPanels + ' area alarm panels need review</strong> (' +
+      summary.reviewFlags + ' unresolved documentation item(s)).</p>';
+    if (!summary.reviewFlags) {
+      return heading + total +
+        '<p>No review flags detected in the recorded panel/channel/test links.</p>' +
+        caution + '</section>';
+    }
+
+    const categories = FILTERS.filter(option => option.id !== 'all').map(option => {
+      const category = matchingReview(summary, option.id);
+      return '<tr><th scope="row">' + escapeHtml(option.label) + '</th>' +
+        '<td>' + category.reviewPanels + '</td><td>' +
+        category.reviewFlags + '</td></tr>';
+    }).join('');
+    const breakdown = '<table class="report-alarm-review-categories">' +
+      '<thead><tr><th scope="col">Issue category</th>' +
+      '<th scope="col">Panels</th><th scope="col">Items</th></tr></thead>' +
+      '<tbody>' + categories + '</tbody></table>';
+
+    const panels = summary.panels.filter(panel => panel.flags.length).map(panel => {
+      const label = [panel.zone, panel.location].filter(Boolean).join(' — ');
+      const details = panel.flags.map(flag =>
+        '<li>' + escapeHtml(flag.detail) + '</li>').join('');
+      return '<li class="report-alarm-review-panel"><strong>' +
+        escapeHtml(label) + '</strong> (' + panel.flags.length +
+        ' item(s))<ul>' + details + '</ul></li>';
+    }).join('');
+    return heading + total + breakdown +
+      '<h4>Open items by panel</h4><ol class="report-alarm-review-panels">' +
+      panels + '</ol>' + caution + '</section>';
+  }
+
+  const api = Object.freeze({ reviewPanel, summarize, matchingReview, normalizeFilter, summaryMarkup, badgeMarkup, reportMarkup, FILTERS });
   root.MGSAreaAlarmReview = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);
