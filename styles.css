@@ -99,3 +99,22 @@ footer{max-width:1180px;margin:0 auto;padding:0 18px 40px;color:var(--muted);fon
 .alarm-review-filter select{max-width:100%;min-height:44px;flex:1 1 210px;border:1px solid #8799aa;border-radius:8px;background:#fff;color:var(--ink);padding:8px 10px;font:inherit}
 .alarm-review-filter select:focus-visible{outline:3px solid #3384d8;outline-offset:2px}
 @media(max-width:480px){.alarm-review-filter{align-items:stretch;flex-direction:column;gap:5px}.alarm-review-filter select{width:100%;flex:auto}}
+
+
+/* Printable turnover: full, unfiltered list of unresolved area alarm documentation issues. */
+@media print {
+  .report-alarm-review { margin: 0 0 20px; }
+  .report-alarm-review>p { margin: 8px 0 10px; }
+  .report-alarm-review-categories { width: 100%; border-collapse: collapse; margin: 8px 0 13px; }
+  .report-alarm-review-categories th,
+  .report-alarm-review-categories td { border: 1px solid #bbb; padding: 5px 7px; font-size: 9pt; text-align: left; }
+  .report-alarm-review-categories td:last-child { width: auto; }
+  .report-alarm-review-categories th:not(:first-child),
+  .report-alarm-review-categories td:not(:first-child) { width: 13%; text-align: center; }
+  .report-alarm-review-categories thead { display: table-header-group; }
+  .report-alarm-review h4 { font-size: 10pt; margin: 10px 0 6px; }
+  .report-alarm-review-panels { padding-left: 22px; margin: 6px 0; }
+  .report-alarm-review-panel { break-inside: avoid; margin: 0 0 8px; overflow-wrap: anywhere; }
+  .report-alarm-review-panel ul { margin: 4px 0 0; padding-left: 19px; }
+  .report-alarm-review-note { border-top: 1px solid #aaa; padding-top: 6px; font-size: 8.5pt; color: #444; }
+}
