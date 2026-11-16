@@ -93,4 +93,30 @@ assert.match(markup, /&lt;img src=x&gt;/);
 assert.match(markup, /data-review-target="/);
 assert.match(Review.badgeMarkup(mismatch, testRecords), /Needs review \(1\)/);
 assert.equal(Review.badgeMarkup(clean, testRecords), '');
+
+// The printed report is an unfiltered, complete, escaped turnover snapshot.
+const turnover = Review.reportMarkup([clean, mismatch, missing], testRecords);
+assert.match(turnover, /2 of 3 area alarm panels need review/);
+assert.match(turnover, /2 unresolved documentation item/);
+assert.match(turnover, /Gas-service mismatches/);
+assert.match(turnover, /Missing or unlinked tests/);
+assert.match(turnover, /Open items by panel/);
+assert.match(turnover, /previously linked alarm test record is missing/);
+assert.equal((turnover.match(/class="report-alarm-review-panel"/g) || []).length, 2);
+assert.doesNotMatch(turnover, /alarmReviewFilter|data-review-target/);
+const cleanTurnover = Review.reportMarkup([clean], testRecords);
+assert.match(cleanTurnover, /0 of 1 area alarm panels need review/);
+assert.match(cleanTurnover, /No review flags detected/);
+assert.doesNotMatch(cleanTurnover, /Open items by panel/);
+assert.match(Review.reportMarkup([], []), /No area alarm panels recorded/);
+const dangerousTurnover = Review.reportMarkup([dangerous], testRecords);
+assert.match(dangerousTurnover, /&lt;script&gt;/);
+assert.match(dangerousTurnover, /&lt;img src=x&gt;/);
+assert.ok(!dangerousTurnover.includes('<script') && !dangerousTurnover.includes('<img'));
+const many = Array.from({ length: 14 }, (_, index) =>
+  alarm([{ sensorService: 'Oxygen', testIds: ['air-test'] }], 'panel-' + index));
+assert.equal((Review.reportMarkup(many, testRecords)
+  .match(/class="report-alarm-review-panel"/g) || []).length, 14,
+  'Printable turnover must include every flagged panel, not dashboard first-twelve cap');
+
 console.log('Area alarm Needs Review summary checks passed.');
