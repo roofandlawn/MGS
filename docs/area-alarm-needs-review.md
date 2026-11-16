@@ -53,6 +53,16 @@ Mobile browser workflow: python scripts/verify-area-alarm-test-links-ui.py on 32
 
 GitHub Actions workflow: .github/workflows/reference-mobile-qa.yml
 
+## Printable turnover report (November 16, 2026)
+
+The **Print / Save PDF** project report now inserts an `Area alarm documentation — Needs Review` section immediately before the alarm records. This is a read-only snapshot of the current project's saved area alarm and functional-test records. It **always includes every outstanding issue** regardless of the dashboard's session filter (and unlike the dashboard, it does not stop at twelve panels).
+
+The report shows overall affected-panel and documentation-item counts, a category breakdown with counts of affected panels and items, and each flagged panel's zone/location and full issue text. Categories are consistent with the dashboard rules. With no flagged panels it states that no current review flags were detected, **not** that the system passed. With no area alarm records it explicitly says none are recorded.
+
+No status, test outcome, code-compliance determination, ASSE 6030 verification or new persisted data is created by printing. User-supplied identifiers and descriptions are HTML-escaped. Print-specific CSS avoids cutting a panel's issue list across pages where possible.
+
+QA: `node scripts/verify-area-alarm-review.cjs` checks counts, categories, safe escaping, empty/clean cases and exports of more than 12 flagged panels; `python scripts/verify-area-alarm-test-links-ui.py` checks printed mismatch and deleted-test warnings on 320px and 390px mobile layouts.
+
 ## Follow-up candidate
 
-Add a documentation-only review breakdown to the printable project turnover report, while keeping the field test and independent verifier records separate.
+Add an optional foreman review sign-off with dated comments, explicitly separate from the independent verifier's acceptance paperwork.
