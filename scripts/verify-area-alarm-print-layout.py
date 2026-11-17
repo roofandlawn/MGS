@@ -46,7 +46,8 @@ def inspect_pdf(pdf_bytes: bytes, width: int) -> int:
             f"{width}px: unexpectedly empty PDF page {page_number}"
         )
         texts.append(text)
-    whole = "\n".join(texts)
+    # PDF text extraction can insert line breaks at print-wrap boundaries.
+    whole = " ".join(" ".join(texts).split())
     assert "Area alarm documentation" in whole and "Needs Review" in whole
     assert "42 of 42 area alarm panels need review" in whole, (
         f"{width}px: total flagged-panel count missing from exported PDF"
