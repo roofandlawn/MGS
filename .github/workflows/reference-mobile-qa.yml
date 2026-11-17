@@ -22,6 +22,7 @@ on:
       - scripts/verify-area-alarm-review.cjs
       - scripts/verify-area-alarm-equipment-ui.py
       - scripts/verify-area-alarm-test-links-ui.py
+      - scripts/verify-area-alarm-print-layout.py
       - scripts/verify-reference-alarm-interface.cjs
       - scripts/verify-reference-sensor-placement.mjs
       - scripts/verify-reference-topology.cjs
@@ -51,7 +52,7 @@ jobs:
 
       - name: Install browser test dependencies
         run: |
-          python -m pip install "playwright==1.56.0"
+          python -m pip install "playwright==1.56.0" "pypdf==6.2.0"
           python -m playwright install --with-deps chromium
 
       - name: Verify section locator contract
@@ -78,5 +79,17 @@ jobs:
       - name: Smoke test channel-specific alarm functional-test links and printed report
         run: python scripts/verify-area-alarm-test-links-ui.py
 
+      - name: Verify physical multi-page Area Alarm PDF print layout
+        run: python scripts/verify-area-alarm-print-layout.py
+
       - name: Run edition and navigation browser checks
         run: python scripts/verify-reference-mobile.py
+
+      - name: Upload synthetic print QA PDFs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: area-alarm-turnover-print-qa
+          path: artifacts/area-alarm-turnover-*.pdf
+          if-no-files-found: warn
+          retention-days: 7
