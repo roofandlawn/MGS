@@ -86,7 +86,9 @@ def check_width(browser, url: str, width: int) -> None:
     page.on("pageerror", lambda error: errors.append(str(error)))
     try:
         page.goto(url, wait_until="domcontentloaded")
-        page.locator("#report").wait_for()
+        # This section is intentionally display:none on screens and only visible
+        # in print media. Wait for its DOM attachment, not screen visibility.
+        page.locator("#report").wait_for(state="attached")
         info = page.evaluate("""() => {
             if (!window.MGSAreaAlarmReview) {
                 throw new Error('Real area alarm report module did not load');
