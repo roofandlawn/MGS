@@ -66,3 +66,14 @@ QA: `node scripts/verify-area-alarm-review.cjs` checks counts, categories, safe 
 ## Follow-up candidate
 
 Add an optional foreman review sign-off with dated comments, explicitly separate from the independent verifier's acceptance paperwork.
+
+## Physical PDF print QA verified — November 19, 2026
+
+The previously pending GitHub Actions run [44350200230](https://github.com/roofandlawn/MGS/actions/runs/44350200230) **passed**, including the Chromium physical print-layout step and synthetic PDF artifact upload. Retrieved and independently inspected the `area-alarm-turnover-print-qa` artifact (created November 18, 2026; artifact ID 14447967927).
+
+- Both the 320px and 390px input viewports produced **identical three-page, US Letter (612 x 792 pt) PDFs**. Printing is intentionally independent of the on-screen phone viewport.
+- Synthetic fixture: **42 of 42 panels** with **42 unresolved items**: 30 gas-service mismatches, 6 missing/unlinked tests, 6 unidentified channels. All panel identifiers and issue descriptions were present exactly once and stayed together on a page.
+- Visually reviewed rendered pages 1–3. Titles, category table, numbered panel issues, continuation breaks, and the installation/independent-verification disclaimer are legible. No clipped text, overflow outside the paper, or blank page was observed. PDF text geometry reports font sizes of roughly 8–22 pt, median 10 pt, with no text spans outside page bounds.
+- The synthetic report is **test evidence**, not a real project record, NFPA 99 acceptance, or ASSE 6030 verification. No production or Supabase changes were made.
+
+**Usability follow-up:** Continuation pages 2 and 3 do not repeat the project/report identifier or show page numbers. Add a restrained print continuation header/page-number convention in a future change, then re-run the physical print regression to verify it does not introduce orphans or page overflow.
