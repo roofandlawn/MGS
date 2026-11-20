@@ -355,6 +355,7 @@ function reportSystemMarkup(project) {
 function renderReport() {
   const p = selectedProject();
   const report = $('#report');
+  window.MGSReportPrint?.update(p);
   if (!p) return report.innerHTML = '<h1>Med Gas Project Report</h1><p>No project selected.</p>';
   const done = p.tasks.filter(t => t.done).length;
   report.innerHTML = `
