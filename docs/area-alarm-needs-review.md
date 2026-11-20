@@ -77,3 +77,11 @@ The previously pending GitHub Actions run [44350200230](https://github.com/roofa
 - The synthetic report is **test evidence**, not a real project record, NFPA 99 acceptance, or ASSE 6030 verification. No production or Supabase changes were made.
 
 **Usability follow-up:** Continuation pages 2 and 3 do not repeat the project/report identifier or show page numbers. Add a restrained print continuation header/page-number convention in a future change, then re-run the physical print regression to verify it does not introduce orphans or page overflow.
+
+## Repeating project identification and pagination — November 20, 2026
+
+The main **Print / Save PDF** report now installs print-only CSS page-margin boxes (see `report-print-page.js`). Every physical page, including continuation pages, carries a compact `MGS | [project number] | [project name]` identifier at the top and `Page N of M` at the bottom right. The job number is read from optional existing `handoffMetadata.projectNumber`; if absent, the project name alone is shown. The full, unabridged project name still appears in the report summary.
+
+Identifiers are whitespace-normalized, CSS-escaped, and length-limited for the margin. The page count comes from the browser's print engine, not project data. Switching projects rebuilds the print rule; printing writes no new records or approval state. Chromium 131+ supports these page-margin boxes; engines without support still print the underlying report, but might omit the repeated identifiers/page numbers.
+
+The physical PDF regression now asserts both project identity and correct `Page N of M` on **each sheet** at 320px and 390px viewport widths, while keeping the existing 42-panel same-page issue checks. The mobile UI regression checks that the real selected project flows into the print rule. The generated PDFs remain synthetic test artifacts, not verifier acceptance documents.
