@@ -1,0 +1,83 @@
+.nav-button{display:inline-flex;align-items:center;text-decoration:none}.reference-shell{max-width:1240px}.reference-hero{display:grid;grid-template-columns:1.7fr .7fr;gap:18px;background:#fff;border:1px solid var(--line);border-radius:20px;padding:clamp(22px,4vw,40px);margin-bottom:18px}.reference-hero h2{margin:6px 0 12px;font-size:clamp(1.7rem,4vw,2.8rem);max-width:760px}.reference-hero p:not(.eyebrow){color:var(--muted);line-height:1.6;max-width:760px}.edition-card{align-self:end;background:var(--soft);border:1px solid var(--line);border-radius:14px;padding:18px}.edition-card span,.edition-card strong,.edition-card small{display:block}.edition-card span{font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}.edition-card strong{font-size:1.3rem;margin:5px 0}.edition-card small{color:var(--muted);line-height:1.4}.reference-controls{margin-bottom:18px}.search-label{margin:0}.filter-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}.filter-chip{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:999px;padding:8px 12px;font-weight:750}.filter-chip.active{background:var(--navy);border-color:var(--navy);color:#fff}.reference-grid{display:grid;grid-template-columns:.8fr 1.2fr;gap:18px;align-items:start}.reference-list-panel{padding:16px;position:sticky;top:92px}.reference-list{display:grid;gap:8px;max-height:70vh;overflow:auto}.reference-row{width:100%;text-align:left;border:1px solid var(--line);background:#fff;border-radius:12px;padding:13px}.reference-row:hover,.reference-row.active{border-color:#76a8df;background:#f4f9ff}.reference-row span{display:block}.reference-row>span:last-child{color:var(--muted);font-size:.8rem;margin-top:5px}.reference-row-top{display:flex!important;justify-content:space-between;gap:10px;align-items:flex-start}.reference-row-top small{color:var(--muted);font-weight:700}.reference-detail-panel{min-height:520px}.reference-detail-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;border-bottom:1px solid var(--line);padding-bottom:14px}.reference-detail-head h2{margin:3px 0 0;font-size:2rem}.verified-badge{font-size:.75rem;font-weight:800;background:#e7f5ed;color:var(--green);padding:6px 9px;border-radius:999px;white-space:nowrap}.reference-section{padding:18px 0;border-bottom:1px solid var(--line)}.reference-section:last-child{border-bottom:0}.reference-section h3{margin:0 0 9px;font-size:1rem}.reference-section p{margin:0;color:var(--muted);line-height:1.6}.field-focus{background:#f7fbff;border-left:3px solid var(--blue);border-bottom:0;border-radius:10px;padding:16px;margin:16px 0}.tag-row{display:flex;flex-wrap:wrap;gap:8px}.tag,.role-tag{display:inline-flex;padding:6px 9px;border-radius:999px;background:var(--soft);border:1px solid var(--line);font-size:.78rem;font-weight:750}.role-tag{background:#eef6ff;border-color:#cfe2f8;color:#184f86}.code-links{display:grid;gap:9px}.code-links div{display:grid;grid-template-columns:90px 1fr;gap:10px;align-items:start;padding:11px;border:1px solid var(--line);border-radius:10px}.code-links span{color:var(--muted);font-size:.83rem;line-height:1.45}.source-note{margin-top:18px}.source-note h3{margin:4px 0 8px}.source-note>p:last-child{color:var(--muted);line-height:1.6;margin-bottom:0}@media(max-width:760px){.reference-hero,.reference-grid{grid-template-columns:1fr}.reference-list-panel{position:static}.reference-list{max-height:none}.reference-detail-panel{min-height:0}.reference-detail-head{display:grid}.verified-badge{justify-self:start}.code-links div{grid-template-columns:1fr}.reference-hero{padding:22px 18px}}
+/* Reference edition safeguards; never imply code adoption is validated. */
+.project-edition-notice{display:flex;justify-content:space-between;align-items:center;gap:18px;margin-bottom:18px;border-left:5px solid #9b6a1b;background:#fff9ec}
+.project-edition-notice strong{display:block;font-size:1rem;margin:4px 0}
+.project-edition-notice p:last-child{margin:5px 0 0;line-height:1.5;color:var(--ink)}
+.project-edition-notice.is-match{background:#f0faf2;border-left-color:#287b4b}
+.project-edition-notice.is-mismatch{background:#fff1f0;border-left-color:#b43f34}
+.project-edition-notice.is-none{background:#f5f8fb;border-left-color:#6b7e94}
+.project-edition-notice .nav-button{white-space:nowrap}
+.reference-edition-warning{padding:11px 12px;border-left:3px solid #9b6a1b;background:#fff8e8;border-radius:6px;color:#4c3611!important}
+@media(max-width:760px){.project-edition-notice{display:block}.project-edition-notice .nav-button{margin-top:12px;white-space:normal}}
+
+/* Mobile reference navigation regression guard (2026-10-27).
+   Global mobile styles hide .top-actions .secondary on other screens; the
+   reference page uses those links to return to Projects and System Path. */
+@media(max-width:760px){
+  .topbar{flex-direction:column;align-items:stretch;gap:10px}
+  .topbar .top-actions{display:flex;flex-wrap:wrap;justify-content:flex-start;gap:8px}
+  .topbar .top-actions .nav-button{display:inline-flex;align-items:center;justify-content:center;min-height:44px;white-space:normal}
+  #referenceDetail{scroll-margin-top:155px}
+}
+.reference-row:focus-visible,.filter-chip:focus-visible,.reference-shell .nav-button:focus-visible,.topbar .nav-button:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+
+/* Sensor location training panel: source-to-patient sequence, NOT a piping drawing. */
+.sensor-guide h4{font-size:.93rem;margin:0 0 10px}
+.sensor-guide .sensor-caution{padding:12px;background:#fff8e8;border-left:3px solid #9b6a1b;border-radius:8px;color:#4c3611}
+.sensor-guide .sensor-general{margin:8px 0;color:#6b4d1a}
+.sensor-space{margin-top:16px}
+.sensor-options{display:grid;gap:10px}
+.sensor-option{background:#f7fafc;border:1px solid var(--line);border-radius:12px;padding:13px}
+.sensor-option>strong{display:block;margin-bottom:9px;font-size:.88rem}
+.sensor-route{display:flex;align-items:stretch;gap:6px;flex-wrap:wrap;margin-bottom:9px}
+.sensor-step{display:inline-flex;align-items:center;min-height:38px;max-width:100%;padding:7px 9px;border:1px solid #ccd8e4;border-radius:9px;background:#fff;font-size:.78rem;line-height:1.25;font-weight:750}
+.sensor-step.is-sensor{background:#e5f2ff;border-color:#8bbce7;color:#174871}
+.sensor-arrow{display:inline-flex;align-items:center;color:#50677f;font-weight:800}
+.sensor-option p{font-size:.85rem}
+.sensor-guide .sensor-contrast{margin-top:14px;padding:10px 12px;background:#f2f7fc;border-radius:8px}
+.sensor-guide .sensor-provenance{margin-top:10px;font-size:.82rem}
+
+
+/* Interactive educational relationship explorer. The SVG scrolls within its card. */
+.topology-panel{margin:18px 0;padding:14px;border:1px solid #b9d2e7;border-radius:13px;background:#f5f9fd}
+.topology-panel h4{margin:0 0 8px;font-size:.96rem}
+.topology-panel .topology-intro{color:#30495e;line-height:1.5;margin:0 0 11px}
+.topology-modes{display:flex;flex-wrap:wrap;gap:7px;margin:0 0 12px}
+.topology-mode{min-height:44px;padding:9px 12px;border-radius:10px;border:1px solid #7898b8;background:#fff;color:#153c5c;font-weight:750;cursor:pointer}
+.topology-mode[aria-pressed="true"]{background:#154e7c;border-color:#154e7c;color:#fff}
+.topology-mode:focus-visible,.topology-viewport:focus-visible{outline:3px solid #287cb2;outline-offset:3px}
+.topology-viewport{width:100%;max-width:100%;min-width:0;overflow-x:auto;background:#fff;border:1px solid #d0dce7;border-radius:10px}
+.topology-svg{display:block;width:800px;min-width:800px;height:405px;font-family:Arial,sans-serif}
+.topology-line{fill:none;stroke-linejoin:round;stroke-linecap:round;stroke-width:4}
+.topology-pipe{stroke:#2b6380}
+.topology-signal{stroke:#b76b29;stroke-width:3;stroke-dasharray:9 7}
+.topology-node{cursor:pointer}
+.topology-node rect{fill:#fff;stroke:#8da5b5;stroke-width:2}
+.topology-node text{fill:#16384c;font-size:15px;font-weight:700;pointer-events:none}
+.topology-node.topology-sensor rect{fill:#e5f3ff;stroke:#3785bd}
+.topology-node.topology-alarm rect{fill:#fff2df;stroke:#be7a38}
+.topology-node.is-selected rect,.topology-node:focus-visible rect{stroke:#0f5795;stroke-width:4}
+.topology-node:focus-visible{outline:none}
+.topology-panel .topology-summary{margin:12px 0 8px;color:#263f52}
+.topology-panel .topology-node-note{min-height:45px;padding:10px 12px;border-radius:8px;background:#e3f2ff;color:#1c435f}
+.topology-panel .topology-warning{margin:10px 0;padding:11px;border-left:3px solid #976019;background:#fff4df;border-radius:7px;color:#4e3414}
+.topology-panel .topology-sequence{margin:10px 0;font-size:.85rem;color:#334b5b}
+.topology-panel .topology-disclaimer{margin:10px 0 0;font-size:.82rem;color:#6b4b20}
+.reference-detail-panel{min-width:0}
+
+/* Manufacturer documentation chooser; NOT a pinout or electrical schematic. */
+.alarm-interface{margin:16px 0;padding:15px;border:1px solid #ccd9e5;border-radius:12px;background:#f7fafc}
+.alarm-interface h4{margin:0 0 8px;font-size:1rem}
+.alarm-interface h5{margin:14px 0 8px;font-size:.9rem}
+.alarm-interface>p{line-height:1.5}
+.alarm-model-buttons{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.alarm-model-button{min-height:44px;padding:9px 12px;border-radius:9px;border:1px solid #7692ac;background:#fff;color:#153c5c;cursor:pointer;font-weight:750}
+.alarm-model-button[aria-pressed="true"]{background:#154e7c;color:#fff;border-color:#154e7c}
+.alarm-model-button:focus-visible,.alarm-model-detail a:focus-visible{outline:3px solid #287cb2;outline-offset:3px}
+.alarm-model-detail{border:1px solid #d4e1ed;border-radius:9px;background:#fff;padding:12px;overflow-wrap:anywhere}
+.alarm-model-detail strong{display:block}
+.alarm-model-detail p{margin:6px 0 8px;color:#334b5b;line-height:1.5}
+.alarm-model-detail a{color:#175b95;font-weight:700}
+.alarm-evidence{margin:5px 0 14px;padding-left:23px;font-size:.88rem;line-height:1.5}
+.alarm-evidence li{margin-bottom:7px}
+.alarm-interface .alarm-no-wiring{color:#68430f;background:#fff4db;border-left:4px solid #976019;border-radius:6px;padding:10px 12px;margin:12px 0 0}
