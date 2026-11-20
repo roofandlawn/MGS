@@ -46,6 +46,17 @@ def inspect_pdf(pdf_bytes: bytes, width: int) -> int:
             f"{width}px: unexpectedly empty PDF page {page_number}"
         )
         texts.append(text)
+    # Every physical page must remain identifiable when pages are separated.
+    # Chromium's CSS page-margin boxes are required even when Playwright's
+    # browser-generated header/footer is explicitly disabled.
+    for page_number, text in enumerate(texts, 1):
+        assert text.count("MGS | QA-PROJ-042 | Synthetic project turnover QA") == 1, (
+            f"{width}px: missing or repeated project ID on page {page_number}"
+        )
+        assert f"Page {page_number} of {len(texts)}" in text, (
+            f"{width}px: missing page count on page {page_number}"
+        )
+
     # PDF text extraction can insert line breaks at print-wrap boundaries.
     whole = " ".join(" ".join(texts).split())
     assert "Area alarm documentation" in whole and "Needs Review" in whole
@@ -121,6 +132,13 @@ def check_width(browser, url: str, width: int) -> None:
                 rollup.reviewFlags !== 42) {
                 throw new Error('Synthetic fixture has incorrect review counts');
             }
+            if (!window.MGSReportPrint) {
+                throw new Error('Print page identification module did not load');
+            }
+            MGSReportPrint.update({
+                name: 'Synthetic project turnover QA',
+                handoffMetadata: { projectNumber: 'QA-PROJ-042' }
+            });
             const reportElement = document.querySelector('#report');
             reportElement.innerHTML =
                 '<div class="report-head"><h1>Synthetic project turnover QA</h1></div>' +
@@ -134,6 +152,9 @@ def check_width(browser, url: str, width: int) -> None:
         assert info == {"panels": PANEL_COUNT, "categoryRows": 5}, (
             f"{width}px: incomplete DOM report: {info}"
         )
+        assert page.evaluate(
+            "() => document.getElementById('mgs-report-page-rules')?.textContent.includes('QA-PROJ-042')"
+        ), "Project ID must be injected into print-only @page rules"
         page.emulate_media(media="print")
         pdf_bytes = page.pdf(
             format="Letter",
