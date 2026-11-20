@@ -106,6 +106,13 @@ def run_width(browser, url, width):
         page.locator('#newProjectSystemScope [name="systems"][value="oxygen"]').check()
         page.locator('#newProjectSystemScope [name="systems"][value="medicalAir"]').check()
         page.locator("#projectForm button.primary").click()
+        # Ensure the live project render path supplies the CSS print header.
+        print_rules = page.evaluate(
+            "() => document.getElementById('mgs-report-page-rules')?.textContent || ''"
+        )
+        assert "Synthetic alarm test-link QA" in print_rules, (
+            "Selected project name is missing from repeated print header"
+        )
 
         page.locator('.tab[data-tab="tests"]').click()
         oxygen_id = add_test(
