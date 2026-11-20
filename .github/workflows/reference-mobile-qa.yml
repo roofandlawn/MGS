@@ -15,6 +15,7 @@ on:
       - reference-alarm-interface.js
       - area-alarm-equipment.js
       - area-alarm-review.js
+      - report-print-page.js
       - canonical-system-records.js
       - app.js
       - index.html
