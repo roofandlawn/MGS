@@ -10,6 +10,54 @@
       .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
 
+
+  // Foreman correction notes are an append-only documentation log, never a
+  // compliance decision. The issue remains flagged until the linked records change.
+  const CORRECTION_STATUSES = Object.freeze({
+    'awaiting-recheck': 'Correction recorded — awaiting recheck',
+    'rechecked': 'Rechecked — issue still flagged'
+  });
+
+  function correctionFor(record, key) {
+    const source = record?.corrections || record?.reviewCorrections || {};
+    const events = Object.prototype.hasOwnProperty.call(source, key) ? source[key] : null;
+    return Array.isArray(events) ? events.filter(item => item && typeof item === 'object') : [];
+  }
+
+  function saveCorrection(alarm, key, input, time = new Date().toISOString()) {
+    const issueKey = String(key || '');
+    const name = String(input?.foreman || '').trim().slice(0, 120);
+    const note = String(input?.note || '').trim().slice(0, 600);
+    const status = String(input?.status || '');
+    if (!issueKey || issueKey.length > 240 || !name || !note || !CORRECTION_STATUSES[status])
+      throw new Error('Enter foreman, correction note and a valid recheck status.');
+    if (!/^\d{4}-\d{2}-\d{2}T/.test(String(time)))
+      throw new Error('A valid timestamp is required.');
+    const old = alarm?.reviewCorrections && typeof alarm.reviewCorrections === 'object'
+      && !Array.isArray(alarm.reviewCorrections) ? alarm.reviewCorrections : {};
+    const history = correctionFor(alarm, issueKey);
+    if (history.length >= 100) throw new Error('Correction history limit reached for this issue.');
+    const event = {
+      at: String(time), foreman: name, note, status,
+      issue: String(input?.issue || '').trim().slice(0, 400)
+    };
+    return { ...old, [issueKey]: [...history, event] };
+  }
+
+  function correctionHistory(record, key) {
+    const events = correctionFor(record, key);
+    if (!events.length) return '';
+    return '<div class="alarm-correction-history"><strong>Foreman correction / recheck log (' +
+      events.length + ')</strong><ul>' + events.map(item => {
+        const label = CORRECTION_STATUSES[item.status] || 'Status not recognized';
+        const stamp = /^\d{4}-\d{2}-\d{2}T/.test(String(item.at || ''))
+          ? String(item.at).replace('T', ' ').slice(0, 16) + ' UTC' : 'Date not recorded';
+        return '<li><strong>' + escapeHtml(label) + '</strong> — ' +
+          escapeHtml(item.foreman) + ', ' + escapeHtml(stamp) +
+          ': ' + escapeHtml(item.note) + '</li>';
+      }).join('') + '</ul></div>';
+  }
+
   // Group underlying issue kinds for fast field review; do not change source records.
   const FILTERS = Object.freeze([
     { id: 'all', label: 'All review issues', kinds: null },
@@ -42,28 +90,30 @@
   function reviewPanel(alarm, tests = []) {
     if (!alarm || alarm.type !== 'Area alarm') return null;
     const flags = [];
-    const add = (kind, detail) => flags.push({ kind, detail });
+    const add = (kind, detail, key) => flags.push({ kind, detail, key });
     const panel = {
       id: String(alarm.id ?? ''),
       location: String(alarm.location || 'Location not entered'),
       zone: '',
+      corrections: alarm.reviewCorrections && typeof alarm.reviewCorrections === 'object' ? alarm.reviewCorrections : {},
       flags
     };
     if (!alarm.equipment || typeof alarm.equipment !== 'object') {
-      add('no-equipment', 'Panel equipment and sensor channels have not been documented.');
+      add('no-equipment', 'Panel equipment and sensor channels have not been documented.', 'panel:no-equipment');
       return panel;
     }
 
     const record = E.normalize(alarm.equipment);
     panel.zone = record.panelZoneId;
     if (!record.sensorChannels.length) {
-      add('unidentified-service', 'No sensor channels have been identified for this panel.');
+      add('unidentified-service', 'No sensor channels have been identified for this panel.', 'panel:no-channels');
       return panel;
     }
 
     const candidates = new Map(E.alarmTestCandidates(tests)
       .map(test => [String(test.id), test]));
     record.sensorChannels.forEach((channel, index) => {
+      const channelKey = 'channel:' + channel.id;
       const label = 'Channel ' + (index + 1) +
         (channel.channelLabel ? ' (' + channel.channelLabel + ')' : '');
       const recognized = E.recognizedServices(channel.sensorService);
@@ -71,26 +121,26 @@
       // A channel must represent exactly one explicitly recognized service.
       if (recognized.length !== 1) {
         add('unidentified-service', label +
-          ': identify one gas service from the approved point schedule.');
+          ': identify one gas service from the approved point schedule.', channelKey + ':unidentified-service');
       }
 
       if (!channel.testIds.length) {
-        add('no-test-link', label + ': no alarm functional-test record linked.');
+        add('no-test-link', label + ': no alarm functional-test record linked.', channelKey + ':no-test-link');
         return;
       }
 
       channel.testIds.forEach(id => {
         const test = candidates.get(id);
         if (!test) {
-          add('missing-test', label + ': a previously linked alarm test record is missing.');
+          add('missing-test', label + ': a previously linked alarm test record is missing.', channelKey + ':missing-test:' + id);
           return;
         }
         // Avoid duplicating the already displayed unidentified-channel warning.
         if (recognized.length !== 1) return;
         const result = E.serviceLinkAssessment(channel.sensorService, test.system);
-        if (result.state === 'mismatch') add('gas-mismatch', label + ': ' + result.message);
+        if (result.state === 'mismatch') add('gas-mismatch', label + ': ' + result.message, channelKey + ':gas-mismatch:' + id);
         if (result.state === 'unconfirmed')
-          add('test-service-unconfirmed', label + ': ' + result.message);
+          add('test-service-unconfirmed', label + ': ' + result.message, channelKey + ':test-service-unconfirmed:' + id);
       });
     });
     return panel;
@@ -138,7 +188,10 @@
       return '<li class="alarm-review-panel">' + action +
         '<span>' + panel.flags.length + ' item(s) in selected category</span>' +
         '<ul>' + panel.flags.map(flag =>
-          '<li>' + escapeHtml(flag.detail) + '</li>').join('') +
+          '<li>' + escapeHtml(flag.detail) + correctionHistory(panel, flag.key) +
+          '<button type="button" class="alarm-review-edit" data-review-panel="' +
+          escapeHtml(panel.id) + '" data-review-key="' + escapeHtml(flag.key) +
+          '">Record correction / recheck</button></li>').join('') +
         '</ul></li>';
     }).join('');
     const countText = matching.filter === 'all'
@@ -200,7 +253,7 @@
     const panels = summary.panels.filter(panel => panel.flags.length).map(panel => {
       const label = [panel.zone, panel.location].filter(Boolean).join(' — ');
       const details = panel.flags.map(flag =>
-        '<li>' + escapeHtml(flag.detail) + '</li>').join('');
+        '<li>' + escapeHtml(flag.detail) + correctionHistory(panel, flag.key) + '</li>').join('');
       return '<li class="report-alarm-review-panel"><strong>' +
         escapeHtml(label) + '</strong> (' + panel.flags.length +
         ' item(s))<ul>' + details + '</ul></li>';
@@ -210,7 +263,7 @@
       panels + '</ol>' + caution + '</section>';
   }
 
-  const api = Object.freeze({ reviewPanel, summarize, matchingReview, normalizeFilter, summaryMarkup, badgeMarkup, reportMarkup, FILTERS });
+  const api = Object.freeze({ reviewPanel, summarize, matchingReview, normalizeFilter, summaryMarkup, badgeMarkup, reportMarkup, saveCorrection, correctionFor, CORRECTION_STATUSES, FILTERS });
   root.MGSAreaAlarmReview = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);
