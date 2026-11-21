@@ -85,3 +85,16 @@ The main **Print / Save PDF** report now installs print-only CSS page-margin box
 Identifiers are whitespace-normalized, CSS-escaped, and length-limited for the margin. The page count comes from the browser's print engine, not project data. Switching projects rebuilds the print rule; printing writes no new records or approval state. Chromium 131+ supports these page-margin boxes; engines without support still print the underlying report, but might omit the repeated identifiers/page numbers.
 
 The physical PDF regression now asserts both project identity and correct `Page N of M` on **each sheet** at 320px and 390px viewport widths, while keeping the existing 42-panel same-page issue checks. The mobile UI regression checks that the real selected project flows into the print rule. The generated PDFs remain synthetic test artifacts, not verifier acceptance documents.
+
+## Foreman correction and recheck notes — November 21, 2026
+
+An active Area Alarm **Needs Review** item now includes **Record correction / recheck**. The button opens a mobile-friendly form requiring the foreman/person recording, a free-text observation or corrective-action note, and one of two explicit documentation statuses:
+
+- **Correction recorded — awaiting recheck**
+- **Rechecked — issue still flagged**
+
+Saving appends a timestamped entry to `alarm.reviewCorrections[issueKey]` (up to 100 entries per issue) in the existing project-local browser record, rather than overwriting previous notes. Every review issue receives a stable key based on panel condition, sensor channel ID and linked functional-test ID, where applicable. Notes and recheck statuses are displayed beside the live review issue on the dashboard and in the printable turnover report. The timestamp uses UTC in the report for consistency across devices. Older projects require no migration, since absent correction histories are treated as empty.
+
+**Safeguards:** Field notes cannot mark an alarm or functional test as passed, cannot remove a live review flag, cannot automatically approve a corrected sensor link, and do not constitute NFPA 99 compliance, project acceptance, or independent ASSE 6030 verification. The review flags are still recomputed directly from current equipment/channel/test links. Once the underlying issue disappears, the dated history remains stored under the alarm record but the now-cleared issue is no longer presented among open items (a separate historical-log view can be added later). The app validates that the issue still exists before recording a new note. Entries are HTML-escaped in dashboard/print output.
+
+**QA:** `scripts/verify-area-alarm-review.cjs` tests stable keys, append-only history, input validation, persistence model, escaping, and the no-auto-clear rule. `scripts/verify-area-alarm-test-links-ui.py` tests the actual 320px/390px form, two successive dated notes, browser reload, and print-report display using synthetic records. Nothing was deployed to production or modified in Supabase.
