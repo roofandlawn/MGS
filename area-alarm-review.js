@@ -29,7 +29,7 @@
     const name = String(input?.foreman || '').trim().slice(0, 120);
     const note = String(input?.note || '').trim().slice(0, 600);
     const status = String(input?.status || '');
-    if (!issueKey || issueKey.length > 240 || !name || !note || !CORRECTION_STATUSES[status])
+    if (!issueKey || issueKey.length > 240 || !name || !note || !Object.prototype.hasOwnProperty.call(CORRECTION_STATUSES, status))
       throw new Error('Enter foreman, correction note and a valid recheck status.');
     if (!/^\d{4}-\d{2}-\d{2}T/.test(String(time)))
       throw new Error('A valid timestamp is required.');
