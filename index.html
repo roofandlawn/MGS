@@ -188,6 +188,23 @@
   </form>
 </dialog>
 
+<dialog id="areaAlarmCorrectionDialog" aria-labelledby="areaAlarmCorrectionHeading">
+  <form id="areaAlarmCorrectionForm">
+    <div class="dialog-head"><h3 id="areaAlarmCorrectionHeading">Foreman correction / recheck</h3><button type="button" class="icon-btn" data-close aria-label="Close">×</button></div>
+    <input name="alarmId" type="hidden" /><input name="flagKey" type="hidden" />
+    <p id="areaAlarmCorrectionIssue" class="equipment-warning"></p>
+    <p id="areaAlarmCorrectionHistory" class="helper"></p>
+    <label>Foreman / person recording<input name="foreman" maxlength="120" required placeholder="Name or initials, company" /></label>
+    <label>Correction or recheck note<textarea name="note" maxlength="600" rows="4" required placeholder="What was corrected, inspected, or remains outstanding?"></textarea></label>
+    <label>Documentation status<select name="status" required>
+      <option value="awaiting-recheck">Correction recorded — awaiting recheck</option>
+      <option value="rechecked">Rechecked — issue still flagged</option>
+    </select></label>
+    <p class="helper">This dated note is appended to the project's field record. It never clears a review flag, changes a functional-test result, or substitutes for independent ASSE 6030 verification.</p>
+    <div class="dialog-actions"><button type="button" class="secondary" data-close>Cancel</button><button class="primary" type="submit">Save dated note</button></div>
+  </form>
+</dialog>
+
 <dialog id="alarmDialog"><form id="alarmForm" method="dialog">
   <div class="dialog-head"><h3>Add alarm record</h3><button type="button" class="icon-btn" data-close>×</button></div>
   <label>Type<select name="type"><option>Master alarm</option><option>Area alarm</option><option>Local alarm</option><option>Other</option></select></label>
