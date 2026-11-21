@@ -244,6 +244,31 @@ def run_width(browser, url, width):
         assert "No panels match this review category" in page.locator("#alarmReviewSummary").inner_text()
         page.locator("#alarmReviewFilter").select_option("all")
         assert project_data(page)["alarms"][0]["status"] == "Not checked"
+
+        # A foreman can append a dated correction note without clearing the
+        # live mismatch, changing a test result, or claiming ASSE verification.
+        page.locator("#alarmReviewSummary [data-review-panel][data-review-key]").first.click()
+        correction = page.locator("#areaAlarmCorrectionForm")
+        assert page.locator("#areaAlarmCorrectionDialog").is_visible()
+        correction.locator('[name="foreman"]').fill("QA Foreman")
+        correction.locator('[name="note"]').fill("Relabeled point; functional-test link needs recheck.")
+        correction.locator('[name="status"]').select_option("awaiting-recheck")
+        correction.locator('button[type="submit"]').click()
+        assert "Needs Review: 1 of 1" in page.locator("#alarmReviewSummary").inner_text()
+        assert "Correction recorded" in page.locator("#alarmReviewSummary").inner_text()
+        page.locator("#alarmReviewSummary [data-review-panel][data-review-key]").first.click()
+        correction.locator('[name="note"]').fill("Rechecked: original mismatch remains.")
+        correction.locator('[name="status"]').select_option("rechecked")
+        correction.locator('button[type="submit"]').click()
+        history = project_data(page)["alarms"][0]["reviewCorrections"]
+        assert len(history) == 1, history
+        events = list(history.values())[0]
+        assert len(events) == 2
+        assert events[0]["status"] == "awaiting-recheck"
+        assert events[1]["status"] == "rechecked"
+        assert events[0]["at"] and events[1]["at"]
+        assert project_data(page)["alarms"][0]["status"] == "Not checked"
+        assert "Rechecked — issue still flagged" in page.locator("#report").inner_text()
         page.reload(wait_until="domcontentloaded")
         page.locator('.tab[data-tab="alarms"]').click()
         page.locator("#alarmList [data-alarm-equipment]").click()
