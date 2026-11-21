@@ -585,6 +585,26 @@ $('#alarmReviewSummary').addEventListener('change', e => {
 });
 
 $('#alarmReviewSummary').addEventListener('click', e => {
+  const correctionButton = e.target.closest('[data-review-panel][data-review-key]');
+  if (correctionButton) {
+    const p = selectedProject();
+    const alarm = p?.alarms.find(a => String(a.id) === correctionButton.dataset.reviewPanel);
+    const panel = alarm && MGSAreaAlarmReview.reviewPanel(alarm, p.tests);
+    const flag = panel?.flags.find(item => item.key === correctionButton.dataset.reviewKey);
+    if (!flag) return alert('This review issue has changed. Refresh the panel before recording a correction.');
+    const form = $('#areaAlarmCorrectionForm');
+    form.reset();
+    form.elements.alarmId.value = alarm.id;
+    form.elements.flagKey.value = flag.key;
+    const history = MGSAreaAlarmReview.correctionFor(alarm, flag.key);
+    if (history.length) form.elements.foreman.value = history[history.length - 1].foreman || '';
+    $('#areaAlarmCorrectionIssue').textContent = flag.detail;
+    $('#areaAlarmCorrectionHistory').textContent = history.length
+      ? history.length + ' previous dated note(s). A new note will be appended, not replace the history.'
+      : 'No prior correction or recheck notes for this issue.';
+    $('#areaAlarmCorrectionDialog').showModal();
+    return;
+  }
   const button = e.target.closest('[data-review-target]');
   if (!button) return;
   const card = Array.from(alarmList.querySelectorAll('[data-alarm-id]'))
@@ -592,6 +612,28 @@ $('#alarmReviewSummary').addEventListener('click', e => {
   if (!card) return;
   card.scrollIntoView({ behavior: 'smooth', block: 'center' });
   card.focus({ preventScroll: true });
+});
+
+$('#areaAlarmCorrectionForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const p = selectedProject();
+  if (!p) return;
+  const form = e.currentTarget, values = new FormData(form);
+  const alarm = p.alarms.find(a => String(a.id) === String(values.get('alarmId')));
+  const key = String(values.get('flagKey') || '');
+  const currentIssue = alarm && MGSAreaAlarmReview.reviewPanel(alarm, p.tests)
+    ?.flags.find(flag => flag.key === key);
+  if (!currentIssue) return alert('This issue is no longer flagged. Reopen the dashboard to review the updated records.');
+  try {
+    // Add a dated field note; never change the linked test status or clear flags.
+    alarm.reviewCorrections = MGSAreaAlarmReview.saveCorrection(alarm, key, {
+      foreman: values.get('foreman'), note: values.get('note'),
+      status: values.get('status'), issue: currentIssue.detail
+    });
+  } catch (error) { return alert(error.message); }
+  $('#areaAlarmCorrectionDialog').close();
+  form.reset();
+  save();
 });
 
 alarmList.addEventListener('click', e => {
