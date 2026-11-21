@@ -119,4 +119,51 @@ assert.equal((Review.reportMarkup(many, testRecords)
   .match(/class="report-alarm-review-panel"/g) || []).length, 14,
   'Printable turnover must include every flagged panel, not dashboard first-twelve cap');
 
+// Dated foreman updates are append-only and NEVER clear a live documentation flag.
+const key = Review.reviewPanel(mismatch, testRecords).flags[0].key;
+assert.equal(key, 'channel:channel-1:gas-mismatch:air-test');
+assert.equal(Review.correctionFor(mismatch, key).length, 0);
+const firstNote = Review.saveCorrection(mismatch, key, {
+  foreman: 'Foreman A', note: 'Corrected labels; pending new functional-test link.',
+  status: 'awaiting-recheck', issue: 'Oxygen versus medical-air mismatch'
+}, '2026-11-21T16:00:00.000Z');
+assert.equal(mismatch.reviewCorrections, undefined, 'Pure correction helper must not mutate source');
+const annotated = { ...mismatch, reviewCorrections: firstNote };
+const secondNote = Review.saveCorrection(annotated, key, {
+  foreman: 'Foreman B', note: 'Rechecked: existing test still needs reconciliation.',
+  status: 'rechecked', issue: 'Oxygen versus medical-air mismatch'
+}, '2026-11-21T16:30:00.000Z');
+const withHistory = { ...mismatch, reviewCorrections: secondNote };
+assert.equal(Review.correctionFor(withHistory, key).length, 2);
+assert.equal(Review.correctionFor(withHistory, key)[0].note,
+  'Corrected labels; pending new functional-test link.');
+assert.deepEqual(Review.reviewPanel(withHistory, testRecords).flags.map(flag => flag.kind),
+  ['gas-mismatch'], 'Foreman recheck cannot clear the live mismatch');
+const dashboardWithHistory = Review.summaryMarkup([withHistory], testRecords);
+assert.match(dashboardWithHistory, /Record correction \/ recheck/);
+assert.match(dashboardWithHistory, /data-review-key="channel:channel-1:gas-mismatch:air-test"/);
+assert.match(dashboardWithHistory, /Foreman A/);
+assert.match(dashboardWithHistory, /Foreman B/);
+assert.match(dashboardWithHistory, /2\)\<\/strong\>/);
+const reportWithHistory = Review.reportMarkup([withHistory], testRecords);
+assert.match(reportWithHistory, /Rechecked — issue still flagged/);
+assert.match(reportWithHistory, /Corrected labels/);
+assert.match(reportWithHistory, /2026-11-21 16:30 UTC/);
+assert.match(reportWithHistory, /1 unresolved documentation item/);
+assert.throws(() => Review.saveCorrection(withHistory, key, {
+  foreman: 'A', note: '', status: 'rechecked'
+}), /Enter foreman/);
+assert.throws(() => Review.saveCorrection(withHistory, key, {
+  foreman: 'A', note: 'Something', status: 'verified'
+}), /valid recheck status/);
+const maliciousNote = Review.saveCorrection(mismatch, key, {
+  foreman: '<img src=x>', note: '<script>alert(1)</script>', status: 'rechecked'
+}, '2026-11-21T17:00:00Z');
+const safeNotes = Review.reportMarkup([
+  { ...mismatch, reviewCorrections: maliciousNote }
+], testRecords);
+assert.match(safeNotes, /&lt;script&gt;/);
+assert.match(safeNotes, /&lt;img src=x&gt;/);
+assert.ok(!safeNotes.includes('<script>') && !safeNotes.includes('<img src=x>'));
+
 console.log('Area alarm Needs Review summary checks passed.');
