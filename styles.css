@@ -101,6 +101,22 @@ footer{max-width:1180px;margin:0 auto;padding:0 18px 40px;color:var(--muted);fon
 @media(max-width:480px){.alarm-review-filter{align-items:stretch;flex-direction:column;gap:5px}.alarm-review-filter select{width:100%;flex:auto}}
 
 
+/* Foreman action on an active issue. Notes are dated documentation, never clearance. */
+.alarm-review-edit{display:block;min-height:44px;margin-top:7px;padding:7px 11px;
+  border:1px solid #b5c5d5;border-radius:7px;color:#174e78;background:#f5faff;
+  font:inherit;font-size:.81rem;font-weight:700;text-align:left}
+.alarm-review-edit:focus-visible{outline:3px solid #3384d8;outline-offset:2px}
+.alarm-correction-history{margin:7px 0;padding:8px 10px;background:#eef3f8;
+  border-left:3px solid #899eaf;border-radius:5px;font-size:.78rem;
+  line-height:1.5;overflow-wrap:anywhere;color:#243b4e}
+.alarm-correction-history ul{margin:5px 0 0;padding-left:18px}
+.alarm-correction-history li+li{margin-top:5px}
+@media(max-width:480px){.alarm-review-edit{width:100%}}
+@media print{
+  .report-alarm-review .alarm-correction-history{background:#fff;border:1px solid #aaa;
+    padding:4px 7px;font-size:8pt;break-inside:avoid}
+}
+
 /* Printable turnover: full, unfiltered list of unresolved area alarm documentation issues. */
 @media print {
   .report-alarm-review { margin: 0 0 20px; }
