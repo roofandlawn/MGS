@@ -269,7 +269,8 @@ function renderSystemScope() {
 function renderAlarms() {
   const p = selectedProject();
   $('#alarmReviewSummary').innerHTML = p
-    ? MGSAreaAlarmReview.summaryMarkup(p.alarms, p.tests, areaAlarmReviewFilter)
+    ? MGSAreaAlarmReview.summaryMarkup(p.alarms, p.tests, areaAlarmReviewFilter) +
+      MGSAreaAlarmReview.resolvedMarkup(p.alarms, p.tests)
     : '<div class="empty">Select a project to review area alarms.</div>';
   if (!p) return alarmList.innerHTML = '<div class="empty">Select a project first.</div>';
   if (!p.alarms.length) return alarmList.innerHTML = '<div class="empty">No alarm records yet.</div>';
@@ -363,6 +364,7 @@ function renderReport() {
     <section class="report-summary"><h2>${escapeHtml(p.name)}</h2><p><strong>Facility:</strong> ${escapeHtml(p.facility || '—')}<br><strong>Location:</strong> ${escapeHtml(p.location || '—')}<br><strong>Created:</strong> ${escapeHtml(p.createdAt || '—')}<br><strong>NFPA 99 basis:</strong> ${escapeHtml(codeEditionLabel(p.codeBasis.edition))}<br><strong>Jurisdiction:</strong> ${escapeHtml(p.codeBasis.jurisdiction || 'Not recorded')}<br><strong>AHJ:</strong> ${escapeHtml(p.codeBasis.ahj || 'Not recorded')}${p.codeBasis.notes ? `<br><strong>Code basis notes:</strong> ${escapeHtml(p.codeBasis.notes)}` : ''}<br><em>Code basis is user-recorded, not verified adoption.</em></p><strong>Systems in scope:</strong>${reportSystemMarkup(p)}${p.notes ? `<p>${escapeHtml(p.notes)}</p>` : ''}</section>
     <section><h3>Checklist (${done}/${p.tasks.length} complete)</h3>${reportRows(p.tasks, t => [`${t.done ? '✓' : '○'} ${escapeHtml(t.text)}`])}</section>
     ${MGSAreaAlarmReview.reportMarkup(p.alarms, p.tests)}
+    ${MGSAreaAlarmReview.resolvedReportMarkup(p.alarms, p.tests)}
     <section><h3>Alarm records</h3>${reportRows(p.alarms, a => [`<strong>${escapeHtml(a.type)}</strong><br>${escapeHtml(a.location)}<br><small>${escapeHtml(a.serves || '')}</small>`, `<strong>${escapeHtml(a.status)}</strong>${a.notes ? `<br>${escapeHtml(a.notes)}` : ''}${MGSAreaAlarmEquipment.reportMarkup(a, p.photos, p.tests)}`])}</section>
     <section><h3>Outlet / terminal records</h3>${reportRows(p.outlets, o => [`<strong>${escapeHtml(o.gas)}</strong><br>${escapeHtml(o.location)}<br><small>${escapeHtml(o.identifier || '')}</small>`, `<strong>${escapeHtml(o.status)}</strong>${o.notes ? `<br>${escapeHtml(o.notes)}` : ''}`])}</section>
     <section><h3>Inspection & test records</h3>${reportRows(p.tests, t => [`<strong>${escapeHtml(t.type)}</strong><br>${escapeHtml(t.system || '')}<br>${escapeHtml(t.location || '')}`, `<strong>${escapeHtml(t.status)}</strong><br>${escapeHtml(formatDate(t.date))}${t.person ? `<br>${escapeHtml(t.person)}` : ''}${t.reading ? `<br>${escapeHtml(t.reading)}` : ''}${t.notes ? `<br>${escapeHtml(t.notes)}` : ''}`])}</section>

@@ -134,3 +134,20 @@ footer{max-width:1180px;margin:0 auto;padding:0 18px 40px;color:var(--muted);fon
   .report-alarm-review-panel ul { margin: 4px 0 0; padding-left: 19px; }
   .report-alarm-review-note { border-top: 1px solid #aaa; padding-top: 6px; font-size: 8.5pt; color: #444; }
 }
+
+/* Historical field review notes remain available after a live flag disappears. */
+.alarm-resolved-history{border:1px solid #c7d4df;border-radius:10px;background:#f6f9fc;padding:12px 14px;margin:0 0 16px;overflow-wrap:anywhere}
+.alarm-resolved-history summary{cursor:pointer;font-size:.9rem;font-weight:750;min-height:44px;display:list-item;padding:10px 0}
+.alarm-resolved-history summary:focus-visible{outline:3px solid #3384d8;outline-offset:2px}
+.alarm-resolved-history>p{font-size:.82rem;line-height:1.5;color:var(--muted)}
+.alarm-resolved-history ol{padding-left:22px;font-size:.82rem;line-height:1.5}
+.alarm-resolved-history ol>li{margin:9px 0;padding:4px 0}
+.alarm-resolved-history ol>li>p{margin:4px 0}
+@media print{
+  .report-alarm-resolved{margin:0 0 20px}
+  .report-alarm-resolved>p{font-size:9pt;color:#444}
+  .report-alarm-resolved ol{padding-left:22px}
+  .report-alarm-resolved-item{break-inside:avoid;overflow-wrap:anywhere;margin-bottom:9px}
+  .report-alarm-resolved-item>p{margin:4px 0}
+  .report-alarm-resolved .alarm-correction-history{background:#fff;border:1px solid #aaa;padding:4px 7px;font-size:8pt;break-inside:avoid}
+}

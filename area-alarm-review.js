@@ -263,7 +263,66 @@
       panels + '</ol>' + caution + '</section>';
   }
 
-  const api = Object.freeze({ reviewPanel, summarize, matchingReview, normalizeFilter, summaryMarkup, badgeMarkup, reportMarkup, saveCorrection, correctionFor, CORRECTION_STATUSES, FILTERS });
+
+  // Previously recorded documentation flags that are no longer detected in
+  // the current panel/channel/test links. This is NOT a verification or proof
+  // that corrective work was performed: deleted/edited records can clear flags.
+  // Logs remain attached to existing area alarm records and are read-only here.
+  function resolvedIssues(alarms, tests = []) {
+    const result = [];
+    (Array.isArray(alarms) ? alarms : []).forEach(alarm => {
+      const panel = reviewPanel(alarm, tests);
+      if (!panel) return;
+      const source = alarm.reviewCorrections || alarm.corrections;
+      if (!source || typeof source !== 'object' || Array.isArray(source)) return;
+      const activeKeys = new Set(panel.flags.map(flag => flag.key));
+      Object.keys(source).forEach(key => {
+        if (activeKeys.has(key)) return;
+        const entries = correctionFor(alarm, key);
+        if (!entries.length) return;
+        const firstDescription = entries.find(entry =>
+          typeof entry.issue === 'string' && entry.issue.trim());
+        result.push({
+          panelId: panel.id,
+          location: [panel.zone, panel.location].filter(Boolean).join(' — '),
+          key,
+          issue: firstDescription ? firstDescription.issue : 'Previously flagged documentation issue',
+          record: alarm
+        });
+      });
+    });
+    return result;
+  }
+
+  function resolvedMarkup(alarms, tests = []) {
+    const items = resolvedIssues(alarms, tests);
+    if (!items.length) return '';
+    const rows = items.map(item => '<li><strong>' + escapeHtml(item.location) +
+      '</strong><p>' + escapeHtml(item.issue) + '</p>' +
+      correctionHistory(item.record, item.key) + '</li>').join('');
+    return '<details class="alarm-resolved-history"><summary>Resolved Issues History (' +
+      items.length + ' no longer flagged)</summary>' +
+      '<p>Previously flagged documentation items not detected in the current records. ' +
+      'A record edit or deletion may remove a flag; this is not proof of correction, ' +
+      'accepted testing, or independent ASSE 6030 verification.</p><ol>' +
+      rows + '</ol></details>';
+  }
+
+  function resolvedReportMarkup(alarms, tests = []) {
+    const items = resolvedIssues(alarms, tests);
+    if (!items.length) return '';
+    const rows = items.map(item => '<li class="report-alarm-resolved-item"><strong>' +
+      escapeHtml(item.location) + '</strong><p>' + escapeHtml(item.issue) +
+      '</p>' + correctionHistory(item.record, item.key) + '</li>').join('');
+    return '<section class="report-alarm-resolved">' +
+      '<h3>Area alarm — Resolved Issues History (documentation only)</h3>' +
+      '<p>Previously flagged items no longer detected in the current records. ' +
+      'Their disappearance may reflect record edits or deletions, not completed corrective work. ' +
+      'This history is not accepted testing, NFPA 99 compliance, or independent ASSE 6030 verification.</p>' +
+      '<ol>' + rows + '</ol></section>';
+  }
+
+  const api = Object.freeze({ reviewPanel, summarize, matchingReview, normalizeFilter, summaryMarkup, badgeMarkup, reportMarkup, saveCorrection, correctionFor, resolvedIssues, resolvedMarkup, resolvedReportMarkup, CORRECTION_STATUSES, FILTERS });
   root.MGSAreaAlarmReview = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);

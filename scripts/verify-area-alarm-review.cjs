@@ -167,3 +167,41 @@ assert.match(safeNotes, /&lt;img src=x&gt;/);
 assert.ok(!safeNotes.includes('<script>') && !safeNotes.includes('<img src=x>'));
 
 console.log('Area alarm Needs Review summary checks passed.');
+
+// Historical notes must survive after a mismatch is corrected in the source
+// records, remain separate from open items and reappear as open if mismatch returns.
+const correctedChannel = { ...mismatch.equipment.sensorChannels[0], testIds: ['o2-test'] };
+const correctedRecord = { ...withHistory, equipment: {
+  ...mismatch.equipment, sensorChannels: [correctedChannel]
+} };
+const beforeHistoryView = JSON.stringify(correctedRecord);
+assert.equal(Review.reviewPanel(correctedRecord, testRecords).flags.length, 0);
+const historical = Review.resolvedIssues([correctedRecord], testRecords);
+assert.equal(historical.length, 1);
+assert.match(historical[0].issue, /Oxygen versus medical-air mismatch/);
+assert.equal(Review.resolvedIssues([withHistory], testRecords).length, 0);
+assert.equal(Review.resolvedIssues([clean], testRecords).length, 0);
+assert.equal(Review.resolvedIssues([{ ...correctedRecord, type: 'Master alarm' }], testRecords).length, 0);
+assert.equal(Review.resolvedMarkup([withHistory], testRecords), '');
+const resolvedDashboard = Review.resolvedMarkup([correctedRecord], testRecords);
+assert.match(resolvedDashboard, /Resolved Issues History \(1 no longer flagged\)/);
+assert.match(resolvedDashboard, /Foreman A/);
+assert.match(resolvedDashboard, /Foreman B/);
+assert.match(resolvedDashboard, /not proof of correction/);
+assert.doesNotMatch(resolvedDashboard, /data-review-key=/);
+const resolvedReport = Review.resolvedReportMarkup([correctedRecord], testRecords);
+assert.match(resolvedReport, /Resolved Issues History/);
+assert.match(resolvedReport, /2026-11-21 16:30 UTC/);
+assert.match(resolvedReport, /independent ASSE 6030 verification/);
+assert.equal(JSON.stringify(correctedRecord), beforeHistoryView, 'History views cannot mutate records');
+// A reintroduced mismatch belongs to live review again, not the historical section.
+assert.equal(Review.resolvedIssues([withHistory], testRecords).length, 0);
+const historyXss = Review.resolvedReportMarkup([{
+  ...correctedRecord, reviewCorrections: maliciousNote
+}], testRecords);
+assert.match(historyXss, /&lt;script&gt;/);
+assert.ok(!historyXss.includes('<script>'));
+assert.equal(Review.resolvedIssues([{
+  ...correctedRecord, reviewCorrections: { orphaned: null }
+}], testRecords).length, 0);
+console.log('Area alarm resolved-issues history checks passed.');

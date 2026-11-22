@@ -277,8 +277,26 @@ def run_width(browser, url, width):
         first_options.locator(f'[data-channel-test-id="{air_id}"]').uncheck()
         first_options.locator(f'[data-channel-test-id="{oxygen_id}"]').check()
         page.locator('#areaAlarmEquipmentForm button[type="submit"]').click()
-        assert "Gas-service mismatch" not in page.locator("#report").inner_text()
+        assert "Gas-service mismatch" not in page.locator("#report .report-alarm-review").inner_text()
         assert_print_channels(page)
+        # The old mismatch is no longer live, but its append-only field log
+        # must be accessible both on the dashboard and in the printed report.
+        history_view = page.locator("#alarmReviewSummary .alarm-resolved-history")
+        assert history_view.count() == 1
+        assert "Resolved Issues History (1 no longer flagged)" in history_view.locator("summary").inner_text()
+        history_view.locator("summary").click()
+        assert "QA Foreman" in history_view.inner_text()
+        assert "Rechecked: original mismatch remains." in history_view.inner_text()
+        assert history_view.locator("[data-review-key]").count() == 0
+        resolved_report = page.locator("#report .report-alarm-resolved")
+        assert "Relabeled point; functional-test link needs recheck." in resolved_report.inner_text()
+        assert "independent ASSE 6030 verification" in resolved_report.inner_text()
+        page.reload(wait_until="domcontentloaded")
+        page.locator('.tab[data-tab="alarms"]').click()
+        assert "Resolved Issues History (1 no longer flagged)" in page.locator(
+            "#alarmReviewSummary .alarm-resolved-history summary"
+        ).inner_text()
+        assert len(list(project_data(page)["alarms"][0]["reviewCorrections"].values())[0]) == 2
 
         # An unidentified channel label must not silently appear compatible.
         page.locator("#alarmList [data-alarm-equipment]").click()
