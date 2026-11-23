@@ -57,6 +57,7 @@ function normalizeProject(project) {
     alarms: Array.isArray(project.alarms) ? project.alarms : [],
     outlets: Array.isArray(project.outlets) ? project.outlets : [],
     tests: Array.isArray(project.tests) ? project.tests : [],
+    auditLog: Array.isArray(project.auditLog) ? project.auditLog : [],
     photos: Array.isArray(project.photos) ? project.photos : [],
     fieldNotes: project.fieldNotes || '',
     codeBasis: normalizeCodeBasis(project.codeBasis),
@@ -270,7 +271,8 @@ function renderAlarms() {
   const p = selectedProject();
   $('#alarmReviewSummary').innerHTML = p
     ? MGSAreaAlarmReview.summaryMarkup(p.alarms, p.tests, areaAlarmReviewFilter) +
-      MGSAreaAlarmReview.resolvedMarkup(p.alarms, p.tests)
+      MGSAreaAlarmReview.resolvedMarkup(p.alarms, p.tests) +
+      MGSProjectAudit.historyMarkup(p)
     : '<div class="empty">Select a project to review area alarms.</div>';
   if (!p) return alarmList.innerHTML = '<div class="empty">Select a project first.</div>';
   if (!p.alarms.length) return alarmList.innerHTML = '<div class="empty">No alarm records yet.</div>';
@@ -365,6 +367,7 @@ function renderReport() {
     <section><h3>Checklist (${done}/${p.tasks.length} complete)</h3>${reportRows(p.tasks, t => [`${t.done ? '✓' : '○'} ${escapeHtml(t.text)}`])}</section>
     ${MGSAreaAlarmReview.reportMarkup(p.alarms, p.tests)}
     ${MGSAreaAlarmReview.resolvedReportMarkup(p.alarms, p.tests)}
+    ${MGSProjectAudit.reportMarkup(p)}
     <section><h3>Alarm records</h3>${reportRows(p.alarms, a => [`<strong>${escapeHtml(a.type)}</strong><br>${escapeHtml(a.location)}<br><small>${escapeHtml(a.serves || '')}</small>`, `<strong>${escapeHtml(a.status)}</strong>${a.notes ? `<br>${escapeHtml(a.notes)}` : ''}${MGSAreaAlarmEquipment.reportMarkup(a, p.photos, p.tests)}`])}</section>
     <section><h3>Outlet / terminal records</h3>${reportRows(p.outlets, o => [`<strong>${escapeHtml(o.gas)}</strong><br>${escapeHtml(o.location)}<br><small>${escapeHtml(o.identifier || '')}</small>`, `<strong>${escapeHtml(o.status)}</strong>${o.notes ? `<br>${escapeHtml(o.notes)}` : ''}`])}</section>
     <section><h3>Inspection & test records</h3>${reportRows(p.tests, t => [`<strong>${escapeHtml(t.type)}</strong><br>${escapeHtml(t.system || '')}<br>${escapeHtml(t.location || '')}`, `<strong>${escapeHtml(t.status)}</strong><br>${escapeHtml(formatDate(t.date))}${t.person ? `<br>${escapeHtml(t.person)}` : ''}${t.reading ? `<br>${escapeHtml(t.reading)}` : ''}${t.notes ? `<br>${escapeHtml(t.notes)}` : ''}`])}</section>
@@ -628,10 +631,14 @@ $('#areaAlarmCorrectionForm').addEventListener('submit', e => {
   if (!currentIssue) return alert('This issue is no longer flagged. Reopen the dashboard to review the updated records.');
   try {
     // Add a dated field note; never change the linked test status or clear flags.
-    alarm.reviewCorrections = MGSAreaAlarmReview.saveCorrection(alarm, key, {
+    const nextCorrections = MGSAreaAlarmReview.saveCorrection(alarm, key, {
       foreman: values.get('foreman'), note: values.get('note'),
       status: values.get('status'), issue: currentIssue.detail
     });
+    const newEntry = nextCorrections[key][nextCorrections[key].length - 1];
+    const nextAudit = MGSProjectAudit.recordCorrection(p, alarm, key, newEntry);
+    alarm.reviewCorrections = nextCorrections;
+    p.auditLog = nextAudit;
   } catch (error) { return alert(error.message); }
   $('#areaAlarmCorrectionDialog').close();
   form.reset();
@@ -682,7 +689,14 @@ alarmList.addEventListener('click', e => {
     return;
   }
   const b = e.target.closest('[data-alarm-delete]'); if (!b) return;
-  const p = selectedProject(); p.alarms = p.alarms.filter(a => a.id !== b.dataset.alarmDelete); save();
+  const p = selectedProject();
+  const alarm = p?.alarms.find(a => a.id === b.dataset.alarmDelete);
+  if (!alarm) return;
+  // Archive both older alarm-attached notes and an explicit deletion event.
+  // Do not represent deletion as correction, passing, or verification.
+  p.auditLog = MGSProjectAudit.archiveAlarmDeletion(p, alarm, p.tests);
+  p.alarms = p.alarms.filter(a => a.id !== alarm.id);
+  save();
 });
 
 outletList.addEventListener('click', e => {
