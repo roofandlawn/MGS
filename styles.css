@@ -151,3 +151,20 @@ footer{max-width:1180px;margin:0 auto;padding:0 18px 40px;color:var(--muted);fon
   .report-alarm-resolved-item>p{margin:4px 0}
   .report-alarm-resolved .alarm-correction-history{background:#fff;border:1px solid #aaa;padding:4px 7px;font-size:8pt;break-inside:avoid}
 }
+
+/* Project-level history persists after an individual alarm record is removed. */
+.project-audit-history{border:1px solid #b8cbdc;border-radius:10px;background:#f8fafc;padding:12px 14px;margin:0 0 16px;overflow-wrap:anywhere}
+.project-audit-history summary{cursor:pointer;font-size:.9rem;font-weight:750;min-height:44px;padding:10px 0}
+.project-audit-history summary:focus-visible{outline:3px solid #3384d8;outline-offset:2px}
+.project-audit-history>p{font-size:.82rem;color:var(--muted);line-height:1.5}
+.project-audit-history ol{padding-left:22px;font-size:.82rem;line-height:1.5}
+.project-audit-history li{margin:12px 0}
+.project-audit-history li p{margin:4px 0;white-space:normal}
+.project-audit-history li small{color:var(--muted)}
+@media print{
+  .report-project-audit{margin:0 0 20px}
+  .report-project-audit>p{font-size:9pt;color:#444}
+  .report-project-audit ol{padding-left:22px}
+  .report-project-audit-item{break-inside:avoid;overflow-wrap:anywhere;margin-bottom:9px}
+  .report-project-audit-item p{margin:4px 0}
+}
