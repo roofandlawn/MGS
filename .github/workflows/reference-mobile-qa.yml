@@ -23,6 +23,7 @@ on:
       - scripts/verify-area-alarm-equipment.cjs
       - scripts/verify-area-alarm-review.cjs
       - scripts/verify-project-audit.cjs
+      - scripts/verify-project-audit-ui.py
       - scripts/verify-area-alarm-equipment-ui.py
       - scripts/verify-area-alarm-test-links-ui.py
       - scripts/verify-area-alarm-print-layout.py
@@ -84,6 +85,9 @@ jobs:
 
       - name: Smoke test channel-specific alarm functional-test links and printed report
         run: python scripts/verify-area-alarm-test-links-ui.py
+
+      - name: Smoke test area alarm audit preservation on deletion and reload
+        run: python scripts/verify-project-audit-ui.py
 
       - name: Verify physical multi-page Area Alarm PDF print layout
         run: python scripts/verify-area-alarm-print-layout.py
