@@ -1,0 +1,43 @@
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { runInNewContext } from 'node:vm';
+
+const code = readFileSync(new URL('../reference-sensor-placement.js', import.meta.url), 'utf8');
+const viewCode = readFileSync(new URL('../reference.js', import.meta.url), 'utf8');
+const html = readFileSync(new URL('../reference.html', import.meta.url), 'utf8');
+const window = {};
+runInNewContext(code, { window });
+const { forProject } = window.MGSSensorPlacement;
+let checks = 0;
+const check = fn => { fn(); checks++; };
+const context = (edition, status = 'mismatch') => ({ year: '2024', status, project: { edition } });
+const routeText = guide => guide.spaces.flatMap(space => space.options)
+  .map(option => option.steps.join(' ') + ' ' + option.explanation).join(' ');
+
+check(() => assert.equal(forProject(context('2018')).edition, '2018'));
+check(() => assert.equal(forProject(context('2024','match')).edition, '2024'));
+check(() => assert.equal(forProject({ year:'2024', status:'none', project:null }).edition, '2024'));
+check(() => assert.equal(forProject({ year:'2024', status:'none', project:null }).generalOnly, true));
+check(() => assert.equal(forProject(context('other','other')).state, 'unavailable'));
+check(() => assert.equal(forProject(context('unconfirmed','unconfirmed')).state, 'unavailable'));
+check(() => assert.equal(forProject(context('2018','match')).state, 'unavailable'));
+check(() => assert.equal(forProject({ year:'2018',status:'mismatch',project:{edition:'2018'} }).state, 'unavailable'));
+check(() => assert.equal(forProject({ year:'2024',status:'mismatch',project:{edition:'2024'} }).state, 'unavailable'));
+check(() => assert.equal(forProject({ year:'2024',status:'none',project:{edition:'2018'} }).state, 'unavailable'));
+check(() => assert.equal(forProject(null).state, 'unavailable'));
+check(() => assert.equal(forProject({}).state, 'unavailable'));
+check(() => assert.equal(forProject(context('2018')).spaces.length, 2));
+check(() => assert.equal(forProject(context('2024','match')).spaces.length, 2));
+check(() => assert.equal(forProject(context('2018')).spaces[0].options.length, 1));
+check(() => assert.equal(forProject(context('2018')).spaces[1].options.length, 2));
+check(() => assert.equal(forProject(context('2024','match')).spaces[1].options.length, 2));
+check(() => assert.ok(routeText(forProject(context('2018'))).includes('individual room zone-valve-box')));
+check(() => assert.ok(!routeText(forProject(context('2018'))).includes('each group of anesthetizing-location zone valves')));
+check(() => assert.ok(routeText(forProject(context('2024','match'))).includes('common branch')));
+check(() => assert.ok(routeText(forProject(context('2024','match'))).includes('Group of zone valves')));
+check(() => assert.ok(!routeText(forProject(context('2024','match'))).includes('2018')));
+check(() => assert.ok(html.includes('<script src="reference-sensor-placement.js"></script>')));
+check(() => assert.ok(viewCode.includes('window.MGSSensorPlacement.forProject(editionStatus)')));
+check(() => assert.ok(viewCode.includes('renderSensorPlacement(component.id)')));
+check(() => assert.deepEqual(Array.from(forProject(context('other','other')).spaces), []));
+console.log('Area alarm sensor-location editorial guards: '+checks+' checks passed.');
